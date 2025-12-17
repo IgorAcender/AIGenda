@@ -1,0 +1,2 @@
+(this["webpackJsonpwebook-react"]=this["webpackJsonpwebook-react"]||[]).push([[228],{2896:function(e,t,s){"use strict";s.r(t);var c=s(0),a=s(27),b=s(232),n=s(22);const i=Object(c.lazy)((()=>Object(b.a)((()=>Promise.all([s.e(3),s.e(6),s.e(11),s.e(46),s.e(48)]).then(s.bind(null,2819)))))),o=Object(c.lazy)((()=>Object(b.a)((()=>Promise.all([s.e(3),s.e(11),s.e(65)]).then(s.bind(null,2830)))))),l=()=>Object(a.a)((e=>e.current_user.permissions.is_admin))?Object(n.jsx)(i,{}):Object(n.jsx)(o,{});t.default=Object(c.memo)(l)}}]);
+//# sourceMappingURL=228.94b69558.chunk.js.map

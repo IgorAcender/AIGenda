@@ -1,0 +1,2 @@
+(this["webpackJsonpwebook-react"]=this["webpackJsonpwebook-react"]||[]).push([[225],{2897:function(e,t,a){"use strict";a.r(t);var s=a(0),l=a(582),b=a(232),c=a(22);const n=Object(s.lazy)((()=>Object(b.a)((()=>Promise.all([a.e(10),a.e(224)]).then(a.bind(null,2840)))))),o=Object(s.lazy)((()=>Object(b.a)((()=>Promise.all([a.e(10),a.e(84)]).then(a.bind(null,893)))))),i=()=>Object(c.jsx)(l.a,{Desktop:n,Mobile:o});i.displayName="Settings",t.default=i}}]);
+//# sourceMappingURL=225.b40781a9.chunk.js.map

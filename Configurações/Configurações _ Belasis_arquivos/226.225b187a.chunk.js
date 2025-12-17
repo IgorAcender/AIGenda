@@ -1,0 +1,2 @@
+(this["webpackJsonpwebook-react"]=this["webpackJsonpwebook-react"]||[]).push([[226],{2916:function(t,e,a){"use strict";a.r(e);var s=a(546),i=a(50),c=a(250),r=a(22);const b=()=>Object(r.jsx)(s.a,{style:{maxWidth:700},status:"warning",title:Object(r.jsx)(c.h,{$color:"red_2",$size:24,$semibold:!0,children:Object(i.b)("whatsapp_marketing.custom_campaigns.temporarily_disabled.title")}),subTitle:Object(i.b)("whatsapp_marketing.custom_campaigns.temporarily_disabled.subtitle")});b.displayName="TemporarilyDisabled",e.default=b}}]);
+//# sourceMappingURL=226.225b187a.chunk.js.map
