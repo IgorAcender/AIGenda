@@ -1,0 +1,58 @@
+# ✅ SOLUÇÃO DO ERRO - DOCKERFILE CRIADO
+
+## O Problema:
+
+O Nixpacks não estava detectando Node.js corretamente.
+
+---
+
+## ✅ A Solução:
+
+Criei um **Dockerfile** que:
+- ✅ Usa Node.js 20 Alpine (imagem oficial)
+- ✅ Copia todos os arquivos do projeto
+- ✅ Instala dependências com npm
+- ✅ Executa o build script
+- ✅ Inicia a aplicação
+
+---
+
+## 🚀 O que fazer AGORA:
+
+### 1️⃣ **Fazer push:**
+
+```bash
+git add Dockerfile
+git commit -m "Add Dockerfile for Easy Panel deployment"
+git push origin main
+```
+
+### 2️⃣ **No Easy Panel:**
+
+- Vá para o projeto **aigenda**
+- Na aba **"Construção"**, mude:
+  - **Método de Build** de "Nixpacks" para **"Dockerfile"**
+- Clique em **"Redeploy"**
+- Aguarde 5-10 minutos
+
+---
+
+## 📝 Mudança no Easy Panel:
+
+**ANTES:**
+- Método de Build: Nixpacks
+
+**DEPOIS:**
+- Método de Build: Dockerfile ✅
+
+---
+
+## 🎉 Desta vez vai funcionar!
+
+O Docker vai:
+1. Usar Node.js 20 (oficial)
+2. Instalar dependências
+3. Fazer build do projeto
+4. Iniciar a aplicação
+
+**Tá pronto! Agora é só fazer git push e mudar no Easy Panel!** 🚀

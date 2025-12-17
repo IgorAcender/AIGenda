@@ -1,5 +1,0 @@
-[build]
-cmd = "npm install --legacy-peer-deps && chmod +x build.sh && ./build.sh"
-
-[start]
-cmd = "npm start"
