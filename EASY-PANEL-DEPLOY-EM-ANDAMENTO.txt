@@ -1,0 +1,71 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║         🚀 ACOMPANHANDO O DEPLOY DO AIGENDA SAAS NO EASY PANEL 🚀      ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📊 ESTADO ATUAL: EM ANDAMENTO...
+
+┌──────────────────────────────────────────────────────────────────────┐
+│ ETAPA                           │ STATUS        │ TEMPO ESPERADO      │
+├──────────────────────────────────────────────────────────────────────┤
+│ 1. Download do GitHub           │ ⏳ EM ANDAMENTO│ 2-3 minutos        │
+│ 2. Instalar Node.js             │ ⏳ AGUARDANDO │ 2-3 minutos        │
+│ 3. npm install                  │ ⏳ AGUARDANDO │ 3-5 minutos        │
+│ 4. Build do projeto             │ ⏳ AGUARDANDO │ 2-3 minutos        │
+│ 5. Iniciar aplicação            │ ⏳ AGUARDANDO │ 1-2 minutos        │
+│ 6. ✅ PRONTO!                   │ ⏳ AGUARDANDO │ TOTAL: 10-15 min   │
+└──────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+⏰ O QUE ESTÁ ACONTECENDO AGORA:
+
+O Easy Panel está:
+1. ⏳ Clonando o repositório do GitHub
+2. ⏳ Baixando todos os arquivos do projeto
+3. ⏳ Preparando o build
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ PRÓXIMAS ETAPAS (Depois que download terminar):
+
+1️⃣  Docker vai instalar Node.js 20
+2️⃣  npm vai instalar todas as dependências
+3️⃣  Script de build vai compilar Frontend + Backend
+4️⃣  npm start vai iniciar a aplicação
+5️⃣  🎉 Aplicação ao vivo em seu-dominio.com
+
+═══════════════════════════════════════════════════════════════════════════
+
+💡 DICAS ENQUANTO AGUARDA:
+
+✅ Não feche essa tela
+✅ Não faça novo deploy enquanto este estiver em andamento
+✅ Se demorar mais de 20 minutos, pode cancelar e tentar novamente
+✅ Verifique "Visualizar" logs se quiser acompanhar em tempo real
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 QUANDO TERMINAR:
+
+✅ Status mudar para VERDE = Deploy bem-sucedido! 🟢
+❌ Status virar VERMELHO = Houve um erro (leia os logs)
+🟠 Status AMARELO = Ainda em andamento ou com aviso
+
+═══════════════════════════════════════════════════════════════════════════
+
+📞 SE DER ERRO:
+
+1. Clique em "Visualizar" para ver os logs completos
+2. Procure por mensagens de erro em vermelho
+3. Me manda a mensagem de erro
+4. Vamos corrigir juntos! 💪
+
+═══════════════════════════════════════════════════════════════════════════
+
+⏳ AGUARDANDO... (Tempo: 2 minutos até agora)
+
+Volte em 5-10 minutos para verificar o status! ✅
+
+═══════════════════════════════════════════════════════════════════════════
