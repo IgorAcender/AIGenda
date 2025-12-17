@@ -1,0 +1,15 @@
+[providers]
+# Explicitar que é Node.js para o Nixpacks
+nodejs = "20"
+
+[phases.install]
+# Comando de instalação
+cmds = ["npm install --legacy-peer-deps"]
+
+[phases.build]
+# Comando de build
+cmds = ["chmod +x build.sh && ./build.sh"]
+
+[phases.start]
+# Comando de início
+cmd = "npm start"
