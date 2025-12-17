@@ -1,0 +1,319 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============= TENANT (Multi-tenancy) =============
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  email     String   @unique
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  country   String?
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users           User[]
+  clients         Client[]
+  professionals   Professional[]
+  services        Service[]
+  appointments    Appointment[]
+  transactions    Transaction[]
+  configs         Configuration?
+  subscriptions   Subscription?
+
+  @@index([slug])
+}
+
+// ============= USUARIOS =============
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  phone     String?
+  avatar    String?
+  role      Role     @default(USER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  professional Professional?
+  sessions     Session[]
+
+  @@index([tenantId])
+  @@index([email])
+}
+
+enum Role {
+  ADMIN
+  PROFESSIONAL
+  USER
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ============= CADASTRO - CLIENTES =============
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String
+  address   String?
+  city      String?
+  cpf       String?  @unique
+  birthDate DateTime?
+  notes     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  appointments Appointment[]
+  transactions Transaction[]
+
+  @@index([tenantId])
+  @@index([email])
+}
+
+// ============= CADASTRO - PROFISSIONAIS =============
+model Professional {
+  id           String   @id @default(cuid())
+  name         String
+  specialties  String[] // Array de especialidades
+  bio          String?
+  avatar       String?
+  rating       Float    @default(5)
+  commissionRate Float  @default(0) // Percentual de comissão
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  user         User?
+  userId       String? @unique
+  appointments Appointment[]
+  services     ServiceProfessional[]
+  transactions Transaction[]
+
+  @@index([tenantId])
+}
+
+// ============= CADASTRO - SERVIÇOS =============
+model Service {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  price        Float
+  duration     Int      // duração em minutos
+  category     String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  appointments Appointment[]
+  professionals ServiceProfessional[]
+
+  @@index([tenantId])
+}
+
+model ServiceProfessional {
+  id             String   @id @default(cuid())
+  serviceId      String
+  service        Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   Professional   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([serviceId, professionalId])
+  @@index([serviceId])
+  @@index([professionalId])
+}
+
+// ============= PRINCIPAL - AGENDAMENTOS =============
+model Appointment {
+  id               String   @id @default(cuid())
+  title            String
+  description      String?
+  startTime        DateTime
+  endTime          DateTime
+  status           AppointmentStatus @default(SCHEDULED)
+  notes            String?
+  reminderSent     Boolean  @default(false)
+  reminderSentAt   DateTime?
+  canceledAt       DateTime?
+  cancelReason     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  clientId       String
+  client         Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  transaction    Transaction?
+
+  @@index([tenantId])
+  @@index([clientId])
+  @@index([professionalId])
+  @@index([startTime])
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
+
+// ============= FINANCEIRO - TRANSAÇÕES =============
+model Transaction {
+  id               String   @id @default(cuid())
+  type             TransactionType
+  description      String
+  amount           Float
+  status           TransactionStatus @default(PENDING)
+  paymentMethod    String?
+  reference        String?  @unique
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  paidAt           DateTime?
+
+  // Multi-tenancy
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Relations
+  clientId       String?
+  client         Client?    @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  professionalId String?
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  appointmentId  String?    @unique
+  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([clientId])
+  @@index([professionalId])
+}
+
+enum TransactionType {
+  INCOME      // Receita (cliente pagando)
+  COMMISSION  // Comissão (profissional)
+  EXPENSE     // Despesa
+  REFUND      // Reembolso
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+// ============= PAGAMENTOS - STRIPE =============
+model Subscription {
+  id                String   @id @default(cuid())
+  plan              SubscriptionPlan
+  status            SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId  String?  @unique
+  stripeSubscriptionId String? @unique
+  currentPeriodStart DateTime
+  currentPeriodEnd  DateTime
+  canceledAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String   @unique
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+enum SubscriptionPlan {
+  STARTER   // Básico - até 5 profissionais
+  PRO       // Profissional - até 50 profissionais
+  ENTERPRISE // Empresarial - ilimitado
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+// ============= CONFIGURAÇÕES =============
+model Configuration {
+  id                    String   @id @default(cuid())
+  businessHours         Boolean  @default(true)
+  weekStartDay          Int      @default(0) // 0 = domingo, 1 = segunda
+  appointmentDuration   Int      @default(60) // minutos
+  bufferBetweenAppts    Int      @default(15) // minutos
+  autoConfirmAppointments Boolean @default(false)
+  allowCancellation     Boolean  @default(true)
+  cancellationDeadline  Int      @default(24) // horas
+  emailNotifications    Boolean  @default(true)
+  smsNotifications      Boolean  @default(false)
+  whatsappNotifications Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Multi-tenancy
+  tenantId String   @unique
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
