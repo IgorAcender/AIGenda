@@ -1,12 +1,5 @@
-[[providers]]
-name = "nodejs"
-version = "20"
+[build]
+cmd = "npm install --legacy-peer-deps && chmod +x build.sh && ./build.sh"
 
-[phases.install]
-cmds = ["npm install --legacy-peer-deps"]
-
-[phases.build]
-cmds = ["chmod +x build.sh && ./build.sh"]
-
-[phases.start]
+[start]
 cmd = "npm start"
