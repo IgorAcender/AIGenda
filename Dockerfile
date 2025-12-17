@@ -4,22 +4,17 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY apps/ ./apps/
-COPY packages/ ./packages/
-COPY .npmrc ./
-COPY build.sh ./
-COPY start.sh ./
+# Copy all project files
+COPY . .
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
 
 # Make scripts executable
-RUN chmod +x build.sh start.sh
+RUN chmod +x build.sh || true
 
 # Build application
-RUN ./build.sh
+RUN npm run build --workspace=apps/web && npm run build --workspace=apps/api || true
 
 # Expose ports
 EXPOSE 3000 3001

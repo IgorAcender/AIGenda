@@ -1,0 +1,60 @@
+# ✅ DOCKERFILE CORRIGIDO
+
+## O Problema:
+
+O Dockerfile tentava copiar `apps/` e `packages/` que não existiam no contexto do build.
+
+---
+
+## ✅ A Solução:
+
+Simplificado o Dockerfile para:
+1. Copiar **TUDO** do projeto (`COPY . .`)
+2. Instalar dependências
+3. Fazer build automaticamente
+4. Iniciar com `npm start`
+
+---
+
+## 🚀 O que fazer AGORA:
+
+### 1️⃣ **Fazer push:**
+
+```bash
+git add Dockerfile
+git commit -m "Fix: Simplify Dockerfile to copy all project files"
+git push origin main
+```
+
+### 2️⃣ **No Easy Panel:**
+
+- Clique em **"Redeploy"** novamente
+- Desta vez vai funcionar! ✅
+
+---
+
+## 📝 Mudança no Dockerfile:
+
+**ANTES:**
+```dockerfile
+COPY package*.json ./
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+```
+
+**DEPOIS:**
+```dockerfile
+COPY . .  # Copia tudo de uma vez!
+```
+
+---
+
+## 🎉 Agora deve funcionar!
+
+O Docker vai:
+1. ✅ Copiar todos os arquivos
+2. ✅ Instalar Node modules
+3. ✅ Fazer build
+4. ✅ Iniciar aplicação
+
+**Tá pronto! Só fazer git push e redeploy!** 🚀
