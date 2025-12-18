@@ -12,6 +12,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
+    tenantName: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,10 +34,18 @@ export default function Register() {
     setLoading(true);
 
     try {
+      // Generate slug from tenant name
+      const tenantSlug = formData.tenantName
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]/g, '');
+
       const response = await api.post('/auth/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        tenantName: formData.tenantName,
+        tenantSlug: tenantSlug,
       });
 
       if (response.data.token) {
@@ -44,7 +53,7 @@ export default function Register() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao criar conta');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Erro ao criar conta');
     } finally {
       setLoading(false);
     }
@@ -65,7 +74,7 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nome
+              Nome Completo
             </label>
             <input
               id="name"
@@ -75,7 +84,23 @@ export default function Register() {
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Seu nome"
+              placeholder="Seu nome completo"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="tenantName" className="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Empresa/Consultório
+            </label>
+            <input
+              id="tenantName"
+              name="tenantName"
+              type="text"
+              value={formData.tenantName}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ex: Meu Consultório"
             />
           </div>
 
