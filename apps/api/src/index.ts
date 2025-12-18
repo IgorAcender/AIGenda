@@ -18,11 +18,38 @@ dotenv.config();
 const app: Express = express();
 const prisma = new PrismaClient();
 
+function getAllowedOrigins(): string[] {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true,
-}));
+const allowedOrigins = getAllowedOrigins();
+const defaultDevOrigins = new Set(['http://localhost:3000', 'http://127.0.0.1:3000']);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.length > 0) {
+        if (allowedOrigins.includes('*')) return callback(null, true);
+        return callback(null, allowedOrigins.includes(origin));
+      }
+
+      if (process.env.NODE_ENV === 'production') {
+        return callback(null, true);
+      }
+
+      return callback(null, defaultDevOrigins.has(origin));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
