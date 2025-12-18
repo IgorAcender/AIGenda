@@ -77,25 +77,7 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Root info (useful when the domain points directly to the API)
-app.get('/', (req: Request, res: Response) => {
-  res.json({
-    name: 'AIGenda API',
-    status: 'ok',
-    health: '/health',
-    routes: [
-      '/api/auth',
-      '/api/clients',
-      '/api/professionals',
-      '/api/services',
-      '/api/appointments',
-      '/api/transactions',
-          '/api/reports',
-    ],
-  });
-});
-
-// Rotas
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/professionals', professionalRoutes);
@@ -104,9 +86,15 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/reports', reportsRoutes);
 
-// Rota 404
+// SPA fallback: Serve index.html for all non-API routes (Next.js client-side routing)
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: 'Route not found' });
+  // If it's an API route but not handled above, return 404 JSON
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  
+  // For all other routes, serve the frontend index.html (SPA routing)
+  res.sendFile(path.join(__dirname, '../../web/out/index.html'));
 });
 
 // Error handler
