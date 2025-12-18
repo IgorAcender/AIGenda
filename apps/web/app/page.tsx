@@ -24,6 +24,10 @@ export default function Home() {
     checkAPI();
   }, []);
 
+  const handleNavigate = (path: string) => {
+    window.location.href = path;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-blue-900">
       <div className="text-center">
@@ -43,19 +47,19 @@ export default function Home() {
         </div>
 
         <div className="space-y-3">
-          <a
-            href="/login"
-            className="inline-block px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition"
+          <button
+            onClick={() => handleNavigate('/login')}
+            className="inline-block px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition cursor-pointer"
           >
             Fazer Login
-          </a>
+          </button>
           <br />
-          <a
-            href="/register"
-            className="inline-block px-8 py-3 bg-blue-400 text-white font-bold rounded-lg hover:bg-blue-500 transition"
+          <button
+            onClick={() => handleNavigate('/register')}
+            className="inline-block px-8 py-3 bg-blue-400 text-white font-bold rounded-lg hover:bg-blue-500 transition cursor-pointer"
           >
             Criar Conta
-          </a>
+          </button>
         </div>
 
         <p className="text-blue-200 mt-8 text-sm">

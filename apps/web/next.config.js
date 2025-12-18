@@ -7,6 +7,8 @@ const nextConfig = {
   images: {
     unoptimized: true,  // Required for static export (no image optimization at build time)
   },
+  trailingSlash: true,  // Ensure consistent URL handling
+  skipTrailingSlashRedirect: true,  // Prevent redirect issues
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
   },
