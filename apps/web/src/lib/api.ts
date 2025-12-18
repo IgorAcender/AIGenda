@@ -40,6 +40,23 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Runtime safety: if the configured baseURL points to localhost but the page
+  // is running on a different host (production HTTPS), rewrite to relative
+  // `/api` to avoid mixed-content blocking in the browser.
+  try {
+    if (typeof window !== 'undefined' && config.baseURL) {
+      const base = String(config.baseURL);
+      const isLocalhost = base.includes('localhost') || base.includes('127.0.0.1');
+      const pageIsLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocalhost && !pageIsLocal) {
+        // rewrite baseURL to relative API path
+        config.baseURL = '/api';
+      }
+    }
+  } catch (e) {
+    // noop
+  }
+
   return config;
 });
 
