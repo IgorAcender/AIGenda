@@ -1,0 +1,90 @@
+🔴 ERRO NO DEPLOY: Backend dist/index.js não encontrado
+═════════════════════════════════════════════════════════════════
+
+ERRO ORIGINAL:
+──────────────
+Error: Cannot find module '/app/apps/api/dist/index.js'
+
+CAUSA:
+──────
+O Dockerfile estava usando `npm run build --workspace=apps/api` mas a compilação
+não estava sendo executada corretamente porque:
+
+1. O workspace build pode ter falhado silenciosamente
+2. O `tsc` (TypeScript Compiler) não estava criando a pasta `dist`
+3. O `|| true` no final ignorava os erros de build
+
+SOLUÇÃO APLICADA:
+──────────────────
+✅ Dockerfile corrigido com passos explícitos:
+
+Antes:
+  RUN npm run build --workspace=apps/api
+  RUN npm run build --workspace=apps/web || echo "..."
+
+Depois:
+  RUN cd apps/api && npm run build && cd ../..
+  RUN cd apps/web && npm run build && cd ../.. || true
+
+Benefícios:
+  ✓ Compilação explícita do backend (obrigatória)
+  ✓ Compilação do frontend (opcional, com fallback)
+  ✓ Garante que `dist/` seja criado antes de `npm start`
+  ✓ Mais legível e debugging mais fácil
+
+COMO FUNCIONA AGORA:
+──────────────────────
+1. npm install (instala todas as dependências)
+2. cd apps/api → npm run build (tsc compila TypeScript → dist)
+3. cd apps/web → npm run build (Next.js faz build, opcional)
+4. npm start (inicia backend com `node dist/index.js`)
+
+ARQUIVO MODIFICADO:
+────────────────────
+✅ Dockerfile
+
+COMMIT REALIZADO:
+──────────────────
+✅ Commit: "fix: Melhorar Dockerfile com compilação explícita do backend"
+✅ Status: Push bem-sucedido para main
+
+PRÓXIMO DEPLOY:
+────────────────
+Easy Panel vai detectar o novo commit e fazer novo build!
+
+⏳ Desta vez será diferente:
+  1. GitHub Archive Download
+  2. Docker Build
+  3. npm install
+  4. cd apps/api && npm run build (compilação explícita!)
+  5. cd apps/web && npm run build (opcional)
+  6. npm start (backend inicia com sucesso)
+
+RESULTADO ESPERADO:
+────────────────────
+🟢 Verde = Sucesso!
+   - Backend compilado e rodando
+   - Frontend pronto
+   - Aplicação 100% funcional
+
+ESTRUTURA QUE SERÁ CRIADA:
+──────────────────────────
+/app/
+├── apps/
+│   ├── api/
+│   │   ├── src/
+│   │   │   ├── index.ts
+│   │   │   └── ...
+│   │   ├── dist/                    ← SERÁ CRIADO AQUI
+│   │   │   ├── index.js             ← NODE EXECUTARÁ ISSO
+│   │   │   ├── routes/
+│   │   │   └── ...
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── web/
+│       └── ...
+
+═════════════════════════════════════════════════════════════════
+Documento gerado: 18 de dezembro de 2025
+Versão: Dockerfile com build explícito
+═════════════════════════════════════════════════════════════════
