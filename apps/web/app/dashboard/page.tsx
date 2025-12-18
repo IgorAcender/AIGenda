@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Tabs, Button, Modal, Form, Input, Table, Space, message, Spin, Card, Row, Col, Statistic } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, TeamOutlined, ShoppingOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import api from '@/lib/api';
 
 interface Client {
   id: string;
@@ -74,10 +72,7 @@ export default function DashboardPage() {
   // ==================== CLIENTS ====================
   const loadClients = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/clients`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/clients');
       setClients(response.data || []);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -88,21 +83,12 @@ export default function DashboardPage() {
   const handleAddClient = async (values: any) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
       if (editingClient) {
-        await axios.put(
-          `${API_URL}/api/clients/${editingClient.id}`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/clients/${editingClient.id}`, values);
         message.success('Cliente atualizado com sucesso');
       } else {
-        await axios.post(
-          `${API_URL}/api/clients`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/clients', values);
         message.success('Cliente criado com sucesso');
       }
       
@@ -119,10 +105,7 @@ export default function DashboardPage() {
 
   const handleDeleteClient = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/clients/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/clients/${id}`);
       message.success('Cliente deletado com sucesso');
       await loadClients();
     } catch (error) {
@@ -133,10 +116,7 @@ export default function DashboardPage() {
   // ==================== PROFESSIONALS ====================
   const loadProfessionals = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/professionals`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/professionals');
       setProfessionals(response.data || []);
     } catch (error) {
       console.error('Error loading professionals:', error);
@@ -146,21 +126,12 @@ export default function DashboardPage() {
   const handleAddProfessional = async (values: any) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
       if (editingProfessional) {
-        await axios.put(
-          `${API_URL}/api/professionals/${editingProfessional.id}`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/professionals/${editingProfessional.id}`, values);
         message.success('Profissional atualizado com sucesso');
       } else {
-        await axios.post(
-          `${API_URL}/api/professionals`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/professionals', values);
         message.success('Profissional criado com sucesso');
       }
       
@@ -177,10 +148,7 @@ export default function DashboardPage() {
 
   const handleDeleteProfessional = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/professionals/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/professionals/${id}`);
       message.success('Profissional deletado com sucesso');
       await loadProfessionals();
     } catch (error) {
@@ -191,10 +159,7 @@ export default function DashboardPage() {
   // ==================== SERVICES ====================
   const loadServices = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/services`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get('/services');
       setServices(response.data || []);
     } catch (error) {
       console.error('Error loading services:', error);
@@ -204,21 +169,12 @@ export default function DashboardPage() {
   const handleAddService = async (values: any) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
       if (editingService) {
-        await axios.put(
-          `${API_URL}/api/services/${editingService.id}`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.put(`/services/${editingService.id}`, values);
         message.success('Serviço atualizado com sucesso');
       } else {
-        await axios.post(
-          `${API_URL}/api/services`,
-          values,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/services', values);
         message.success('Serviço criado com sucesso');
       }
       
@@ -235,10 +191,7 @@ export default function DashboardPage() {
 
   const handleDeleteService = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/services/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/services/${id}`);
       message.success('Serviço deletado com sucesso');
       await loadServices();
     } catch (error) {
