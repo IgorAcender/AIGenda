@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies (including devDependencies for build tools like tsc)
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
 
 # Generate Prisma Client for the API workspace (monorepo/workspaces need explicit generate)
 RUN cd apps/api && npm run generate && cd ../..
