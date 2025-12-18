@@ -29,6 +29,6 @@ RUN cd apps/web && npm run build && cd ../.. || true
 # Expose ports
 EXPOSE 80 3000 3001
 
-# Start only the API server (Express will serve Next.js static files from the root)
-# API will listen on port 3001, and Nginx will route port 80 traffic to it
+# Start ONLY the API server (Express serves Next.js static files from .next/ and public/)
+# This is a single process; no background jobs.
 CMD ["node", "apps/api/dist/index.js"]
