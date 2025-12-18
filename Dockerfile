@@ -7,17 +7,20 @@ WORKDIR /app
 # Copy all project files
 COPY . .
 
-# Install dependencies
+# Install dependencies (including devDependencies for build tools like tsc)
 RUN npm install --legacy-peer-deps
 
-# Build backend API (TypeScript → JavaScript)
+# Build backend API (TypeScript → JavaScript in dist/)
 RUN cd apps/api && npm run build && cd ../..
 
-# Build frontend Next.js
+# Build frontend Next.js (optional - can fail)
 RUN cd apps/web && npm run build && cd ../.. || true
 
-# Expose ports
-EXPOSE 3000 3001 3001
+# Remove devDependencies to reduce image size (optional, but recommended for production)
+# RUN npm ci --legacy-peer-deps --omit=dev
 
-# Start application with backend
+# Expose ports
+EXPOSE 3000 3001
+
+# Start application
 CMD ["npm", "start"]
