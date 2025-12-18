@@ -1,0 +1,64 @@
+🔧 ERRO: Backend não foi compilado (dist/index.js não encontrado)
+═══════════════════════════════════════════════════════════════════
+
+ERRO ORIGINAL:
+──────────────
+Error: Cannot find module '/app/apps/api/dist/index.js'
+    at Module._resolveFilename (node:internal/modules/cjs_loader:1207:15)
+    at Module._load (node:internal/main/modules:1038:27)
+
+CAUSA:
+──────
+O Dockerfile tinha `|| true` no final do build, que:
+  1. Ignora erros de compilação
+  2. Não gera a pasta `dist` do backend
+  3. Tenta iniciar app sem arquivos compilados
+  4. Falha ao procurar `/app/apps/api/dist/index.js`
+
+CÓDIGO ANTIGO (ERRADO):
+────────────────────────
+RUN npm run build --workspace=apps/web && npm run build --workspace=apps/api || true
+
+Problema: O `|| true` ignora TODOS os erros, então se o backend falhar
+na compilação, o script continua como se tudo estivesse bem.
+
+CÓDIGO NOVO (CORRETO):
+───────────────────────
+# Build backend first (critical)
+RUN npm run build --workspace=apps/api
+
+# Build frontend (if it fails, don't stop)
+RUN npm run build --workspace=apps/web || echo "Frontend build had warnings..."
+
+Melhoria: 
+  1. Backend é prioritário (sem || true)
+  2. Frontend tem falha controlada
+  3. Garante que dist/ seja gerado
+
+COMMIT REALIZADO:
+──────────────────
+✅ Commit: "fix: Corrigir Dockerfile para compilar backend corretamente"
+✅ Arquivo: Dockerfile
+✅ Status: Push bem-sucedido
+
+PRÓXIMO DEPLOY:
+────────────────
+Easy Panel vai detectar o novo commit!
+
+⏳ Aguarde 10-15 minutos para novo build onde:
+  1. Backend será compilado corretamente
+  2. Arquivo /app/apps/api/dist/index.js será gerado
+  3. npm start conseguirá encontrar o arquivo
+  4. Aplicação iniciará corretamente
+
+RESULTADO ESPERADO:
+────────────────────
+🟢 Verde = Backend rodando!
+   ✅ API respondendo em :3001
+   ✅ Frontend em :3000
+   ✅ Health check: /health respondendo
+
+═══════════════════════════════════════════════════════════════
+Documento gerado: 18 de dezembro de 2025
+Status: Dockerfile corrigido, aguardando novo deploy
+═══════════════════════════════════════════════════════════════
