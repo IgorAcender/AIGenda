@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// If NEXT_PUBLIC_API_URL is set use it and append /api, otherwise use relative /api
+const rawApi = process.env.NEXT_PUBLIC_API_URL || '';
+const API_URL = rawApi ? `${rawApi.replace(/\/+$/g, '')}/api` : '/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
