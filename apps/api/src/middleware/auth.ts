@@ -1,7 +1,7 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export interface AuthRequest extends Express.Request {
+export interface AuthRequest extends Request {
   userId?: string;
   tenantId?: string;
   user?: any;
