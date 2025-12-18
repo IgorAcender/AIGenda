@@ -19,8 +19,8 @@ RUN cd apps/api && npm run generate && cd ../..
 # Build backend API (TypeScript → JavaScript in dist/)
 RUN cd apps/api && npm run build && cd ../..
 
-# Build frontend Next.js (optional - can fail)
-RUN cd apps/web && npm run build && cd ../.. || true
+# Build frontend Next.js to static HTML/CSS/JS (output: 'export' generates out/ folder)
+RUN cd apps/web && npm run build && cd ../..
 
 # Remove devDependencies to reduce image size (optional, recommended for production)
 # Note: prefer prune to avoid re-installing and losing generated Prisma Client.

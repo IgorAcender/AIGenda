@@ -86,15 +86,9 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/reports', reportsRoutes);
 
-// SPA fallback: Serve index.html for all non-API routes (Next.js client-side routing)
-app.use((req: Request, res: Response) => {
-  // If it's an API route but not handled above, return 404 JSON
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API route not found' });
-  }
-  
-  // For all other routes, serve the frontend index.html (SPA routing)
-  res.sendFile(path.join(__dirname, '../../web/out/index.html'));
+// 404 handler for API routes
+app.use('/api', (req: Request, res: Response) => {
+  res.status(404).json({ error: 'API route not found' });
 });
 
 // Error handler
