@@ -10,14 +10,18 @@ COPY . .
 # Install dependencies (including devDependencies for build tools like tsc)
 RUN npm install --legacy-peer-deps
 
+# Generate Prisma Client for the API workspace (monorepo/workspaces need explicit generate)
+RUN cd apps/api && npm run generate && cd ../..
+
 # Build backend API (TypeScript → JavaScript in dist/)
 RUN cd apps/api && npm run build && cd ../..
 
 # Build frontend Next.js (optional - can fail)
 RUN cd apps/web && npm run build && cd ../.. || true
 
-# Remove devDependencies to reduce image size (optional, but recommended for production)
-# RUN npm ci --legacy-peer-deps --omit=dev
+# Remove devDependencies to reduce image size (optional, recommended for production)
+# Note: prefer prune to avoid re-installing and losing generated Prisma Client.
+# RUN npm prune --omit=dev
 
 # Expose ports
 EXPOSE 3000 3001
