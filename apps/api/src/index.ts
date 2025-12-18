@@ -93,14 +93,7 @@ app.use('/api', (req: Request, res: Response) => {
 
 // SPA fallback: serve index.html for all non-API routes (Next.js client-side routing)
 app.use((req: Request, res: Response) => {
-  // Try to serve the index.html from the root out/ directory
-  const indexPath = path.join(__dirname, '../../web/out/index.html');
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      // If index.html doesn't exist, try the home directory route
-      res.sendFile(path.join(__dirname, '../../web/out/index/index.html'));
-    }
-  });
+  res.sendFile(path.join(__dirname, '../../web/out/index/index.html'));
 });
 
 // Error handler
