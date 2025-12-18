@@ -29,6 +29,6 @@ RUN cd apps/web && npm run build && cd ../.. || true
 # Expose ports
 EXPOSE 80 3000 3001
 
-# Start frontend (Next) on port 80 in background, then start API in foreground
-# This way the container serves the frontend on root (port 80) and keeps the API running
-CMD ["sh", "-c", "cd apps/web && PORT=80 npm run start & cd /app && node apps/api/dist/index.js"]
+# Start frontend (Next) on port 3000 in background, then start API on 3001 in foreground
+# Easy Panel Nginx will route requests accordingly
+CMD ["sh", "-c", "cd apps/web && PORT=3000 npm run start & cd /app && PORT=3001 node apps/api/dist/index.js"]
