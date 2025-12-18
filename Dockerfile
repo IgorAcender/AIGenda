@@ -10,17 +10,14 @@ COPY . .
 # Install dependencies
 RUN npm install --legacy-peer-deps
 
-# Make scripts executable
-RUN chmod +x build.sh || true
+# Build backend API (TypeScript → JavaScript)
+RUN cd apps/api && npm run build && cd ../..
 
-# Build backend first (critical)
-RUN npm run build --workspace=apps/api
-
-# Build frontend (if it fails, don't stop)
-RUN npm run build --workspace=apps/web || echo "Frontend build had warnings but continuing..."
+# Build frontend Next.js
+RUN cd apps/web && npm run build && cd ../.. || true
 
 # Expose ports
-EXPOSE 3000 3001
+EXPOSE 3000 3001 3001
 
-# Start application
+# Start application with backend
 CMD ["npm", "start"]
