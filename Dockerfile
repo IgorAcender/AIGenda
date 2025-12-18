@@ -29,6 +29,6 @@ RUN cd apps/web && npm run build && cd ../.. || true
 # Expose ports
 EXPOSE 80 3000 3001
 
-# Start frontend (Next) on port 3000 in background, then start API on 3001 in foreground
-# Easy Panel Nginx will route requests accordingly
-CMD ["sh", "-c", "cd apps/web && PORT=3000 npm run start & cd /app && PORT=3001 node apps/api/dist/index.js"]
+# Start only the API server (Express will serve Next.js static files from the root)
+# API will listen on port 3001, and Nginx will route port 80 traffic to it
+CMD ["node", "apps/api/dist/index.js"]

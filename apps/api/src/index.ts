@@ -54,6 +54,14 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve Next.js frontend as static files from the root
+// This allows Express to serve the compiled Next.js app on the same port as the API
+import path from 'path';
+const nextPublicPath = path.join(__dirname, '../../web/.next');
+app.use(express.static(nextPublicPath));
+// Serve Next.js public folder (legacy files, etc.)
+app.use(express.static(path.join(__dirname, '../../web/public')));
+
 // Middleware de logging
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
