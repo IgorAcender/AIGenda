@@ -4,6 +4,9 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
+# Prisma on Alpine needs OpenSSL available at runtime/build time
+RUN apk add --no-cache openssl
+
 # Copy all project files
 COPY . .
 

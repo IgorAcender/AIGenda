@@ -58,7 +58,7 @@ model User {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
-  professional Professional?
+  professional Professional? @relation("UserProfessional")
   sessions     Session[]
 
   @@index([tenantId])
@@ -129,7 +129,7 @@ model Professional {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Relations
-  user         User?
+  user         User? @relation("UserProfessional", fields: [userId], references: [id], onDelete: SetNull)
   userId       String? @unique
   appointments Appointment[]
   services     ServiceProfessional[]
