@@ -1,10 +1,28 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 import { prisma } from '../index';
 import { AuthRequest, authenticateToken } from '../middleware/auth';
 
 const router = Router();
+
+function parseJwtExpiresInSeconds(value: string | undefined, fallbackSeconds: number): number {
+  if (!value) return fallbackSeconds;
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return fallbackSeconds;
+
+  if (/^\d+$/.test(trimmed)) return Number(trimmed);
+
+  const match = trimmed.match(/^(\d+(?:\.\d+)?)([smhd])$/i);
+  if (!match) return fallbackSeconds;
+
+  const amount = Number(match[1]);
+  const unit = match[2].toLowerCase() as 's' | 'm' | 'h' | 'd';
+  const multipliers: Record<typeof unit, number> = { s: 1, m: 60, h: 60 * 60, d: 60 * 60 * 24 };
+
+  return Math.floor(amount * multipliers[unit]);
+}
 
 // Register
 router.post('/register', async (req: AuthRequest, res: Response) => {
@@ -59,16 +77,29 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
     });
 
     // Gerar tokens
+    const jwtSecret: Secret = process.env.JWT_SECRET ?? 'secret';
+    const tokenExpiresInSeconds = parseJwtExpiresInSeconds(process.env.JWT_EXPIRES_IN, 60 * 60 * 24 * 7);
+    const refreshExpiresInSeconds = parseJwtExpiresInSeconds(
+      process.env.REFRESH_TOKEN_EXPIRES_IN,
+      60 * 60 * 24 * 30
+    );
+    const signOptions: SignOptions = {
+      expiresIn: tokenExpiresInSeconds,
+    };
+    const refreshSignOptions: SignOptions = {
+      expiresIn: refreshExpiresInSeconds,
+    };
+
     const token = jwt.sign(
       { userId: user.id, tenantId: tenant.id, email: user.email },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      signOptions
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id, tenantId: tenant.id },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d' }
+      jwtSecret,
+      refreshSignOptions
     );
 
     res.status(201).json({
@@ -109,16 +140,23 @@ router.post('/login', async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'User account is inactive' });
     }
 
+    const jwtSecret: Secret = process.env.JWT_SECRET ?? 'secret';
+    const tokenExpiresInSeconds = parseJwtExpiresInSeconds(process.env.JWT_EXPIRES_IN, 60 * 60 * 24 * 7);
+    const refreshExpiresInSeconds = parseJwtExpiresInSeconds(
+      process.env.REFRESH_TOKEN_EXPIRES_IN,
+      60 * 60 * 24 * 30
+    );
+
     const token = jwt.sign(
       { userId: user.id, tenantId: user.tenantId, email: user.email },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: tokenExpiresInSeconds }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id, tenantId: user.tenantId },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d' }
+      jwtSecret,
+      { expiresIn: refreshExpiresInSeconds }
     );
 
     res.json({
