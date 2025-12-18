@@ -27,7 +27,7 @@ RUN cd apps/web && npm run build && cd ../.. || true
 # RUN npm prune --omit=dev
 
 # Expose ports
-EXPOSE 3000 3001
+EXPOSE 80 3000 3001
 
-# Start application
-CMD ["npm", "start"]
+# Start API (run Node directly so SIGTERM is handled cleanly)
+CMD ["node", "apps/api/dist/index.js"]

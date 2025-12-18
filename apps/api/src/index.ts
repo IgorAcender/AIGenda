@@ -104,10 +104,21 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`\n🚀 AIGenda API rodando em http://localhost:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+const server = app.listen(Number(PORT), HOST, () => {
+  console.log(`\n🚀 AIGenda API rodando em http://${HOST}:${PORT}`);
   console.log(`📚 Environment: ${process.env.NODE_ENV || 'development'}\n`);
 });
+
+async function shutdown(signal: string) {
+  console.log(`\n🛑 Received ${signal}. Shutting down...`);
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+  await prisma.$disconnect().catch(() => undefined);
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
 
 export default app;
 export { prisma };
