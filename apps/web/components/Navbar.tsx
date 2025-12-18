@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Layout, Menu, Button, Drawer, Space } from 'antd';
-import { MenuOutlined, LogoutOutlined, HomeOutlined, DashboardOutlined, CalendarOutlined, DollarOutlined, FileTextOutlined } from 'antd/icons';
+import { MenuOutlined, LogoutOutlined, HomeOutlined, DashboardOutlined, CalendarOutlined, DollarOutlined, FileTextOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 
