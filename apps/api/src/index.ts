@@ -37,6 +37,23 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root info (useful when the domain points directly to the API)
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    name: 'AIGenda API',
+    status: 'ok',
+    health: '/health',
+    routes: [
+      '/api/auth',
+      '/api/clients',
+      '/api/professionals',
+      '/api/services',
+      '/api/appointments',
+      '/api/transactions',
+    ],
+  });
+});
+
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
