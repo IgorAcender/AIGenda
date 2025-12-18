@@ -29,5 +29,6 @@ RUN cd apps/web && npm run build && cd ../.. || true
 # Expose ports
 EXPOSE 80 3000 3001
 
-# Start API (run Node directly so SIGTERM is handled cleanly)
-CMD ["node", "apps/api/dist/index.js"]
+# Start frontend (Next) on port 80 in background, then start API in foreground
+# This way the container serves the frontend on root (port 80) and keeps the API running
+CMD ["sh", "-c", "cd apps/web && PORT=80 npm run start & cd /app && node apps/api/dist/index.js"]
