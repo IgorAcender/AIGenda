@@ -91,6 +91,11 @@ app.use('/api', (req: Request, res: Response) => {
   res.status(404).json({ error: 'API route not found' });
 });
 
+// SPA fallback: serve index.html for all non-API routes (Next.js client-side routing)
+app.use((req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, '../../web/out/index.html'));
+});
+
 // Error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
