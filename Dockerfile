@@ -16,6 +16,9 @@ RUN npm install --legacy-peer-deps --ignore-scripts --no-audit --no-fund
 # Generate Prisma Client for the API workspace (monorepo/workspaces need explicit generate)
 RUN cd apps/api && npm run generate && cd ../..
 
+# Build shared package first (needed by both API and web)
+RUN cd packages/shared && npm run build && cd ../..
+
 # Build backend API (TypeScript → JavaScript in dist/)
 RUN cd apps/api && npm run build && cd ../..
 
