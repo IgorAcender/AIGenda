@@ -12,7 +12,7 @@
     "dev": "npm run dev --workspace=apps/web & npm run dev --workspace=apps/api",
     "build": "npm run build --workspace=apps/web && npm run build --workspace=apps/api",
     "start": "npm start --workspace=apps/api",
-    "postinstall": "node scripts/postinstall-prisma.mjs",
+  "postinstall": "node scripts/postinstall-prisma.mjs && node scripts/copy-legacy.mjs",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "format": "prettier --write ."
   },
