@@ -10,6 +10,7 @@ import professionalRoutes from './routes/professionals.routes';
 import serviceRoutes from './routes/services.routes';
 import appointmentRoutes from './routes/appointments.routes';
 import transactionRoutes from './routes/transactions.routes';
+import reportsRoutes from './routes/reports.routes';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -77,6 +78,7 @@ app.get('/', (req: Request, res: Response) => {
       '/api/services',
       '/api/appointments',
       '/api/transactions',
+          '/api/reports',
     ],
   });
 });
@@ -88,6 +90,7 @@ app.use('/api/professionals', professionalRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // Rota 404
 app.use((req: Request, res: Response) => {
