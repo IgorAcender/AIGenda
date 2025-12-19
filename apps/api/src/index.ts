@@ -57,6 +57,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve Next.js frontend as static files from the root
 // This allows Express to serve the compiled Next.js app on the same port as the API
 import path from 'path';
+import fs from 'fs';
 
 // When Next.js is built with `output: 'export'`, it generates a static `out/` folder
 // that can be served directly by Express (no Next.js server needed)
@@ -93,7 +94,18 @@ app.use('/api', (req: Request, res: Response) => {
 
 // SPA fallback: serve index.html for all non-API routes (Next.js client-side routing)
 app.use((req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../../web/out/index/index.html'));
+  const candidates = [
+    path.join(nextExportPath, 'index.html'),
+    path.join(nextExportPath, 'index', 'index.html'),
+  ];
+
+  for (const file of candidates) {
+    if (fs.existsSync(file)) {
+      return res.sendFile(file);
+    }
+  }
+
+  res.status(404).json({ error: 'Frontend build not found' });
 });
 
 // Error handler
