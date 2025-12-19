@@ -4,27 +4,23 @@ import axios from 'axios';
 // Avoid using an http://localhost URL from a production HTTPS page (mixed content blocked).
 const rawApi = process.env.NEXT_PUBLIC_API_URL || '';
 let API_URL: string;
-if (!rawApi) {
+// In the browser we always prefer the relative `/api` to guarantee same-origin
+// requests and avoid mixed-content (HTTPS page calling http://localhost).
+if (typeof window !== 'undefined') {
   API_URL = '/api';
-} else if (typeof window !== 'undefined') {
+} else if (!rawApi) {
+  API_URL = '/api';
+} else {
   // If the configured URL points to localhost but the app is running on a non-localhost host
   // (e.g., production on Easy Panel with HTTPS), prefer the relative /api to avoid mixed-content.
   try {
     const parsed = new URL(rawApi);
     const isLocalhost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
-    const isSameOrigin = window.location.origin === parsed.origin;
-    if (isLocalhost && !isSameOrigin) {
-      API_URL = '/api';
-    } else {
-      API_URL = `${rawApi.replace(/\/+$/g, '')}/api`;
-    }
+    // On server-side build we can't compare window origin, so prefer configured rawApi
+    API_URL = rawApi ? `${rawApi.replace(/\/+$/g, '')}/api` : '/api';
   } catch (e) {
-    // If rawApi is not a full URL, fallback to using it as-is or relative /api
     API_URL = rawApi.startsWith('/') ? rawApi : '/api';
   }
-} else {
-  // Server-side (build) - keep the configured rawApi so static pages reference correct host if provided
-  API_URL = rawApi ? `${rawApi.replace(/\/+$/g, '')}/api` : '/api';
 }
 
 const apiClient = axios.create({
