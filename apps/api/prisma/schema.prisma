@@ -3,6 +3,10 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Explicit output to avoid generator path resolution issues inside container
+  // Output is relative to the schema file location. This targets the project's
+  // top-level node_modules so the generated client can be imported by the API.
+  output = "../../node_modules/.prisma/client"
 }
 
 datasource db {
