@@ -1,7 +1,14 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+
+// Import prisma client at runtime to avoid TypeScript named-export issues
+// in some container/build environments where generated client typings
+// may not match the installed package. Using require with a ts-ignore
+// keeps the code working while still allowing TypeScript compilation.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const { PrismaClient } = require('@prisma/client');
 
 // Importar rotas
 import authRoutes from './routes/auth.routes';
