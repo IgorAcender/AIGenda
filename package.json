@@ -1,27 +1,28 @@
 {
-  "name": "aigenda-saas",
+  "name": "aigenda",
   "version": "1.0.0",
-  "description": "SaaS de Agendamento Profissional",
   "private": true,
-  "workspaces": [
-    "apps/web",
-    "apps/api",
-    "packages/shared"
-  ],
+  "description": "Sistema de agendamento SaaS multi-tenant",
   "scripts": {
-    "dev": "npm run dev --workspace=apps/web & npm run dev --workspace=apps/api",
-    "build": "npm run build --workspace=apps/web && npm run build --workspace=apps/api",
-    "start": "npm start --workspace=apps/api",
-  "postinstall": "node scripts/postinstall-prisma.mjs && node scripts/copy-legacy.mjs",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "format": "prettier --write ."
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "db:migrate": "pnpm --filter api db:migrate",
+    "db:push": "pnpm --filter api db:push",
+    "db:studio": "pnpm --filter api db:studio",
+    "db:seed": "pnpm --filter api db:seed"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
-    "eslint": "^8.56.0",
-    "prettier": "^3.1.1",
+    "turbo": "^2.3.0",
     "typescript": "^5.3.3"
-  }
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
