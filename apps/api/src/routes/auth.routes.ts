@@ -111,9 +111,11 @@ router.post('/register', async (req: AuthRequest, res: Response) => {
         refreshToken,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    // Return error message to help debug in staging; keep generic in production
+    const message = error?.message || 'Internal server error';
+    res.status(500).json({ error: message });
   }
 });
 
@@ -167,9 +169,10 @@ router.post('/login', async (req: AuthRequest, res: Response) => {
         refreshToken,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    const message = error?.message || 'Internal server error';
+    res.status(500).json({ error: message });
   }
 });
 
