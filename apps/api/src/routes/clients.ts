@@ -20,7 +20,10 @@ export async function clientRoutes(app: FastifyInstance) {
   // Listar todos os clientes
   app.get('/', async (request: any) => {
     const { tenantId } = request.user
-    const { search, page = 1, limit = 20 } = request.query as any
+    const { search, page = '1', limit = '20' } = request.query as any
+    
+    const pageNum = parseInt(page, 10)
+    const limitNum = parseInt(limit, 10)
 
     const where: any = { tenantId }
     
@@ -36,8 +39,8 @@ export async function clientRoutes(app: FastifyInstance) {
       prisma.client.findMany({
         where,
         orderBy: { name: 'asc' },
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
       }),
       prisma.client.count({ where }),
     ])
@@ -45,10 +48,10 @@ export async function clientRoutes(app: FastifyInstance) {
     return {
       data: clients,
       pagination: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limitNum),
       },
     }
   })

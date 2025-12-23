@@ -1,17 +1,37 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { authApi } from '@/lib/api'
+import { api } from '@/lib/api'
 
-interface User {
+// Tipos
+export type UserRole = 'MASTER' | 'OWNER' | 'PROFESSIONAL'
+
+export interface User {
   id: string
   name: string
   email: string
-  role: string
-  tenantId: string
+  role: UserRole
+  avatar?: string
+  phone?: string
+}
+
+export interface Tenant {
+  id: string
+  name: string
+  slug: string
+  logo?: string
+}
+
+export interface Professional {
+  id: string
+  name: string
+  specialty?: string
+  color?: string
 }
 
 interface AuthState {
   user: User | null
+  tenant: Tenant | null
+  professional: Professional | null
   token: string | null
   isAuthenticated: boolean
   isLoading: boolean
@@ -19,22 +39,32 @@ interface AuthState {
 
   // Actions
   login: (email: string, password: string) => Promise<void>
-  register: (data: {
-    name: string
-    email: string
-    password: string
-    tenantName: string
-    tenantSlug: string
-  }) => Promise<void>
-  logout: () => Promise<void>
+  register: (data: RegisterData) => Promise<void>
+  logout: () => void
   checkAuth: () => Promise<void>
   clearError: () => void
+  
+  // Helpers
+  isMaster: () => boolean
+  isOwner: () => boolean
+  isProfessional: () => boolean
+  canAccess: (requiredRole: UserRole | UserRole[]) => boolean
+}
+
+interface RegisterData {
+  name: string
+  email: string
+  password: string
+  tenantName: string
+  phone?: string
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
+      tenant: null,
+      professional: null,
       token: null,
       isAuthenticated: false,
       isLoading: false,
@@ -43,10 +73,17 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await authApi.login({ email, password })
+          const response = await api.post('/auth/login', { email, password })
+          const { user, tenant, professional, token } = response.data
+          
+          // Salvar token no localStorage
+          localStorage.setItem('token', token)
+          
           set({
-            user: response.user,
-            token: response.token,
+            user,
+            tenant: tenant || null,
+            professional: professional || null,
+            token,
             isAuthenticated: true,
             isLoading: false,
           })
@@ -57,13 +94,19 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      register: async (data) => {
+      register: async (data: RegisterData) => {
         set({ isLoading: true, error: null })
         try {
-          const response = await authApi.register(data)
+          const response = await api.post('/auth/register', data)
+          const { user, tenant, token } = response.data
+          
+          localStorage.setItem('token', token)
+          
           set({
-            user: response.user,
-            token: response.token,
+            user,
+            tenant,
+            professional: null,
+            token,
             isAuthenticated: true,
             isLoading: false,
           })
@@ -74,25 +117,24 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: async () => {
-        set({ isLoading: true })
-        try {
-          await authApi.logout()
-        } catch (error) {
-          // Ignore error, just clear state
-        } finally {
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null,
-          })
+      logout: () => {
+        localStorage.removeItem('token')
+        set({
+          user: null,
+          tenant: null,
+          professional: null,
+          token: null,
+          isAuthenticated: false,
+          error: null,
+        })
+        // Redirecionar para login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
         }
       },
 
       checkAuth: async () => {
-        const { token } = get()
+        const token = localStorage.getItem('token')
         if (!token) {
           set({ isAuthenticated: false })
           return
@@ -100,15 +142,23 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true })
         try {
-          const response = await authApi.me()
+          const response = await api.get('/auth/me')
+          const { user, tenant, professional } = response.data
+          
           set({
-            user: response.user,
+            user,
+            tenant: tenant || null,
+            professional: professional || null,
+            token,
             isAuthenticated: true,
             isLoading: false,
           })
         } catch (error) {
+          localStorage.removeItem('token')
           set({
             user: null,
+            tenant: null,
+            professional: null,
             token: null,
             isAuthenticated: false,
             isLoading: false,
@@ -117,14 +167,35 @@ export const useAuthStore = create<AuthState>()(
       },
 
       clearError: () => set({ error: null }),
+
+      // Helpers para verificar role
+      isMaster: () => get().user?.role === 'MASTER',
+      isOwner: () => get().user?.role === 'OWNER',
+      isProfessional: () => get().user?.role === 'PROFESSIONAL',
+      
+      canAccess: (requiredRole: UserRole | UserRole[]) => {
+        const userRole = get().user?.role
+        if (!userRole) return false
+        
+        // MASTER pode tudo
+        if (userRole === 'MASTER') return true
+        
+        const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
+        return roles.includes(userRole)
+      },
     }),
     {
-      name: 'auth-storage',
+      name: 'aigenda-auth',
       partialize: (state) => ({
         user: state.user,
+        tenant: state.tenant,
+        professional: state.professional,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
     }
   )
 )
+
+// Hook para usar fora de componentes React
+export const getAuthState = () => useAuthStore.getState()

@@ -23,9 +23,12 @@ export async function transactionRoutes(app: FastifyInstance) {
       endDate, 
       type, 
       status,
-      page = 1,
-      limit = 50 
+      page = '1',
+      limit = '50' 
     } = request.query as any
+
+    const pageNum = parseInt(page, 10)
+    const limitNum = parseInt(limit, 10)
 
     const where: any = { tenantId }
     
@@ -48,8 +51,8 @@ export async function transactionRoutes(app: FastifyInstance) {
       prisma.transaction.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
         include: {
           client: {
             select: { id: true, name: true },
@@ -79,10 +82,10 @@ export async function transactionRoutes(app: FastifyInstance) {
         return acc
       }, {} as Record<string, number>),
       pagination: {
-        page,
-        limit,
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limitNum),
       },
     }
   })

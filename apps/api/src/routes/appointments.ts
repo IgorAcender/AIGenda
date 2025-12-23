@@ -3,8 +3,6 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 
 const appointmentSchema = z.object({
-  title: z.string().min(2),
-  description: z.string().optional().nullable(),
   startTime: z.string(),
   endTime: z.string(),
   clientId: z.string(),
@@ -31,8 +29,8 @@ export async function appointmentRoutes(app: FastifyInstance) {
     
     if (startDate && endDate) {
       where.startTime = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+        gte: startDate,
+        lte: endDate,
       }
     }
     
@@ -103,16 +101,16 @@ export async function appointmentRoutes(app: FastifyInstance) {
           status: { in: ['SCHEDULED', 'CONFIRMED'] },
           OR: [
             {
-              startTime: { lte: new Date(data.startTime) },
-              endTime: { gt: new Date(data.startTime) },
+              startTime: { lte: data.startTime },
+              endTime: { gt: data.startTime },
             },
             {
-              startTime: { lt: new Date(data.endTime) },
-              endTime: { gte: new Date(data.endTime) },
+              startTime: { lt: data.endTime },
+              endTime: { gte: data.endTime },
             },
             {
-              startTime: { gte: new Date(data.startTime) },
-              endTime: { lte: new Date(data.endTime) },
+              startTime: { gte: data.startTime },
+              endTime: { lte: data.endTime },
             },
           ],
         },
@@ -125,8 +123,7 @@ export async function appointmentRoutes(app: FastifyInstance) {
       const appointment = await prisma.appointment.create({
         data: {
           ...data,
-          startTime: new Date(data.startTime),
-          endTime: new Date(data.endTime),
+          date: new Date(data.startTime),
           tenantId,
         },
         include: {
@@ -164,8 +161,6 @@ export async function appointmentRoutes(app: FastifyInstance) {
         where: { id },
         data: {
           ...data,
-          startTime: data.startTime ? new Date(data.startTime) : undefined,
-          endTime: data.endTime ? new Date(data.endTime) : undefined,
         },
         include: {
           client: true,
@@ -199,7 +194,7 @@ export async function appointmentRoutes(app: FastifyInstance) {
 
     const updateData: any = { status }
 
-    if (status === 'CANCELED') {
+    if (status === 'CANCELLED') {
       updateData.canceledAt = new Date()
       updateData.cancelReason = cancelReason
     }
@@ -252,10 +247,9 @@ export async function appointmentRoutes(app: FastifyInstance) {
           type: 'INCOME',
           description: `Serviço: ${appointment.service.name}`,
           amount: appointment.service.price,
-          status: 'CONFIRMED',
+          status: 'PAID',
           paymentMethod,
           clientId: appointment.clientId,
-          professionalId: appointment.professionalId,
           appointmentId: id,
           paidAt: new Date(),
         },

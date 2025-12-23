@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Layout, Menu, Avatar, Dropdown, Button, theme } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Layout, Menu, Avatar, Dropdown, Button, theme, Spin, Tag, message } from 'antd'
 import {
   DashboardOutlined,
   CalendarOutlined,
@@ -29,10 +29,13 @@ import {
   PercentageOutlined,
   BarChartOutlined,
   ShoppingCartOutlined,
+  CrownOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type { MenuProps } from 'antd'
+import { useAuthStore, UserRole } from '@/stores/auth'
 
 const { Header, Sider, Content } = Layout
 
@@ -52,46 +55,75 @@ function getItem(
   } as MenuItem
 }
 
-const menuItems: MenuItem[] = [
-  // Principal
-  getItem('Painel', '/dashboard', <DashboardOutlined />),
-  getItem('Agenda', '/agenda', <CalendarOutlined />),
-  getItem('Pacotes', '/pacotes', <GiftOutlined />),
-  
-  // Cadastro
-  getItem('Cadastro', 'cadastro', <AppstoreOutlined />, [
-    getItem(<Link href="/cadastro/clientes">Clientes</Link>, '/cadastro/clientes', <UserOutlined />),
-    getItem(<Link href="/cadastro/profissionais">Profissionais</Link>, '/cadastro/profissionais', <TeamOutlined />),
-    getItem(<Link href="/cadastro/servicos">Serviços</Link>, '/cadastro/servicos', <ScissorOutlined />),
-    getItem(<Link href="/cadastro/categorias">Categorias</Link>, '/cadastro/categorias', <TagOutlined />),
-    getItem(<Link href="/cadastro/produtos">Produtos</Link>, '/cadastro/produtos', <ShoppingOutlined />),
-    getItem(<Link href="/cadastro/fornecedores">Fornecedores</Link>, '/cadastro/fornecedores', <TruckOutlined />),
-  ]),
-  
-  // Financeiro
-  getItem('Financeiro', 'financeiro', <DollarOutlined />, [
-    getItem(<Link href="/financeiro/painel">Painel Financeiro</Link>, '/financeiro/painel', <BarChartOutlined />),
-    getItem(<Link href="/financeiro/transacoes">Transações</Link>, '/financeiro/transacoes', <WalletOutlined />),
-    getItem(<Link href="/financeiro/caixa">Caixa</Link>, '/financeiro/caixa', <BankOutlined />),
-    getItem(<Link href="/financeiro/comissoes">Comissões</Link>, '/financeiro/comissoes', <PercentageOutlined />),
-  ]),
-  
-  // Controle
-  getItem('Controle', 'controle', <ShopOutlined />, [
-    getItem(<Link href="/controle/compras">Compras</Link>, '/controle/compras', <ShoppingCartOutlined />),
-    getItem(<Link href="/controle/relatorios">Relatórios</Link>, '/controle/relatorios', <FileTextOutlined />),
-  ]),
-  
-  // Marketing
-  getItem('Marketing', 'marketing', <StarOutlined />, [
-    getItem(<Link href="/marketing/agendamento-online">Agendamento Online</Link>, '/marketing/agendamento-online', <GlobalOutlined />),
-    getItem(<Link href="/marketing/avaliacoes">Avaliações</Link>, '/marketing/avaliacoes', <StarOutlined />),
-    getItem(<Link href="/marketing/whatsapp">WhatsApp Marketing</Link>, '/marketing/whatsapp', <WhatsAppOutlined />),
-  ]),
-  
-  // Configurações
-  getItem('Configurações', '/configuracoes', <SettingOutlined />),
-]
+// Função para gerar menu baseado na role do usuário
+function getMenuItems(role: UserRole | null): MenuItem[] {
+  const items: MenuItem[] = [
+    // Principal - todos os roles veem
+    getItem(<Link href="/dashboard">Painel</Link>, '/dashboard', <DashboardOutlined />),
+    getItem(<Link href="/agenda">Agenda</Link>, '/agenda', <CalendarOutlined />),
+    getItem(<Link href="/pacotes">Pacotes</Link>, '/pacotes', <GiftOutlined />),
+  ]
+
+  // PROFESSIONAL vê apenas itens básicos e seus próprios dados
+  if (role === 'PROFESSIONAL') {
+    items.push(
+      getItem(<Link href="/meus-atendimentos">Meus Atendimentos</Link>, '/meus-atendimentos', <CalendarOutlined />),
+      getItem(<Link href="/minhas-comissoes">Minhas Comissões</Link>, '/minhas-comissoes', <PercentageOutlined />),
+    )
+    return items
+  }
+
+  // OWNER e MASTER veem tudo
+  items.push(
+    // Cadastro
+    getItem('Cadastro', 'cadastro', <AppstoreOutlined />, [
+      getItem(<Link href="/cadastro/clientes">Clientes</Link>, '/cadastro/clientes', <UserOutlined />),
+      getItem(<Link href="/cadastro/profissionais">Profissionais</Link>, '/cadastro/profissionais', <TeamOutlined />),
+      getItem(<Link href="/cadastro/servicos">Serviços</Link>, '/cadastro/servicos', <ScissorOutlined />),
+      getItem(<Link href="/cadastro/categorias">Categorias</Link>, '/cadastro/categorias', <TagOutlined />),
+      getItem(<Link href="/cadastro/produtos">Produtos</Link>, '/cadastro/produtos', <ShoppingOutlined />),
+      getItem(<Link href="/cadastro/fornecedores">Fornecedores</Link>, '/cadastro/fornecedores', <TruckOutlined />),
+    ]),
+    
+    // Financeiro
+    getItem('Financeiro', 'financeiro', <DollarOutlined />, [
+      getItem(<Link href="/financeiro/painel">Painel Financeiro</Link>, '/financeiro/painel', <BarChartOutlined />),
+      getItem(<Link href="/financeiro/transacoes">Transações</Link>, '/financeiro/transacoes', <WalletOutlined />),
+      getItem(<Link href="/financeiro/caixa">Caixa</Link>, '/financeiro/caixa', <BankOutlined />),
+      getItem(<Link href="/financeiro/comissoes">Comissões</Link>, '/financeiro/comissoes', <PercentageOutlined />),
+    ]),
+    
+    // Controle
+    getItem('Controle', 'controle', <ShopOutlined />, [
+      getItem(<Link href="/controle/compras">Compras</Link>, '/controle/compras', <ShoppingCartOutlined />),
+      getItem(<Link href="/controle/relatorios">Relatórios</Link>, '/controle/relatorios', <FileTextOutlined />),
+    ]),
+    
+    // Marketing
+    getItem('Marketing', 'marketing', <StarOutlined />, [
+      getItem(<Link href="/marketing/agendamento-online">Agendamento Online</Link>, '/marketing/agendamento-online', <GlobalOutlined />),
+      getItem(<Link href="/marketing/avaliacoes">Avaliações</Link>, '/marketing/avaliacoes', <StarOutlined />),
+      getItem(<Link href="/marketing/whatsapp">WhatsApp Marketing</Link>, '/marketing/whatsapp', <WhatsAppOutlined />),
+    ]),
+    
+    // Configurações
+    getItem(<Link href="/configuracoes">Configurações</Link>, '/configuracoes', <SettingOutlined />),
+  )
+
+  // MASTER vê área administrativa extra
+  if (role === 'MASTER') {
+    items.push(
+      getItem('Administração', 'admin', <SafetyOutlined />, [
+        getItem(<Link href="/admin/tenants">Tenants</Link>, '/admin/tenants', <ShopOutlined />),
+        getItem(<Link href="/admin/usuarios">Usuários</Link>, '/admin/usuarios', <TeamOutlined />),
+        getItem(<Link href="/admin/assinaturas">Assinaturas</Link>, '/admin/assinaturas', <CrownOutlined />),
+        getItem(<Link href="/admin/relatorios">Relatórios Gerais</Link>, '/admin/relatorios', <BarChartOutlined />),
+      ]),
+    )
+  }
+
+  return items
+}
 
 export default function DashboardLayout({
   children,
@@ -99,19 +131,91 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentDateTime, setCurrentDateTime] = useState<{ date: string; time: string }>({
+    date: new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+    time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  })
   const pathname = usePathname()
+  const router = useRouter()
   const { token } = theme.useToken()
+  
+  const { user, tenant, isAuthenticated, logout, checkAuth, isMaster, isOwner, isProfessional } = useAuthStore()
+
+  // Atualizar hora a cada segundo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date()
+      setCurrentDateTime({
+        date: now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }),
+        time: now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Verificar autenticação ao montar
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        await checkAuth()
+      } catch (error) {
+        router.push('/login')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    verifyAuth()
+  }, [checkAuth, router])
+
+  // Redirecionar se não autenticado
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isLoading, isAuthenticated, router])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      message.success('Logout realizado com sucesso!')
+      router.push('/login')
+    } catch (error) {
+      message.error('Erro ao fazer logout')
+    }
+  }
 
   const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'user-info',
+      label: (
+        <div style={{ padding: '8px 0' }}>
+          <div style={{ fontWeight: 600 }}>{user?.name}</div>
+          <div style={{ fontSize: 12, color: '#888' }}>{user?.email}</div>
+          <Tag 
+            color={isMaster() ? 'purple' : isOwner() ? 'blue' : 'green'} 
+            style={{ marginTop: 4 }}
+          >
+            {isMaster() ? 'Master' : isOwner() ? 'Proprietário' : 'Profissional'}
+          </Tag>
+        </div>
+      ),
+      disabled: true,
+    },
+    {
+      type: 'divider',
+    },
     {
       key: 'profile',
       icon: <UserOutlined />,
       label: 'Meu Perfil',
+      onClick: () => router.push('/perfil'),
     },
     {
       key: 'settings',
       icon: <SettingOutlined />,
       label: 'Configurações',
+      onClick: () => router.push('/configuracoes'),
     },
     {
       type: 'divider',
@@ -121,17 +225,41 @@ export default function DashboardLayout({
       icon: <LogoutOutlined />,
       label: 'Sair',
       danger: true,
+      onClick: handleLogout,
     },
   ]
 
-  // Find the open keys based on current path
+  // Determinar quais submenus abrir baseado na rota atual
   const getOpenKeys = () => {
     if (pathname?.startsWith('/cadastro')) return ['cadastro']
     if (pathname?.startsWith('/financeiro')) return ['financeiro']
     if (pathname?.startsWith('/controle')) return ['controle']
     if (pathname?.startsWith('/marketing')) return ['marketing']
+    if (pathname?.startsWith('/admin')) return ['admin']
     return []
   }
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#f5f5f5'
+      }}>
+        <Spin size="large" tip="Carregando..." />
+      </div>
+    )
+  }
+
+  // Se não autenticado, não renderizar nada (vai redirecionar)
+  if (!isAuthenticated || !user) {
+    return null
+  }
+
+  const menuItems = getMenuItems(user.role)
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -141,14 +269,14 @@ export default function DashboardLayout({
         collapsed={collapsed}
         width={260}
         style={{
-          background: '#fff',
-          borderRight: '1px solid #f0f0f0',
-          position: 'fixed',
+          overflow: 'auto',
           height: '100vh',
+          position: 'fixed',
           left: 0,
           top: 0,
           bottom: 0,
-          overflow: 'auto',
+          background: '#fff',
+          borderRight: '1px solid #f0f0f0',
         }}
       >
         {/* Logo */}
@@ -157,40 +285,83 @@ export default function DashboardLayout({
             height: 64,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? 0 : '0 24px',
+            justifyContent: 'center',
             borderBottom: '1px solid #f0f0f0',
           }}
         >
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: 'linear-gradient(135deg, #505afb 0%, #7c3aed 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 18,
-            }}
-          >
-            A
-          </div>
-          {!collapsed && (
-            <span
+          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
               style={{
-                marginLeft: 12,
-                fontSize: 20,
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
                 fontWeight: 700,
-                color: '#1a1a2e',
+                fontSize: 18,
               }}
             >
-              AIGenda
-            </span>
-          )}
+              A
+            </div>
+            {!collapsed && (
+              <span
+                style={{
+                  fontSize: 20,
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                AIGenda
+              </span>
+            )}
+          </Link>
         </div>
+
+        {/* Tenant Info - apenas para OWNER e PROFESSIONAL */}
+        {tenant && !collapsed && (
+          <div
+            style={{
+              padding: '12px 16px',
+              background: '#fafafa',
+              borderBottom: '1px solid #f0f0f0',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <ShopOutlined style={{ color: token.colorPrimary }} />
+              <div style={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {tenant.name}
+                </div>
+                <div style={{ fontSize: 11, color: '#888' }}>
+                  {tenant.slug}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MASTER badge */}
+        {isMaster() && !collapsed && (
+          <div
+            style={{
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #722ed1, #9254de)',
+              color: '#fff',
+              fontSize: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <CrownOutlined />
+            <span>Modo Administrador</span>
+          </div>
+        )}
 
         {/* Menu */}
         <Menu
@@ -228,13 +399,23 @@ export default function DashboardLayout({
             style={{ fontSize: 16, width: 40, height: 40 }}
           />
 
+          {/* Data e Hora Centralizada */}
+          <div style={{ textAlign: 'center', flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 15.6, color: '#505afb', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9.6 }}>
+              <span style={{ color: '#999' }}>{currentDateTime.date}</span>
+              <span style={{ color: '#505afb', fontWeight: 600 }}>{currentDateTime.time}</span>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Botão de notificações */}
             <Button
               type="text"
               icon={<BellOutlined />}
               style={{ fontSize: 18 }}
             />
             
+            {/* Dropdown do usuário */}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div
                 style={{
@@ -247,10 +428,16 @@ export default function DashboardLayout({
                 }}
               >
                 <Avatar
-                  style={{ background: token.colorPrimary }}
+                  style={{ 
+                    background: isMaster() 
+                      ? 'linear-gradient(135deg, #722ed1, #9254de)' 
+                      : isOwner() 
+                        ? token.colorPrimary 
+                        : '#52c41a'
+                  }}
                   icon={<UserOutlined />}
                 />
-                <span style={{ fontWeight: 500 }}>Admin</span>
+                <span style={{ fontWeight: 500 }}>{user.name?.split(' ')[0]}</span>
               </div>
             </Dropdown>
           </div>

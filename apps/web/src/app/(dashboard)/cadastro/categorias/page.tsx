@@ -1,19 +1,19 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Table,
   Card,
   Button,
   Input,
   Space,
+  Tag,
   Modal,
   Form,
   message,
   Popconfirm,
   Typography,
-  Row,
-  Col,
+  Select,
   Tooltip,
   ColorPicker,
 } from 'antd'
@@ -22,10 +22,11 @@ import {
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
-  ReloadOutlined,
   TagOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { api } from '@/lib/api'
 
 const { Title } = Typography
 
@@ -34,115 +35,124 @@ interface Category {
   name: string
   description: string | null
   color: string
+  active: boolean
   createdAt: string
+  _count?: {
+    services: number
+  }
 }
 
-// Mock data
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Cabelo',
-    description: 'Serviços de cabelo, corte, tintura, etc',
-    color: '#505afb',
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '2',
-    name: 'Unhas',
-    description: 'Manicure e pedicure',
-    color: '#eb2f96',
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '3',
-    name: 'Estética',
-    description: 'Tratamentos estéticos e faciais',
-    color: '#52c41a',
-    createdAt: '2024-01-12',
-  },
-  {
-    id: '4',
-    name: 'Massagem',
-    description: 'Massagens relaxantes e terapêuticas',
-    color: '#faad14',
-    createdAt: '2024-02-01',
-  },
-  {
-    id: '5',
-    name: 'Depilação',
-    description: 'Serviços de depilação',
-    color: '#722ed1',
-    createdAt: '2024-02-05',
-  },
+const PRESET_COLORS = [
+  '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
+  '#13c2c2', '#eb2f96', '#fa8c16', '#2f54eb', '#a0d911',
+  '#ff7a45', '#597ef7', '#9254de', '#36cfc9', '#73d13d',
 ]
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories)
-  const [loading, setLoading] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
-  const [selectedColor, setSelectedColor] = useState('#505afb')
   const [form] = Form.useForm()
 
-  const filteredCategories = categories.filter(
-    (cat) =>
-      cat.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      cat.description?.toLowerCase().includes(searchText.toLowerCase())
-  )
+  // Buscar categorias da API
+  const fetchCategories = useCallback(async (search = '') => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
 
+      const response = await api.get(`/categories?${params}`)
+      setCategories(response.data.data || response.data)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao carregar categorias')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Carregar ao montar
+  useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
+
+  // Busca com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCategories(searchText)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchText, fetchCategories])
+
+  // Abrir modal para criar
   const handleCreate = () => {
     setEditingCategory(null)
-    setSelectedColor('#505afb')
     form.resetFields()
+    form.setFieldsValue({
+      color: PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)],
+    })
     setIsModalOpen(true)
   }
 
+  // Abrir modal para editar
   const handleEdit = (category: Category) => {
     setEditingCategory(category)
-    setSelectedColor(category.color)
-    form.setFieldsValue(category)
+    form.setFieldsValue({
+      ...category,
+    })
     setIsModalOpen(true)
   }
 
+  // Salvar categoria
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      
+      setSaving(true)
+
       const categoryData = {
-        ...values,
-        color: selectedColor,
+        name: values.name,
+        description: values.description || null,
+        color: typeof values.color === 'string' ? values.color : values.color?.toHexString() || '#1890ff',
       }
 
       if (editingCategory) {
-        setCategories((prev) =>
-          prev.map((c) =>
-            c.id === editingCategory.id ? { ...c, ...categoryData } : c
-          )
-        )
+        await api.put(`/categories/${editingCategory.id}`, categoryData)
         message.success('Categoria atualizada com sucesso!')
       } else {
-        const newCategory: Category = {
-          id: Date.now().toString(),
-          ...categoryData,
-          createdAt: new Date().toISOString(),
-        }
-        setCategories((prev) => [newCategory, ...prev])
+        await api.post('/categories', categoryData)
         message.success('Categoria criada com sucesso!')
       }
 
       setIsModalOpen(false)
       form.resetFields()
-    } catch (error) {
-      console.error('Erro ao salvar:', error)
+      fetchCategories(searchText)
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        message.error(error.response.data.error)
+      } else if (error.errorFields) {
+        // Erro de validação do form
+      } else {
+        message.error('Erro ao salvar categoria')
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleDelete = (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id))
-    message.success('Categoria excluída com sucesso!')
+  // Deletar categoria
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/categories/${id}`)
+      message.success('Categoria removida!')
+      fetchCategories(searchText)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao remover categoria')
+    }
   }
 
+  // Colunas da tabela
   const columns: ColumnsType<Category> = [
     {
       title: 'Categoria',
@@ -150,29 +160,28 @@ export default function CategoriesPage() {
       key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record: Category) => (
-        <Space>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
-              width: 24,
-              height: 24,
-              borderRadius: '50%',
+              width: 32,
+              height: 32,
+              borderRadius: 6,
               backgroundColor: record.color,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <TagOutlined style={{ color: '#fff', fontSize: 12 }} />
+            <TagOutlined style={{ color: '#fff' }} />
           </div>
-          <span style={{ fontWeight: 500 }}>{name}</span>
-        </Space>
+          <div>
+            <div style={{ fontWeight: 500 }}>{name}</div>
+            {record.description && (
+              <div style={{ fontSize: 12, color: '#888' }}>{record.description}</div>
+            )}
+          </div>
+        </div>
       ),
-    },
-    {
-      title: 'Descrição',
-      dataIndex: 'description',
-      key: 'description',
-      render: (description: string | null) => description || '-',
     },
     {
       title: 'Cor',
@@ -180,21 +189,24 @@ export default function CategoriesPage() {
       key: 'color',
       width: 100,
       render: (color: string) => (
-        <div
-          style={{
-            width: 40,
-            height: 24,
-            borderRadius: 4,
-            backgroundColor: color,
-          }}
-        />
+        <Tag color={color} style={{ minWidth: 60, textAlign: 'center' }}>
+          {color}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Serviços',
+      key: 'services',
+      width: 100,
+      render: (_: any, record: Category) => (
+        <Tag>{record._count?.services || 0} serviços</Tag>
       ),
     },
     {
       title: 'Ações',
       key: 'actions',
       width: 100,
-      render: (_, record: Category) => (
+      render: (_: any, record: Category) => (
         <Space>
           <Tooltip title="Editar">
             <Button
@@ -204,14 +216,13 @@ export default function CategoriesPage() {
             />
           </Tooltip>
           <Popconfirm
-            title="Excluir categoria"
-            description="Tem certeza? Serviços vinculados ficarão sem categoria."
+            title="Remover categoria?"
+            description="Serviços vinculados ficarão sem categoria."
             onConfirm={() => handleDelete(record.id)}
             okText="Sim"
             cancelText="Não"
-            okButtonProps={{ danger: true }}
           >
-            <Tooltip title="Excluir">
+            <Tooltip title="Remover">
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>
@@ -222,15 +233,8 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24,
-        }}
-      >
-        <Title level={3} style={{ margin: 0 }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={2} style={{ margin: 0 }}>
           Categorias
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
@@ -239,68 +243,76 @@ export default function CategoriesPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={8}>
-              <Input
-                placeholder="Buscar por nome ou descrição..."
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-            </Col>
-            <Col>
-              <Button icon={<ReloadOutlined />} onClick={() => setSearchText('')}>
-                Limpar
-              </Button>
-            </Col>
-          </Row>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+          <Input
+            placeholder="Buscar por nome..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => fetchCategories(searchText)}
+          >
+            Atualizar
+          </Button>
         </div>
 
         <Table
           columns={columns}
-          dataSource={filteredCategories}
+          dataSource={categories}
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
             showTotal: (total) => `Total: ${total} categorias`,
           }}
         />
       </Card>
 
+      {/* Modal de criação/edição */}
       <Modal
         title={editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
         open={isModalOpen}
         onOk={handleSave}
-        onCancel={() => {
-          setIsModalOpen(false)
-          form.resetFields()
-        }}
+        onCancel={() => setIsModalOpen(false)}
         okText="Salvar"
         cancelText="Cancelar"
+        confirmLoading={saving}
         width={400}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item
             name="name"
-            label="Nome"
+            label="Nome da Categoria"
             rules={[{ required: true, message: 'Nome é obrigatório' }]}
           >
-            <Input placeholder="Ex: Cabelo" />
+            <Input prefix={<TagOutlined />} placeholder="Ex: Cabelo, Barba, Unhas..." />
           </Form.Item>
 
           <Form.Item name="description" label="Descrição">
-            <Input.TextArea rows={2} placeholder="Descrição da categoria" />
+            <Input.TextArea rows={2} placeholder="Descrição opcional..." />
           </Form.Item>
 
-          <Form.Item label="Cor">
-            <ColorPicker
-              value={selectedColor}
-              onChange={(color) => setSelectedColor(color.toHexString())}
-              showText
-            />
+          <Form.Item name="color" label="Cor">
+            <Select>
+              {PRESET_COLORS.map((color) => (
+                <Select.Option key={color} value={color}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: 4,
+                        backgroundColor: color,
+                      }}
+                    />
+                    {color}
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Table,
   Card,
@@ -15,22 +15,23 @@ import {
   Typography,
   Row,
   Col,
-  Select,
-  Tooltip,
   Switch,
   InputNumber,
+  Tooltip,
+  Select,
 } from 'antd'
 import {
   PlusOutlined,
   SearchOutlined,
   EditOutlined,
   DeleteOutlined,
+  ScissorOutlined,
+  ReloadOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  ReloadOutlined,
-  ScissorOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { api } from '@/lib/api'
 
 const { Title } = Typography
 
@@ -40,8 +41,12 @@ interface Service {
   description: string | null
   duration: number
   price: number
-  categoryId: string
-  categoryName: string
+  categoryId: string | null
+  category?: {
+    id: string
+    name: string
+    color: string
+  }
   active: boolean
   createdAt: string
 }
@@ -49,178 +54,158 @@ interface Service {
 interface Category {
   id: string
   name: string
+  color: string
 }
 
-// Mock data
-const mockCategories: Category[] = [
-  { id: '1', name: 'Cabelo' },
-  { id: '2', name: 'Unhas' },
-  { id: '3', name: 'Estética' },
-  { id: '4', name: 'Massagem' },
-]
-
-const mockServices: Service[] = [
-  {
-    id: '1',
-    name: 'Corte Feminino',
-    description: 'Corte com lavagem e secador',
-    duration: 60,
-    price: 80.0,
-    categoryId: '1',
-    categoryName: 'Cabelo',
-    active: true,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '2',
-    name: 'Corte Masculino',
-    description: 'Corte tradicional',
-    duration: 30,
-    price: 45.0,
-    categoryId: '1',
-    categoryName: 'Cabelo',
-    active: true,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '3',
-    name: 'Manicure',
-    description: 'Manicure completa com esmaltação',
-    duration: 45,
-    price: 35.0,
-    categoryId: '2',
-    categoryName: 'Unhas',
-    active: true,
-    createdAt: '2024-01-12',
-  },
-  {
-    id: '4',
-    name: 'Pedicure',
-    description: 'Pedicure completa com esmaltação',
-    duration: 60,
-    price: 45.0,
-    categoryId: '2',
-    categoryName: 'Unhas',
-    active: true,
-    createdAt: '2024-01-12',
-  },
-  {
-    id: '5',
-    name: 'Limpeza de Pele',
-    description: 'Limpeza profunda com extração',
-    duration: 90,
-    price: 150.0,
-    categoryId: '3',
-    categoryName: 'Estética',
-    active: true,
-    createdAt: '2024-02-01',
-  },
-  {
-    id: '6',
-    name: 'Massagem Relaxante',
-    description: 'Massagem corporal relaxante',
-    duration: 60,
-    price: 120.0,
-    categoryId: '4',
-    categoryName: 'Massagem',
-    active: false,
-    createdAt: '2024-02-05',
-  },
-]
-
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(mockServices)
-  const [categories] = useState<Category[]>(mockCategories)
-  const [loading, setLoading] = useState(false)
+  const [services, setServices] = useState<Service[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [searchText, setSearchText] = useState('')
-  const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [form] = Form.useForm()
 
-  const filteredServices = services.filter((service) => {
-    const matchesSearch =
-      service.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      service.description?.toLowerCase().includes(searchText.toLowerCase())
-    const matchesCategory = !filterCategory || service.categoryId === filterCategory
-    return matchesSearch && matchesCategory
-  })
+  // Buscar serviços da API
+  const fetchServices = useCallback(async (search = '') => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
 
+      const response = await api.get(`/services?${params}`)
+      setServices(response.data.data || response.data)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao carregar serviços')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Buscar categorias
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await api.get('/categories')
+      setCategories(response.data.data || response.data)
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error)
+    }
+  }, [])
+
+  // Carregar ao montar
+  useEffect(() => {
+    fetchServices()
+    fetchCategories()
+  }, [fetchServices, fetchCategories])
+
+  // Busca com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchServices(searchText)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchText, fetchServices])
+
+  // Abrir modal para criar
   const handleCreate = () => {
     setEditingService(null)
     form.resetFields()
-    form.setFieldsValue({ duration: 60, price: 0 })
+    form.setFieldsValue({
+      duration: 30,
+      price: 0,
+      active: true,
+    })
     setIsModalOpen(true)
   }
 
+  // Abrir modal para editar
   const handleEdit = (service: Service) => {
     setEditingService(service)
-    form.setFieldsValue(service)
+    form.setFieldsValue({
+      ...service,
+      price: service.price / 100, // Converter centavos para reais
+    })
     setIsModalOpen(true)
   }
 
+  // Salvar serviço
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      
-      const category = categories.find((c) => c.id === values.categoryId)
+      setSaving(true)
+
       const serviceData = {
-        ...values,
-        categoryName: category?.name || '',
+        name: values.name,
+        description: values.description || null,
+        duration: values.duration,
+        price: Math.round(values.price * 100), // Converter reais para centavos
+        categoryId: values.categoryId || null,
       }
 
       if (editingService) {
-        setServices((prev) =>
-          prev.map((s) =>
-            s.id === editingService.id ? { ...s, ...serviceData } : s
-          )
-        )
+        await api.put(`/services/${editingService.id}`, serviceData)
         message.success('Serviço atualizado com sucesso!')
       } else {
-        const newService: Service = {
-          id: Date.now().toString(),
-          ...serviceData,
-          active: true,
-          createdAt: new Date().toISOString(),
-        }
-        setServices((prev) => [newService, ...prev])
+        await api.post('/services', serviceData)
         message.success('Serviço criado com sucesso!')
       }
 
       setIsModalOpen(false)
       form.resetFields()
-    } catch (error) {
-      console.error('Erro ao salvar:', error)
+      fetchServices(searchText)
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        message.error(error.response.data.error)
+      } else if (error.errorFields) {
+        // Erro de validação do form
+      } else {
+        message.error('Erro ao salvar serviço')
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleDelete = (id: string) => {
-    setServices((prev) => prev.filter((s) => s.id !== id))
-    message.success('Serviço excluído com sucesso!')
+  // Alternar status ativo
+  const handleToggleActive = async (id: string, active: boolean) => {
+    try {
+      await api.put(`/services/${id}`, { active })
+      message.success(active ? 'Serviço ativado!' : 'Serviço desativado!')
+      fetchServices(searchText)
+    } catch (error: any) {
+      message.error('Erro ao alterar status')
+    }
   }
 
-  const handleToggleActive = (id: string, active: boolean) => {
-    setServices((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, active } : s))
-    )
-    message.success(active ? 'Serviço ativado!' : 'Serviço desativado!')
+  // Deletar serviço
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/services/${id}`)
+      message.success('Serviço removido!')
+      fetchServices(searchText)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao remover serviço')
+    }
   }
 
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    if (hours > 0 && mins > 0) return `${hours}h ${mins}min`
-    if (hours > 0) return `${hours}h`
-    return `${mins}min`
-  }
-
-  const formatPrice = (price: number) => {
+  // Formatar preço
+  const formatPrice = (cents: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
-    }).format(price)
+    }).format(cents / 100)
   }
 
+  // Formatar duração
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes}min`
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`
+  }
+
+  // Colunas da tabela
   const columns: ColumnsType<Service> = [
     {
       title: 'Serviço',
@@ -229,43 +214,44 @@ export default function ServicesPage() {
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record: Service) => (
         <div>
-          <Space>
-            <ScissorOutlined style={{ color: '#505afb' }} />
-            <span style={{ fontWeight: 500 }}>{name}</span>
-          </Space>
+          <div style={{ fontWeight: 500 }}>
+            <ScissorOutlined style={{ marginRight: 8, color: record.category?.color || '#1890ff' }} />
+            {name}
+          </div>
           {record.description && (
-            <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
-              {record.description}
-            </div>
+            <div style={{ fontSize: 12, color: '#888' }}>{record.description}</div>
           )}
         </div>
       ),
     },
     {
       title: 'Categoria',
-      dataIndex: 'categoryName',
-      key: 'categoryName',
-      render: (category: string) => <Tag color="blue">{category}</Tag>,
-      filters: categories.map((c) => ({ text: c.name, value: c.id })),
-      onFilter: (value, record) => record.categoryId === value,
+      dataIndex: 'category',
+      key: 'category',
+      render: (category: Category | null) =>
+        category ? (
+          <Tag color={category.color}>{category.name}</Tag>
+        ) : (
+          <Tag>Sem categoria</Tag>
+        ),
     },
     {
       title: 'Duração',
       dataIndex: 'duration',
       key: 'duration',
-      sorter: (a, b) => a.duration - b.duration,
+      width: 120,
       render: (duration: number) => (
-        <Space>
-          <ClockCircleOutlined />
+        <span>
+          <ClockCircleOutlined style={{ marginRight: 8 }} />
           {formatDuration(duration)}
-        </Space>
+        </span>
       ),
     },
     {
       title: 'Preço',
       dataIndex: 'price',
       key: 'price',
-      sorter: (a, b) => a.price - b.price,
+      width: 120,
       render: (price: number) => (
         <span style={{ fontWeight: 500, color: '#52c41a' }}>
           {formatPrice(price)}
@@ -276,6 +262,7 @@ export default function ServicesPage() {
       title: 'Status',
       dataIndex: 'active',
       key: 'active',
+      width: 100,
       render: (active: boolean, record: Service) => (
         <Switch
           checked={active}
@@ -289,7 +276,7 @@ export default function ServicesPage() {
       title: 'Ações',
       key: 'actions',
       width: 100,
-      render: (_, record: Service) => (
+      render: (_: any, record: Service) => (
         <Space>
           <Tooltip title="Editar">
             <Button
@@ -299,14 +286,13 @@ export default function ServicesPage() {
             />
           </Tooltip>
           <Popconfirm
-            title="Excluir serviço"
-            description="Tem certeza que deseja excluir?"
+            title="Remover serviço?"
+            description="Esta ação não pode ser desfeita."
             onConfirm={() => handleDelete(record.id)}
             okText="Sim"
             cancelText="Não"
-            okButtonProps={{ danger: true }}
           >
-            <Tooltip title="Excluir">
+            <Tooltip title="Remover">
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>
@@ -317,15 +303,8 @@ export default function ServicesPage() {
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24,
-        }}
-      >
-        <Title level={3} style={{ margin: 0 }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={2} style={{ margin: 0 }}>
           Serviços
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
@@ -334,68 +313,43 @@ export default function ServicesPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={8}>
-              <Input
-                placeholder="Buscar por nome ou descrição..."
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-            </Col>
-            <Col xs={24} sm={8} md={6}>
-              <Select
-                placeholder="Filtrar por categoria"
-                style={{ width: '100%' }}
-                value={filterCategory}
-                onChange={setFilterCategory}
-                allowClear
-              >
-                {categories.map((cat) => (
-                  <Select.Option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Col>
-            <Col>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={() => {
-                  setSearchText('')
-                  setFilterCategory(null)
-                }}
-              >
-                Limpar
-              </Button>
-            </Col>
-          </Row>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+          <Input
+            placeholder="Buscar por nome..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => fetchServices(searchText)}
+          >
+            Atualizar
+          </Button>
         </div>
 
         <Table
           columns={columns}
-          dataSource={filteredServices}
+          dataSource={services}
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
             showTotal: (total) => `Total: ${total} serviços`,
           }}
         />
       </Card>
 
+      {/* Modal de criação/edição */}
       <Modal
         title={editingService ? 'Editar Serviço' : 'Novo Serviço'}
         open={isModalOpen}
         onOk={handleSave}
-        onCancel={() => {
-          setIsModalOpen(false)
-          form.resetFields()
-        }}
+        onCancel={() => setIsModalOpen(false)}
         okText="Salvar"
         cancelText="Cancelar"
+        confirmLoading={saving}
         width={500}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
@@ -404,25 +358,11 @@ export default function ServicesPage() {
             label="Nome do Serviço"
             rules={[{ required: true, message: 'Nome é obrigatório' }]}
           >
-            <Input placeholder="Ex: Corte de Cabelo" />
+            <Input prefix={<ScissorOutlined />} placeholder="Ex: Corte masculino" />
           </Form.Item>
 
           <Form.Item name="description" label="Descrição">
-            <Input.TextArea rows={2} placeholder="Descrição do serviço" />
-          </Form.Item>
-
-          <Form.Item
-            name="categoryId"
-            label="Categoria"
-            rules={[{ required: true, message: 'Categoria é obrigatória' }]}
-          >
-            <Select placeholder="Selecione a categoria">
-              {categories.map((cat) => (
-                <Select.Option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </Select.Option>
-              ))}
-            </Select>
+            <Input.TextArea rows={2} placeholder="Descrição do serviço..." />
           </Form.Item>
 
           <Row gutter={16}>
@@ -437,25 +377,46 @@ export default function ServicesPage() {
                   max={480}
                   step={5}
                   style={{ width: '100%' }}
-                  addonAfter="min"
+                  prefix={<ClockCircleOutlined />}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="price"
-                label="Preço"
+                label="Preço (R$)"
                 rules={[{ required: true, message: 'Preço é obrigatório' }]}
               >
                 <InputNumber
                   min={0}
+                  step={5}
                   precision={2}
                   style={{ width: '100%' }}
-                  addonBefore="R$"
+                  prefix={<DollarOutlined />}
                 />
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item name="categoryId" label="Categoria">
+            <Select placeholder="Selecione uma categoria" allowClear>
+              {categories.map((cat) => (
+                <Select.Option key={cat.id} value={cat.id}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 2,
+                        backgroundColor: cat.color,
+                      }}
+                    />
+                    {cat.name}
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
         </Form>
       </Modal>
     </div>

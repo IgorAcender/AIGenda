@@ -1,0 +1,512 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #09913b;
+  --primary-light: #0aae46;
+  --bg-dark: #000000;
+  --bg-secondary: #1a1a1a;
+  --text-light: #ffffff;
+  --text-muted: #999999;
+  --border-color: #333333;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* Header Fixo */
+.landing-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 1000;
+}
+
+.landing-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.landing-menu-btn {
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container */
+.landing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Hero Section */
+.landing-hero {
+  margin-top: 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-hero-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.landing-hero-content {
+  padding: 2rem;
+  text-align: center;
+  background: var(--bg-dark);
+}
+
+.landing-hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+.landing-hero-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.landing-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 0.75rem;
+}
+
+.landing-cta-primary:hover {
+  background: var(--primary-light);
+  transform: scale(1.02);
+}
+
+.landing-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  color: var(--text-light);
+  text-decoration: none;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.landing-cta-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Seção Sobre */
+.landing-section {
+  padding: 2.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.landing-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text-light);
+}
+
+.landing-section-icon {
+  font-size: 1.75rem;
+  color: var(--primary);
+}
+
+.landing-about-text {
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.landing-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.landing-stat {
+  background: var(--bg-secondary);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.landing-stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.landing-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Profissionais */
+.landing-professionals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.landing-professional {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.landing-professional-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 2.5rem;
+  color: white;
+}
+
+.landing-professional-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-professional-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+/* Horários */
+.landing-hours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.landing-hour-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.landing-hour-day {
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.landing-hour-time {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Contato */
+.landing-contact-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.landing-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.landing-contact-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.landing-contact-content h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 0.25rem;
+}
+
+.landing-contact-content p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.landing-contact-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.landing-contact-link:hover {
+  text-decoration: underline;
+}
+
+/* Whatsapp Button */
+.landing-whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.landing-whatsapp-btn:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+/* Endereço */
+.landing-address-info {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.landing-address-info p {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.landing-maps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.landing-maps-btn:hover {
+  background: var(--primary-light);
+}
+
+/* Redes Sociais */
+.landing-social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.landing-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.landing-social-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(9, 145, 59, 0.1);
+}
+
+/* Formas de Pagamento */
+.landing-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.landing-payment-item {
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-light);
+}
+
+/* Comodidades */
+.landing-amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.landing-amenity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.landing-amenity-icon {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.landing-amenity-text {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Google Maps */
+.landing-map-container {
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.landing-map-container iframe {
+  width: 100%;
+  height: 300px;
+}
+
+/* Footer */
+.landing-footer {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+}
+
+.landing-footer-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .landing-header {
+    padding: 0 1rem;
+  }
+
+  .landing-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .landing-section-title {
+    font-size: 1.25rem;
+  }
+
+  .landing-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-payment-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-amenities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-professionals-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}

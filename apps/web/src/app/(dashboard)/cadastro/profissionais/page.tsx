@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Table,
   Card,
@@ -15,10 +15,12 @@ import {
   Typography,
   Row,
   Col,
-  TimePicker,
-  Tooltip,
   Switch,
+  InputNumber,
   Avatar,
+  Tooltip,
+  Select,
+  TimePicker,
   Checkbox,
 } from 'antd'
 import {
@@ -28,29 +30,34 @@ import {
   DeleteOutlined,
   UserOutlined,
   PhoneOutlined,
-  ClockCircleOutlined,
   ReloadOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
+import { api } from '@/lib/api'
 
 const { Title } = Typography
 
 interface Professional {
   id: string
   name: string
+  phone: string | null
   email: string | null
-  phone: string
-  commission: number
-  workDays: number[]
-  workStart: string
-  workEnd: string
-  color: string
+  specialty: string | null
+  avatar: string | null
+  commissionRate: number
+  color: string | null
+  workingHours: any
+  workingDays: number[]
   active: boolean
   createdAt: string
+  _count?: {
+    appointments: number
+  }
 }
 
-const weekDays = [
+const WEEKDAYS = [
   { label: 'Dom', value: 0 },
   { label: 'Seg', value: 1 },
   { label: 'Ter', value: 2 },
@@ -60,159 +67,145 @@ const weekDays = [
   { label: 'Sáb', value: 6 },
 ]
 
-const colors = [
-  '#505afb',
-  '#52c41a',
-  '#faad14',
-  '#f5222d',
-  '#722ed1',
-  '#eb2f96',
-  '#13c2c2',
-  '#fa541c',
-]
-
-// Mock data
-const mockProfessionals: Professional[] = [
-  {
-    id: '1',
-    name: 'Dra. Carla Mendes',
-    email: 'carla@clinica.com',
-    phone: '(11) 99999-1111',
-    commission: 50,
-    workDays: [1, 2, 3, 4, 5],
-    workStart: '09:00',
-    workEnd: '18:00',
-    color: '#505afb',
-    active: true,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: '2',
-    name: 'Dr. Paulo Silva',
-    email: 'paulo@clinica.com',
-    phone: '(11) 99999-2222',
-    commission: 45,
-    workDays: [1, 2, 4, 5, 6],
-    workStart: '10:00',
-    workEnd: '19:00',
-    color: '#52c41a',
-    active: true,
-    createdAt: '2024-02-05',
-  },
-  {
-    id: '3',
-    name: 'Ana Beatriz Costa',
-    email: 'ana@clinica.com',
-    phone: '(11) 99999-3333',
-    commission: 40,
-    workDays: [2, 3, 4, 5, 6],
-    workStart: '08:00',
-    workEnd: '17:00',
-    color: '#722ed1',
-    active: true,
-    createdAt: '2024-03-01',
-  },
-  {
-    id: '4',
-    name: 'Roberto Gomes',
-    email: null,
-    phone: '(11) 99999-4444',
-    commission: 35,
-    workDays: [1, 3, 5],
-    workStart: '14:00',
-    workEnd: '20:00',
-    color: '#faad14',
-    active: false,
-    createdAt: '2024-01-20',
-  },
+const COLORS = [
+  '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
+  '#13c2c2', '#eb2f96', '#fa8c16', '#2f54eb', '#a0d911',
 ]
 
 export default function ProfessionalsPage() {
-  const [professionals, setProfessionals] = useState<Professional[]>(mockProfessionals)
-  const [loading, setLoading] = useState(false)
+  const [professionals, setProfessionals] = useState<Professional[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null)
-  const [selectedColor, setSelectedColor] = useState(colors[0])
   const [form] = Form.useForm()
 
-  const filteredProfessionals = professionals.filter(
-    (prof) =>
-      prof.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      prof.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-      prof.phone.includes(searchText)
-  )
+  // Buscar profissionais da API
+  const fetchProfessionals = useCallback(async (search = '') => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
 
+      const response = await api.get(`/professionals?${params}`)
+      setProfessionals(response.data.data)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao carregar profissionais')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Carregar ao montar
+  useEffect(() => {
+    fetchProfessionals()
+  }, [fetchProfessionals])
+
+  // Busca com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProfessionals(searchText)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchText, fetchProfessionals])
+
+  // Abrir modal para criar
   const handleCreate = () => {
     setEditingProfessional(null)
-    setSelectedColor(colors[0])
     form.resetFields()
     form.setFieldsValue({
-      workDays: [1, 2, 3, 4, 5],
-      commission: 50,
+      workingDays: [1, 2, 3, 4, 5, 6],
+      commissionRate: 40,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      workStart: dayjs('09:00', 'HH:mm'),
+      workEnd: dayjs('18:00', 'HH:mm'),
     })
     setIsModalOpen(true)
   }
 
+  // Abrir modal para editar
   const handleEdit = (professional: Professional) => {
     setEditingProfessional(professional)
-    setSelectedColor(professional.color)
     form.setFieldsValue({
       ...professional,
-      workStart: dayjs(professional.workStart, 'HH:mm'),
-      workEnd: dayjs(professional.workEnd, 'HH:mm'),
+      workStart: professional.workingHours?.start 
+        ? dayjs(professional.workingHours.start, 'HH:mm') 
+        : dayjs('09:00', 'HH:mm'),
+      workEnd: professional.workingHours?.end 
+        ? dayjs(professional.workingHours.end, 'HH:mm') 
+        : dayjs('18:00', 'HH:mm'),
     })
     setIsModalOpen(true)
   }
 
+  // Salvar profissional
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      
+      setSaving(true)
+
       const professionalData = {
-        ...values,
-        workStart: values.workStart?.format('HH:mm') || '09:00',
-        workEnd: values.workEnd?.format('HH:mm') || '18:00',
-        color: selectedColor,
+        name: values.name,
+        phone: values.phone || null,
+        email: values.email || null,
+        specialty: values.specialty || null,
+        commissionRate: values.commissionRate || 0,
+        color: values.color,
+        workingDays: values.workingDays || [],
+        workingHours: {
+          start: values.workStart?.format('HH:mm') || '09:00',
+          end: values.workEnd?.format('HH:mm') || '18:00',
+        },
       }
 
       if (editingProfessional) {
-        setProfessionals((prev) =>
-          prev.map((p) =>
-            p.id === editingProfessional.id ? { ...p, ...professionalData } : p
-          )
-        )
+        await api.put(`/professionals/${editingProfessional.id}`, professionalData)
         message.success('Profissional atualizado com sucesso!')
       } else {
-        const newProfessional: Professional = {
-          id: Date.now().toString(),
-          ...professionalData,
-          active: true,
-          createdAt: new Date().toISOString(),
-        }
-        setProfessionals((prev) => [newProfessional, ...prev])
+        await api.post('/professionals', professionalData)
         message.success('Profissional criado com sucesso!')
       }
 
       setIsModalOpen(false)
       form.resetFields()
-    } catch (error) {
-      console.error('Erro ao salvar:', error)
+      fetchProfessionals(searchText)
+    } catch (error: any) {
+      if (error.response?.data?.error) {
+        message.error(error.response.data.error)
+      } else if (error.errorFields) {
+        // Erro de validação do form
+      } else {
+        message.error('Erro ao salvar profissional')
+      }
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleDelete = (id: string) => {
-    setProfessionals((prev) => prev.filter((p) => p.id !== id))
-    message.success('Profissional excluído com sucesso!')
+  // Alternar status ativo
+  const handleToggleActive = async (id: string, active: boolean) => {
+    try {
+      await api.put(`/professionals/${id}`, { active })
+      message.success(active ? 'Profissional ativado!' : 'Profissional desativado!')
+      fetchProfessionals(searchText)
+    } catch (error: any) {
+      message.error('Erro ao alterar status')
+    }
   }
 
-  const handleToggleActive = (id: string, active: boolean) => {
-    setProfessionals((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, active } : p))
-    )
-    message.success(active ? 'Profissional ativado!' : 'Profissional desativado!')
+  // Deletar profissional
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/professionals/${id}`)
+      message.success('Profissional removido!')
+      fetchProfessionals(searchText)
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Erro ao remover profissional')
+    }
   }
 
+  // Colunas da tabela
   const columns: ColumnsType<Professional> = [
     {
       title: 'Profissional',
@@ -220,41 +213,46 @@ export default function ProfessionalsPage() {
       key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (name: string, record: Professional) => (
-        <Space>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <Avatar
-            style={{ backgroundColor: record.color }}
+            style={{ backgroundColor: record.color || '#1890ff' }}
             icon={<UserOutlined />}
+            src={record.avatar}
           />
           <div>
             <div style={{ fontWeight: 500 }}>{name}</div>
             {record.phone && (
-              <div style={{ fontSize: 12, color: '#666' }}>
-                <PhoneOutlined /> {record.phone}
+              <div style={{ fontSize: 12, color: '#888' }}>
+                <PhoneOutlined style={{ marginRight: 4 }} />
+                {record.phone}
               </div>
             )}
           </div>
-        </Space>
+        </div>
       ),
     },
     {
       title: 'Horário',
-      key: 'schedule',
-      render: (_, record: Professional) => (
-        <Space>
-          <ClockCircleOutlined />
-          {record.workStart} - {record.workEnd}
-        </Space>
-      ),
+      key: 'workingHours',
+      render: (_: any, record: Professional) => {
+        const hours = record.workingHours || { start: '09:00', end: '18:00' }
+        return (
+          <span>
+            <ClockCircleOutlined style={{ marginRight: 8 }} />
+            {hours.start} - {hours.end}
+          </span>
+        )
+      },
     },
     {
       title: 'Dias de Trabalho',
-      key: 'workDays',
-      render: (_, record: Professional) => (
+      key: 'workingDays',
+      render: (_: any, record: Professional) => (
         <Space size={4}>
-          {weekDays.map((day) => (
+          {WEEKDAYS.map((day) => (
             <Tag
               key={day.value}
-              color={record.workDays.includes(day.value) ? 'blue' : 'default'}
+              color={record.workingDays?.includes(day.value) ? 'blue' : 'default'}
               style={{ margin: 0 }}
             >
               {day.label}
@@ -265,14 +263,16 @@ export default function ProfessionalsPage() {
     },
     {
       title: 'Comissão',
-      dataIndex: 'commission',
-      key: 'commission',
-      render: (commission: number) => `${commission}%`,
+      dataIndex: 'commissionRate',
+      key: 'commissionRate',
+      width: 100,
+      render: (rate: number) => `${rate}%`,
     },
     {
       title: 'Status',
       dataIndex: 'active',
       key: 'active',
+      width: 100,
       render: (active: boolean, record: Professional) => (
         <Switch
           checked={active}
@@ -286,7 +286,7 @@ export default function ProfessionalsPage() {
       title: 'Ações',
       key: 'actions',
       width: 100,
-      render: (_, record: Professional) => (
+      render: (_: any, record: Professional) => (
         <Space>
           <Tooltip title="Editar">
             <Button
@@ -296,14 +296,13 @@ export default function ProfessionalsPage() {
             />
           </Tooltip>
           <Popconfirm
-            title="Excluir profissional"
-            description="Tem certeza que deseja excluir?"
+            title="Remover profissional?"
+            description="Esta ação não pode ser desfeita."
             onConfirm={() => handleDelete(record.id)}
             okText="Sim"
             cancelText="Não"
-            okButtonProps={{ danger: true }}
           >
-            <Tooltip title="Excluir">
+            <Tooltip title="Remover">
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>
@@ -314,15 +313,8 @@ export default function ProfessionalsPage() {
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 24,
-        }}
-      >
-        <Title level={3} style={{ margin: 0 }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Title level={2} style={{ margin: 0 }}>
           Profissionais
         </Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
@@ -331,134 +323,128 @@ export default function ProfessionalsPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={8}>
-              <Input
-                placeholder="Buscar por nome, e-mail ou telefone..."
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-            </Col>
-            <Col>
-              <Button icon={<ReloadOutlined />} onClick={() => setSearchText('')}>
-                Limpar
-              </Button>
-            </Col>
-          </Row>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+          <Input
+            placeholder="Buscar por nome, e-mail ou telefone..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => fetchProfessionals(searchText)}
+          >
+            Atualizar
+          </Button>
         </div>
 
         <Table
           columns={columns}
-          dataSource={filteredProfessionals}
+          dataSource={professionals}
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
             showTotal: (total) => `Total: ${total} profissionais`,
           }}
         />
       </Card>
 
+      {/* Modal de criação/edição */}
       <Modal
         title={editingProfessional ? 'Editar Profissional' : 'Novo Profissional'}
         open={isModalOpen}
         onOk={handleSave}
-        onCancel={() => {
-          setIsModalOpen(false)
-          form.resetFields()
-        }}
+        onCancel={() => setIsModalOpen(false)}
         okText="Salvar"
         cancelText="Cancelar"
+        confirmLoading={saving}
         width={600}
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Row gutter={16}>
-            <Col span={24}>
+            <Col span={16}>
               <Form.Item
                 name="name"
-                label="Nome"
+                label="Nome Completo"
                 rules={[{ required: true, message: 'Nome é obrigatório' }]}
               >
-                <Input placeholder="Nome completo" />
+                <Input prefix={<UserOutlined />} placeholder="Nome do profissional" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="color" label="Cor">
+                <Select>
+                  {COLORS.map((color) => (
+                    <Select.Option key={color} value={color}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div
+                          style={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: 4,
+                            backgroundColor: color,
+                          }}
+                        />
+                        {color}
+                      </div>
+                    </Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item
-                name="phone"
-                label="Telefone"
-                rules={[{ required: true, message: 'Telefone é obrigatório' }]}
-              >
-                <Input placeholder="(00) 00000-0000" />
+              <Form.Item name="phone" label="Telefone">
+                <Input prefix={<PhoneOutlined />} placeholder="(11) 99999-9999" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="email" label="E-mail">
-                <Input placeholder="email@exemplo.com" type="email" />
+                <Input placeholder="email@exemplo.com" />
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item
-                name="commission"
-                label="Comissão (%)"
-                rules={[{ required: true, message: 'Obrigatório' }]}
-              >
-                <Input type="number" min={0} max={100} />
+            <Col span={16}>
+              <Form.Item name="specialty" label="Especialidade">
+                <Input placeholder="Ex: Barbeiro, Cabeleireiro, Manicure..." />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item
-                name="workStart"
-                label="Início Expediente"
-                rules={[{ required: true, message: 'Obrigatório' }]}
-              >
+              <Form.Item name="commissionRate" label="Comissão (%)">
+                <InputNumber min={0} max={100} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="workStart" label="Horário Início">
                 <TimePicker format="HH:mm" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item
-                name="workEnd"
-                label="Fim Expediente"
-                rules={[{ required: true, message: 'Obrigatório' }]}
-              >
+            <Col span={12}>
+              <Form.Item name="workEnd" label="Horário Fim">
                 <TimePicker format="HH:mm" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item
-            name="workDays"
-            label="Dias de Trabalho"
-            rules={[{ required: true, message: 'Selecione ao menos um dia' }]}
-          >
-            <Checkbox.Group options={weekDays} />
-          </Form.Item>
-
-          <Form.Item label="Cor na Agenda">
-            <Space>
-              {colors.map((color) => (
-                <div
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    backgroundColor: color,
-                    cursor: 'pointer',
-                    border: selectedColor === color ? '3px solid #333' : '2px solid transparent',
-                  }}
-                />
-              ))}
-            </Space>
+          <Form.Item name="workingDays" label="Dias de Trabalho">
+            <Checkbox.Group>
+              <Row>
+                {WEEKDAYS.map((day) => (
+                  <Col span={6} key={day.value}>
+                    <Checkbox value={day.value}>{day.label}</Checkbox>
+                  </Col>
+                ))}
+              </Row>
+            </Checkbox.Group>
           </Form.Item>
         </Form>
       </Modal>

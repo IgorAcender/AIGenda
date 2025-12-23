@@ -4,11 +4,15 @@ import { prisma } from '../lib/prisma'
 
 const professionalSchema = z.object({
   name: z.string().min(2),
-  specialties: z.array(z.string()).default([]),
-  bio: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable(),
+  specialty: z.string().optional().nullable(),
   avatar: z.string().optional().nullable(),
+  color: z.string().optional().nullable(),
   commissionRate: z.number().min(0).max(100).default(0),
-  userId: z.string().optional().nullable(),
+  workingHours: z.any().optional(),
+  workingDays: z.array(z.number()).default([1, 2, 3, 4, 5, 6]),
+  active: z.boolean().optional(),
 })
 
 export async function professionalRoutes(app: FastifyInstance) {
@@ -26,7 +30,7 @@ export async function professionalRoutes(app: FastifyInstance) {
     }
     
     if (active !== undefined) {
-      where.active = active === 'true'
+      where.isActive = active === 'true'
     }
 
     const professionals = await prisma.professional.findMany({

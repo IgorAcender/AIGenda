@@ -2,78 +2,43 @@ import { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma'
 
 export async function dashboardRoutes(app: FastifyInstance) {
-  app.addHook('preHandler', app.authenticate)
+  app.addHook('preHandler', (app as any).authenticate)
 
   // Dashboard principal
   app.get('/', async (request: any) => {
     const { tenantId } = request.user
 
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const todayStr = today.toISOString().split('T')[0] // YYYY-MM-DD
+    const tomorrowDate = new Date(today)
+    tomorrowDate.setDate(tomorrowDate.getDate() + 1)
+    const tomorrowStr = tomorrowDate.toISOString().split('T')[0]
 
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
     // Buscar dados em paralelo
     const [
-      appointmentsToday,
-      appointmentsMonth,
-      revenueMonth,
       totalClients,
       totalProfessionals,
-      upcomingAppointments,
-      recentTransactions,
+      allAppointments,
+      allTransactions,
     ] = await Promise.all([
-      // Agendamentos de hoje
-      prisma.appointment.count({
-        where: {
-          tenantId,
-          startTime: { gte: today, lt: tomorrow },
-          status: { in: ['SCHEDULED', 'CONFIRMED'] },
-        },
-      }),
-      
-      // Agendamentos do mês
-      prisma.appointment.count({
-        where: {
-          tenantId,
-          startTime: { gte: startOfMonth, lte: endOfMonth },
-        },
-      }),
-      
-      // Receita do mês
-      prisma.transaction.aggregate({
-        where: {
-          tenantId,
-          type: 'INCOME',
-          status: 'CONFIRMED',
-          createdAt: { gte: startOfMonth, lte: endOfMonth },
-        },
-        _sum: { amount: true },
-      }),
-      
       // Total de clientes ativos
       prisma.client.count({
-        where: { tenantId, active: true },
+        where: { tenantId, isActive: true },
       }),
       
       // Total de profissionais ativos
       prisma.professional.count({
-        where: { tenantId, active: true },
+        where: { tenantId, isActive: true },
       }),
       
-      // Próximos agendamentos
+      // Todos os agendamentos do tenant
       prisma.appointment.findMany({
-        where: {
-          tenantId,
-          startTime: { gte: today },
-          status: { in: ['SCHEDULED', 'CONFIRMED'] },
-        },
-        orderBy: { startTime: 'asc' },
-        take: 5,
+        where: { tenantId },
+        orderBy: { startTime: 'desc' },
+        take: 100,
         include: {
           client: { select: { name: true } },
           professional: { select: { name: true } },
@@ -85,106 +50,80 @@ export async function dashboardRoutes(app: FastifyInstance) {
       prisma.transaction.findMany({
         where: { tenantId },
         orderBy: { createdAt: 'desc' },
-        take: 5,
+        take: 50,
         include: {
           client: { select: { name: true } },
         },
       }),
     ])
 
+    // Filtrar agendamentos do mês
+    const appointmentsThisMonth = allAppointments.filter((a: any) => {
+      const appointmentDate = new Date(a.startTime)
+      return appointmentDate >= startOfMonth && appointmentDate <= endOfMonth
+    })
+
+    // Contar agendamentos por status (mês atual)
+    const totalScheduled = appointmentsThisMonth.length
+    const confirmedCount = appointmentsThisMonth.filter((a: any) => a.status === 'CONFIRMED').length
+    const scheduledCount = appointmentsThisMonth.filter((a: any) => a.status === 'SCHEDULED').length
+    const cancelledCount = appointmentsThisMonth.filter((a: any) => a.status === 'CANCELLED').length
+    const noShowCount = appointmentsThisMonth.filter((a: any) => a.status === 'NO_SHOW').length
+
+    // Calcular percentuais
+    const confirmedPercent = totalScheduled > 0 ? Math.round((confirmedCount / totalScheduled) * 100) : 0
+    const scheduledPercent = totalScheduled > 0 ? Math.round((scheduledCount / totalScheduled) * 100) : 0
+    const cancelledPercent = totalScheduled > 0 ? Math.round((cancelledCount / totalScheduled) * 100) : 0
+    const noShowPercent = totalScheduled > 0 ? Math.round((noShowCount / totalScheduled) * 100) : 0
+
+    // Agendamentos de hoje
+    const appointmentsToday = allAppointments.filter((a: any) => 
+      a.startTime >= todayStr && a.startTime < tomorrowStr &&
+      ['SCHEDULED', 'CONFIRMED'].includes(a.status)
+    ).length
+
+    // Calcular receita do mês
+    const revenueMonth = allTransactions
+      .filter((t: any) => {
+        const transactionDate = new Date(t.createdAt)
+        return t.type === 'INCOME' && 
+               t.status === 'PAID' &&
+               transactionDate >= startOfMonth && 
+               transactionDate <= endOfMonth
+      })
+      .reduce((sum: number, t: any) => sum + t.amount, 0)
+
+    // Próximos agendamentos
+    const upcomingAppointments = allAppointments
+      .filter((a: any) => 
+        a.startTime >= todayStr &&
+        ['SCHEDULED', 'CONFIRMED'].includes(a.status)
+      )
+      .slice(0, 5)
+
+    // Últimas transações
+    const recentTransactions = allTransactions.slice(0, 5)
+
     return {
       stats: {
         appointmentsToday,
-        appointmentsMonth,
-        revenueMonth: revenueMonth._sum.amount || 0,
+        appointmentsMonth: totalScheduled,
+        revenueMonth,
         totalClients,
         totalProfessionals,
+        // Stats por status
+        totalScheduled,
+        confirmedCount,
+        confirmedPercent,
+        scheduledCount,
+        scheduledPercent,
+        cancelledCount,
+        cancelledPercent,
+        noShowCount,
+        noShowPercent,
       },
       upcomingAppointments,
       recentTransactions,
     }
-  })
-
-  // Estatísticas por período
-  app.get('/stats', async (request: any) => {
-    const { tenantId } = request.user
-    const { startDate, endDate } = request.query as any
-
-    const start = startDate ? new Date(startDate) : new Date(new Date().setDate(1))
-    const end = endDate ? new Date(endDate) : new Date()
-
-    const [appointments, revenue, appointmentsByStatus] = await Promise.all([
-      prisma.appointment.count({
-        where: {
-          tenantId,
-          startTime: { gte: start, lte: end },
-        },
-      }),
-      
-      prisma.transaction.aggregate({
-        where: {
-          tenantId,
-          type: 'INCOME',
-          status: 'CONFIRMED',
-          createdAt: { gte: start, lte: end },
-        },
-        _sum: { amount: true },
-      }),
-      
-      prisma.appointment.groupBy({
-        by: ['status'],
-        where: {
-          tenantId,
-          startTime: { gte: start, lte: end },
-        },
-        _count: true,
-      }),
-    ])
-
-    return {
-      period: { start, end },
-      appointments,
-      revenue: revenue._sum.amount || 0,
-      appointmentsByStatus: appointmentsByStatus.reduce((acc, item) => {
-        acc[item.status] = item._count
-        return acc
-      }, {} as Record<string, number>),
-    }
-  })
-
-  // Ranking de profissionais
-  app.get('/professionals-ranking', async (request: any) => {
-    const { tenantId } = request.user
-    const { startDate, endDate } = request.query as any
-
-    const start = startDate ? new Date(startDate) : new Date(new Date().setDate(1))
-    const end = endDate ? new Date(endDate) : new Date()
-
-    const professionals = await prisma.professional.findMany({
-      where: { tenantId, active: true },
-      include: {
-        _count: {
-          select: { appointments: true },
-        },
-        transactions: {
-          where: {
-            type: 'INCOME',
-            status: 'CONFIRMED',
-            createdAt: { gte: start, lte: end },
-          },
-          select: { amount: true },
-        },
-      },
-    })
-
-    const ranking = professionals.map((p) => ({
-      id: p.id,
-      name: p.name,
-      avatar: p.avatar,
-      appointmentsCount: p._count.appointments,
-      revenue: p.transactions.reduce((sum, t) => sum + t.amount, 0),
-    })).sort((a, b) => b.revenue - a.revenue)
-
-    return { data: ranking }
   })
 }

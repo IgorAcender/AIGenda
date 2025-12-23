@@ -30,7 +30,7 @@ export async function serviceRoutes(app: FastifyInstance) {
     }
 
     if (active !== undefined) {
-      where.active = active === 'true'
+      where.isActive = active === 'true'
     }
 
     const services = await prisma.service.findMany({

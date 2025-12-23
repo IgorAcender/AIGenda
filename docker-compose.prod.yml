@@ -1,0 +1,46 @@
+version: '3.8'
+
+# ===========================================
+# PRODUÇÃO - EasyPanel
+# PostgreSQL e Redis são instalados como apps separados no EasyPanel
+# Este compose é apenas para API e Frontend
+# ===========================================
+
+services:
+  # API Backend
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: aigenda-api
+    restart: unless-stopped
+    environment:
+      # Configurar no EasyPanel com os valores reais
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      API_PORT: 3001
+      API_HOST: 0.0.0.0
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 7d
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Web
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: aigenda-web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy

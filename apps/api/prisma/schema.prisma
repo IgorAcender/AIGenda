@@ -1,763 +1,596 @@
-// This is your Prisma schema file,// This is your Prisma schema file,
+// This is your Prisma schema file
 
-// learn more about it in the docs: https://pris.ly/d/prisma-schema// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
-
-generator client {generator client {
-
-  provider = "prisma-client-js"  provider = "prisma-client-js"
-
-}  // Explicit output to avoid generator path resolution issues inside container.
-
-  // The @prisma/client runtime expects the generated files under its own
-
-datasource db {  // package path (node_modules/@prisma/client/.prisma/client). Configure the
-
-  provider = "postgresql"  // generator to write directly into that location so `require('@prisma/client')`
-
-  url      = env("DATABASE_URL")  // can find the generated client at runtime inside containers and Docker images.
-
-}  // Output is relative to this schema file's directory.
-
-  output = "../../node_modules/@prisma/client/.prisma/client"
-
-// ============= TENANT (Multi-tenancy) =============}
-
+// ============= TENANT (Multi-tenancy) =============
 model Tenant {
-
-  id        String   @id @default(cuid())datasource db {
-
-  name      String  provider = "postgresql"
-
-  slug      String   @unique  url      = env("DATABASE_URL")
-
-  logo      String?}
-
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
   email     String   @unique
-
-  phone     String?// ============= TENANT (Multi-tenancy) =============
-
-  address   String?model Tenant {
-
-  city      String?  id        String   @id @default(cuid())
-
-  state     String?  name      String
-
-  zipCode   String?  slug      String   @unique
-
-  country   String?  logo      String?
-
-  website   String?  email     String   @unique
-
-  createdAt DateTime @default(now())  phone     String?
-
-  updatedAt DateTime @updatedAt  address   String?
-
-  city      String?
-
-  // Relations  state     String?
-
-  users           User[]  zipCode   String?
-
-  clients         Client[]  country   String?
-
-  professionals   Professional[]  website   String?
-
-  services        Service[]  createdAt DateTime @default(now())
-
-  categories      Category[]  updatedAt DateTime @updatedAt
-
-  products        Product[]
-
-  suppliers       Supplier[]  // Relations
-
-  packages        Package[]  users           User[]
-
-  appointments    Appointment[]  clients         Client[]
-
-  transactions    Transaction[]  professionals   Professional[]
-
-  configs         Configuration?  services        Service[]
-
-  subscriptions   Subscription?  appointments    Appointment[]
-
-  transactions    Transaction[]
-
-  @@index([slug])  configs         Configuration?
-
-}  subscriptions   Subscription?
-
-
-
-// ============= USUARIOS =============  @@index([slug])
-
-model User {}
-
-  id        String   @id @default(cuid())
-
-  email     String   @unique// ============= USUARIOS =============
-
-  name      Stringmodel User {
-
-  password  String  id        String   @id @default(cuid())
-
-  phone     String?  email     String   @unique
-
-  avatar    String?  name      String
-
-  role      Role     @default(USER)  password  String
-
-  active    Boolean  @default(true)  phone     String?
-
-  createdAt DateTime @default(now())  avatar    String?
-
-  updatedAt DateTime @updatedAt  role      Role     @default(USER)
-
-  active    Boolean  @default(true)
-
-  // Multi-tenancy  createdAt DateTime @default(now())
-
-  tenantId String  updatedAt DateTime @updatedAt
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  // Multi-tenancy
-
-  // Relations  tenantId String
-
-  professional Professional? @relation("UserProfessional")  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  sessions     Session[]
-
-  // Relations
-
-  @@index([tenantId])  professional Professional? @relation("UserProfessional")
-
-  @@index([email])  sessions     Session[]
-
-}
-
-  @@index([tenantId])
-
-enum Role {  @@index([email])
-
-  ADMIN}
-
-  PROFESSIONAL
-
-  USERenum Role {
-
-}  ADMIN
-
-  PROFESSIONAL
-
-model Session {  USER
-
-  id        String   @id @default(cuid())}
-
-  token     String   @unique
-
-  expiresAt DateTimemodel Session {
-
-  createdAt DateTime @default(now())  id        String   @id @default(cuid())
-
-  token     String   @unique
-
-  // Relations  expiresAt DateTime
-
-  userId String  createdAt DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Relations
-
-  @@index([userId])  userId String
-
-}  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-
-
-// ============= CADASTRO - CLIENTES =============  @@index([userId])
-
-model Client {}
-
-  id        String   @id @default(cuid())
-
-  name      String// ============= CADASTRO - CLIENTES =============
-
-  email     String?model Client {
-
-  phone     String  id        String   @id @default(cuid())
-
-  address   String?  name      String
-
-  city      String?  email     String?
-
-  cpf       String?  @unique  phone     String
-
-  birthDate DateTime?  address   String?
-
-  notes     String?  city      String?
-
-  active    Boolean  @default(true)  cpf       String?  @unique
-
-  createdAt DateTime @default(now())  birthDate DateTime?
-
-  updatedAt DateTime @updatedAt  notes     String?
-
-  active    Boolean  @default(true)
-
-  // Multi-tenancy  createdAt DateTime @default(now())
-
-  tenantId String  updatedAt DateTime @updatedAt
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  // Multi-tenancy
-
-  // Relations  tenantId String
-
-  appointments Appointment[]  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  transactions Transaction[]
-
-  // Relations
-
-  @@index([tenantId])  appointments Appointment[]
-
-  @@index([email])  transactions Transaction[]
-
-}
-
-  @@index([tenantId])
-
-// ============= CADASTRO - PROFISSIONAIS =============  @@index([email])
-
-model Professional {}
-
-  id           String   @id @default(cuid())
-
-  name         String// ============= CADASTRO - PROFISSIONAIS =============
-
-  specialties  String[]model Professional {
-
-  bio          String?  id           String   @id @default(cuid())
-
-  avatar       String?  name         String
-
-  rating       Float    @default(5)  specialties  String[] // Array de especialidades
-
-  commissionRate Float  @default(0)  bio          String?
-
-  active       Boolean  @default(true)  avatar       String?
-
-  createdAt    DateTime @default(now())  rating       Float    @default(5)
-
-  updatedAt    DateTime @updatedAt  commissionRate Float  @default(0) // Percentual de comissão
-
-  active       Boolean  @default(true)
-
-  // Multi-tenancy  createdAt    DateTime @default(now())
-
-  tenantId String  updatedAt    DateTime @updatedAt
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  // Multi-tenancy
-
-  // Relations  tenantId String
-
-  user         User? @relation("UserProfessional", fields: [userId], references: [id], onDelete: SetNull)  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  userId       String? @unique
-
-  appointments Appointment[]  // Relations
-
-  services     ServiceProfessional[]  user         User? @relation("UserProfessional", fields: [userId], references: [id], onDelete: SetNull)
-
-  transactions Transaction[]  userId       String? @unique
-
-  appointments Appointment[]
-
-  @@index([tenantId])  services     ServiceProfessional[]
-
-}  transactions Transaction[]
-
-
-
-// ============= CADASTRO - CATEGORIAS =============  @@index([tenantId])
-
-model Category {}
-
-  id          String   @id @default(cuid())
-
-  name        String// ============= CADASTRO - SERVIÇOS =============
-
-  description String?model Service {
-
-  color       String?  id           String   @id @default(cuid())
-
-  icon        String?  name         String
-
-  active      Boolean  @default(true)  description  String?
-
-  createdAt   DateTime @default(now())  price        Float
-
-  updatedAt   DateTime @updatedAt  duration     Int      // duração em minutos
-
-  category     String?
-
-  // Multi-tenancy  active       Boolean  @default(true)
-
-  tenantId String  createdAt    DateTime @default(now())
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)  updatedAt    DateTime @updatedAt
-
-
-
-  // Relations  // Multi-tenancy
-
-  services Service[]  tenantId String
-
-  products Product[]  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-
-
-  @@index([tenantId])  // Relations
-
-}  appointments Appointment[]
-
-  professionals ServiceProfessional[]
-
-// ============= CADASTRO - SERVIÇOS =============
-
-model Service {  @@index([tenantId])
-
-  id           String   @id @default(cuid())}
-
-  name         String
-
-  description  String?model ServiceProfessional {
-
-  price        Float  id             String   @id @default(cuid())
-
-  duration     Int      // duração em minutos  serviceId      String
-
-  active       Boolean  @default(true)  service        Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  createdAt    DateTime @default(now())  professionalId String
-
-  updatedAt    DateTime @updatedAt  professional   Professional   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-
-  createdAt      DateTime @default(now())
-
-  // Multi-tenancy
-
-  tenantId String  @@unique([serviceId, professionalId])
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)  @@index([serviceId])
-
-  @@index([professionalId])
-
-  // Relations}
-
-  categoryId    String?
-
-  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)// ============= PRINCIPAL - AGENDAMENTOS =============
-
-  appointments  Appointment[]model Appointment {
-
-  professionals ServiceProfessional[]  id               String   @id @default(cuid())
-
-  packageItems  PackageItem[]  title            String
-
-  description      String?
-
-  @@index([tenantId])  startTime        DateTime
-
-  @@index([categoryId])  endTime          DateTime
-
-}  status           AppointmentStatus @default(SCHEDULED)
-
-  notes            String?
-
-model ServiceProfessional {  reminderSent     Boolean  @default(false)
-
-  id             String       @id @default(cuid())  reminderSentAt   DateTime?
-
-  serviceId      String  canceledAt       DateTime?
-
-  service        Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)  cancelReason     String?
-
-  professionalId String  createdAt        DateTime @default(now())
-
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)  updatedAt        DateTime @updatedAt
-
-  createdAt      DateTime     @default(now())
-
-  // Multi-tenancy
-
-  @@unique([serviceId, professionalId])  tenantId String
-
-  @@index([serviceId])  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([professionalId])
-
-}  // Relations
-
-  clientId       String
-
-// ============= CADASTRO - PRODUTOS =============  client         Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-model Product {  professionalId String
-
-  id          String   @id @default(cuid())  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
-
-  name        String  serviceId      String
-
-  description String?  service        Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-
-  price       Float  transaction    Transaction?
-
-  costPrice   Float?
-
-  sku         String?  @@index([tenantId])
-
-  barcode     String?  @@index([clientId])
-
-  stock       Int      @default(0)  @@index([professionalId])
-
-  minStock    Int      @default(5)  @@index([startTime])
-
-  active      Boolean  @default(true)}
-
-  createdAt   DateTime @default(now())
-
-  updatedAt   DateTime @updatedAtenum AppointmentStatus {
-
-  SCHEDULED
-
-  // Multi-tenancy  CONFIRMED
-
-  tenantId String  COMPLETED
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)  CANCELED
-
-  NO_SHOW
-
-  // Relations}
-
-  categoryId String?
-
-  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)// ============= FINANCEIRO - TRANSAÇÕES =============
-
-  supplierId String?model Transaction {
-
-  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)  id               String   @id @default(cuid())
-
-  type             TransactionType
-
-  @@index([tenantId])  description      String
-
-  @@index([categoryId])  amount           Float
-
-}  status           TransactionStatus @default(PENDING)
-
-  paymentMethod    String?
-
-// ============= CADASTRO - FORNECEDORES =============  reference        String?  @unique
-
-model Supplier {  notes            String?
-
-  id        String   @id @default(cuid())  createdAt        DateTime @default(now())
-
-  name      String  updatedAt        DateTime @updatedAt
-
-  email     String?  paidAt           DateTime?
-
   phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  country   String?
+  website   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  cnpj      String?  // Multi-tenancy
+  users           User[]
+  clients         Client[]
+  professionals   Professional[]
+  services        Service[]
+  categories      Category[]
+  products        Product[]
+  suppliers       Supplier[]
+  packages        Package[]
+  appointments    Appointment[]
+  transactions    Transaction[]
+  commissions     Commission[]
+  cashRegisters   CashRegister[]
+  configs         Configuration?
+  subscription    Subscription?
+  bookingPolicy   BookingPolicy?
 
-  address   String?  tenantId String
-
-  city      String?  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  notes     String?
-
-  active    Boolean  @default(true)  // Relations
-
-  createdAt DateTime @default(now())  clientId       String?
-
-  updatedAt DateTime @updatedAt  client         Client?    @relation(fields: [clientId], references: [id], onDelete: SetNull)
-
-  professionalId String?
-
-  // Multi-tenancy  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
-
-  tenantId String  appointmentId  String?    @unique
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)  appointment    Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-
-
-
-  // Relations  @@index([tenantId])
-
-  products Product[]  @@index([clientId])
-
-  @@index([professionalId])
-
-  @@index([tenantId])}
-
+  @@index([slug])
 }
 
-enum TransactionType {
+// ============= USUARIOS =============
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(PROFESSIONAL)
+  avatar    String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-// ============= PACOTES DE SERVIÇOS =============  INCOME      // Receita (cliente pagando)
+  // MASTER não tem tenant (acessa todos)
+  // OWNER e PROFESSIONAL pertencem a um tenant
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-model Package {  COMMISSION  // Comissão (profissional)
+  // Se for PROFESSIONAL, vincula ao registro de Professional
+  professionalId String?   @unique
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
 
-  id           String   @id @default(cuid())  EXPENSE     // Despesa
+  @@index([tenantId])
+  @@index([email])
+}
 
-  name         String  REFUND      // Reembolso
+enum UserRole {
+  MASTER        // Você - Dono do SaaS (acessa TUDO)
+  OWNER         // Dono do salão (acessa só o tenant dele)
+  PROFESSIONAL  // Funcionário/Barbeiro (acessa só os dados dele)
+}
 
-  description  String?}
-
-  price        Float
-
-  validityDays Int      @default(30)enum TransactionStatus {
-
-  active       Boolean  @default(true)  PENDING
-
-  createdAt    DateTime @default(now())  CONFIRMED
-
-  updatedAt    DateTime @updatedAt  FAILED
-
-  REFUNDED
-
-  // Multi-tenancy}
+// ============= CLIENTES =============
+model Client {
+  id          String    @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  cpf         String?
+  birthDate   DateTime?
+  gender      String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  notes       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)// ============= PAGAMENTOS - STRIPE =============
-
-model Subscription {
-
-  // Relations  id                String   @id @default(cuid())
-
-  items PackageItem[]  plan              SubscriptionPlan
-
-  status            SubscriptionStatus @default(ACTIVE)
-
-  @@index([tenantId])  stripeCustomerId  String?  @unique
-
-}  stripeSubscriptionId String? @unique
-
-  currentPeriodStart DateTime
-
-model PackageItem {  currentPeriodEnd  DateTime
-
-  id        String  @id @default(cuid())  canceledAt        DateTime?
-
-  quantity  Int     @default(1)  createdAt         DateTime @default(now())
-
-    updatedAt         DateTime @updatedAt
-
-  // Relations
-
-  packageId String  // Multi-tenancy
-
-  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)  tenantId String   @unique
-
-  serviceId String  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+  transactions    Transaction[]
+  clientPackages  ClientPackage[]
 
   @@index([tenantId])
+  @@index([email])
+  @@index([phone])
+}
 
-  @@unique([packageId, serviceId])}
+// ============= PROFISSIONAIS =============
+model Professional {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  cpf         String?
+  specialty   String?
+  bio         String?
+  avatar      String?
+  color       String?
+  commission  Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([packageId])
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([serviceId])enum SubscriptionPlan {
+  // Usuário vinculado (para login do profissional)
+  user         User?
+  
+  appointments Appointment[]
+  commissions  Commission[]
+  services     ProfessionalService[]
+  schedules    ProfessionalSchedule[]
+  availabilityRules AvailabilityRule[]
 
-}  STARTER   // Básico - até 5 profissionais
+  @@index([tenantId])
+}
 
-  PRO       // Profissional - até 50 profissionais
-
-// ============= PRINCIPAL - AGENDAMENTOS =============  ENTERPRISE // Empresarial - ilimitado
-
-model Appointment {}
-
-  id               String            @id @default(cuid())
-
-  title            Stringenum SubscriptionStatus {
-
-  description      String?  ACTIVE
-
-  startTime        DateTime  PAST_DUE
-
-  endTime          DateTime  CANCELED
-
-  status           AppointmentStatus @default(SCHEDULED)  EXPIRED
-
-  notes            String?}
-
-  reminderSent     Boolean           @default(false)
-
-  reminderSentAt   DateTime?// ============= CONFIGURAÇÕES =============
-
-  canceledAt       DateTime?model Configuration {
-
-  cancelReason     String?  id                    String   @id @default(cuid())
-
-  createdAt        DateTime          @default(now())  businessHours         Boolean  @default(true)
-
-  updatedAt        DateTime          @updatedAt  weekStartDay          Int      @default(0) // 0 = domingo, 1 = segunda
-
-  appointmentDuration   Int      @default(60) // minutos
-
-  // Multi-tenancy  bufferBetweenAppts    Int      @default(15) // minutos
-
-  tenantId String  autoConfirmAppointments Boolean @default(false)
-
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)  allowCancellation     Boolean  @default(true)
-
-  cancellationDeadline  Int      @default(24) // horas
-
-  // Relations  emailNotifications    Boolean  @default(true)
-
-  clientId       String  smsNotifications      Boolean  @default(false)
-
-  client         Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)  whatsappNotifications Boolean  @default(false)
-
-  professionalId String  createdAt             DateTime @default(now())
-
-  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)  updatedAt             DateTime @updatedAt
-
+model ProfessionalService {
+  id             String @id @default(cuid())
+  professionalId String
   serviceId      String
 
-  service        Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)  // Multi-tenancy
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
-  transaction    Transaction?  tenantId String   @unique
+  @@unique([professionalId, serviceId])
+}
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+model ProfessionalSchedule {
+  id             String  @id @default(cuid())
+  professionalId String
+  dayOfWeek      Int
+  startTime      String
+  endTime        String
+  isActive       Boolean @default(true)
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId])
+}
+
+// ============= SERVICOS =============
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  duration    Int
+  price       Float
+  color       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  appointments    Appointment[]
+  professionals   ProfessionalService[]
+  packageServices PackageService[]
 
   @@index([tenantId])
+  @@index([categoryId])
+}
 
-  @@index([clientId])  @@index([tenantId])
+// ============= CATEGORIAS =============
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  color       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([professionalId])}
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([startTime])
+  services Service[]
+  products Product[]
+
+  @@index([tenantId])
+}
+
+// ============= PRODUTOS =============
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sku         String?
+  barcode     String?
+  price       Float
+  cost        Float?
+  stock       Int      @default(0)
+  minStock    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  transactionItems TransactionItem[]
+
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([sku])
+}
+
+// ============= FORNECEDORES =============
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?
+  phone       String?
+  cnpj        String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  contactName String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+// ============= PACOTES =============
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  validDays   Int      @default(30)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  services       PackageService[]
+  clientPackages ClientPackage[]
+
+  @@index([tenantId])
+}
+
+model PackageService {
+  id        String @id @default(cuid())
+  packageId String
+  serviceId String
+  quantity  Int    @default(1)
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, serviceId])
+}
+
+model ClientPackage {
+  id             String        @id @default(cuid())
+  clientId       String
+  packageId      String
+  purchaseDate   DateTime      @default(now())
+  expirationDate DateTime
+  usedQuantity   Int           @default(0)
+  totalQuantity  Int
+  status         PackageStatus @default(ACTIVE)
+
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([packageId])
+}
+
+enum PackageStatus {
+  ACTIVE
+  EXPIRED
+  USED
+  CANCELLED
+}
+
+// ============= AGENDAMENTOS =============
+model Appointment {
+  id        String            @id @default(cuid())
+  date      DateTime
+  startTime String
+  endTime   String
+  status    AppointmentStatus @default(SCHEDULED)
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  clientId       String
+  professionalId String
+  serviceId      String
+  tenantId       String
+
+  // Dados do cliente (para agendamentos públicos)
+  customerName    String?
+  customerPhone   String?
+  customerEmail   String?
+
+  // Reagendamento
+  originalAppointmentId String?
+  rescheduledFrom       Appointment?  @relation("AppointmentReschedules", fields: [originalAppointmentId], references: [id])
+  rescheduledTo         Appointment[] @relation("AppointmentReschedules")
+
+  // Cancelamento
+  cancelledAt       DateTime?
+  cancellationReason String?
+
+  // Confirmação
+  confirmedAt       DateTime?
+  confirmationToken String? @unique
+
+  // Avaliação
+  rating            Int? // 1-5
+  review            String?
+
+  client       Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  transaction Transaction?
+
+  @@index([tenantId])
+  @@index([clientId])
+  @@index([professionalId])
+  @@index([date])
+  @@index([confirmationToken])
+  @@index([originalAppointmentId])
 }
 
 enum AppointmentStatus {
   SCHEDULED
   CONFIRMED
+  IN_PROGRESS
   COMPLETED
-  CANCELED
+  CANCELLED
   NO_SHOW
 }
 
-// ============= FINANCEIRO - TRANSAÇÕES =============
+// ============= TRANSACOES FINANCEIRAS =============
 model Transaction {
   id            String            @id @default(cuid())
   type          TransactionType
-  description   String
   amount        Float
+  description   String?
+  paymentMethod PaymentMethod?
   status        TransactionStatus @default(PENDING)
-  paymentMethod String?
-  reference     String?           @unique
-  notes         String?
+  dueDate       DateTime?
+  paidAt        DateTime?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
-  paidAt        DateTime?
 
-  // Multi-tenancy
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  // Relations
   clientId       String?
-  client         Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  professionalId String?
-  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
-  appointmentId  String?       @unique
-  appointment    Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId  String?        @unique
+  tenantId       String
+  cashRegisterId String?
+
+  client       Client?       @relation(fields: [clientId], references: [id])
+  appointment  Appointment?  @relation(fields: [appointmentId], references: [id])
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cashRegister CashRegister? @relation(fields: [cashRegisterId], references: [id])
+
+  items TransactionItem[]
 
   @@index([tenantId])
   @@index([clientId])
-  @@index([professionalId])
+  @@index([type])
+  @@index([status])
+}
+
+model TransactionItem {
+  id            String @id @default(cuid())
+  transactionId String
+  productId     String?
+  description   String
+  quantity      Int    @default(1)
+  unitPrice     Float
+  total         Float
+
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product     Product?    @relation(fields: [productId], references: [id])
+
+  @@index([transactionId])
 }
 
 enum TransactionType {
   INCOME
-  COMMISSION
   EXPENSE
-  REFUND
 }
 
 enum TransactionStatus {
   PENDING
-  CONFIRMED
-  FAILED
+  PAID
+  CANCELLED
   REFUNDED
 }
 
-// ============= PAGAMENTOS - STRIPE =============
-model Subscription {
-  id                   String             @id @default(cuid())
-  plan                 SubscriptionPlan
-  status               SubscriptionStatus @default(ACTIVE)
-  stripeCustomerId     String?            @unique
-  stripeSubscriptionId String?            @unique
-  currentPeriodStart   DateTime
-  currentPeriodEnd     DateTime
-  canceledAt           DateTime?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  BANK_TRANSFER
+  BOLETO
+  OTHER
+}
 
-  // Multi-tenancy
-  tenantId String @unique
+// ============= CAIXA =============
+model CashRegister {
+  id             String     @id @default(cuid())
+  openedAt       DateTime   @default(now())
+  closedAt       DateTime?
+  openingBalance Float
+  closingBalance Float?
+  status         CashStatus @default(OPEN)
+  notes          String?
+
+  tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  transactions Transaction[]
+
   @@index([tenantId])
+  @@index([status])
+}
+
+enum CashStatus {
+  OPEN
+  CLOSED
+}
+
+// ============= COMISSOES =============
+model Commission {
+  id             String           @id @default(cuid())
+  professionalId String
+  amount         Float
+  percentage     Float
+  referenceMonth String
+  status         CommissionStatus @default(PENDING)
+  paidAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([professionalId])
+  @@index([referenceMonth])
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+// ============= CONFIGURACOES =============
+model Configuration {
+  id       String @id @default(cuid())
+  tenantId String @unique
+
+  businessName    String?
+  businessEmail   String?
+  businessPhone   String?
+  businessAddress String?
+  timezone        String  @default("America/Sao_Paulo")
+  currency        String  @default("BRL")
+  dateFormat      String  @default("DD/MM/YYYY")
+  timeFormat      String  @default("HH:mm")
+
+  slotDuration     Int     @default(30)
+  advanceBooking   Int     @default(30)
+  cancellationTime Int     @default(24)
+
+  workStartTime String @default("08:00")
+  workEndTime   String @default("18:00")
+  workDays      String @default("1,2,3,4,5")
+
+  emailNotifications    Boolean @default(true)
+  smsNotifications      Boolean @default(false)
+  whatsappNotifications Boolean @default(false)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+// ============= ASSINATURA =============
+model Subscription {
+  id        String             @id @default(cuid())
+  tenantId  String             @unique
+  plan      SubscriptionPlan   @default(FREE)
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
 enum SubscriptionPlan {
-  STARTER
-  PRO
+  FREE
+  BASIC
+  PROFESSIONAL
   ENTERPRISE
 }
 
 enum SubscriptionStatus {
   ACTIVE
+  INACTIVE
+  CANCELLED
   PAST_DUE
-  CANCELED
-  EXPIRED
 }
 
-// ============= CONFIGURAÇÕES =============
-model Configuration {
-  id                      String   @id @default(cuid())
-  businessHours           Boolean  @default(true)
-  weekStartDay            Int      @default(0)
-  appointmentDuration     Int      @default(60)
-  bufferBetweenAppts      Int      @default(15)
-  autoConfirmAppointments Boolean  @default(false)
-  allowCancellation       Boolean  @default(true)
-  cancellationDeadline    Int      @default(24)
-  emailNotifications      Boolean  @default(true)
-  smsNotifications        Boolean  @default(false)
-  whatsappNotifications   Boolean  @default(false)
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+// ============= POLÍTICAS DE AGENDAMENTO =============
+model BookingPolicy {
+  id        String   @id @default(cuid())
+  tenantId  String   @unique
 
-  // Multi-tenancy
-  tenantId String @unique
-  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Cancelamento
+  allowCancellation       Boolean @default(true)
+  minCancellationHours    Int     @default(24)
+  maxCancellationsPerMonth Int     @default(3)
+
+  // Reagendamento
+  allowRescheduling       Boolean @default(true)
+  minReschedulingHours    Int     @default(24)
+  maxReschedulings        Int     @default(2)
+
+  // Geral
+  minAdvanceBookingHours  Int     @default(1)
+  maxAdvanceBookingDays   Int     @default(90)
+  slotDurationMinutes     Int     @default(30)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+}
+
+// ============= REGRAS DE DISPONIBILIDADE =============
+model AvailabilityRule {
+  id             String  @id @default(cuid())
+  professionalId String
+  dayOfWeek      Int     // 0-6 (domingo-sábado)
+  startTime      String  // "09:00"
+  endTime        String  // "18:00"
+  isActive       Boolean @default(true)
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, dayOfWeek])
+  @@index([professionalId])
 }
