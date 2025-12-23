@@ -77,6 +77,7 @@ export function DateTimeSelector({
 
   // Agrupar slots por data COM MEMOIZAÇÃO (otimização de performance)
   const slotsByDate = useMemo(() => {
+    if (!Array.isArray(slots)) return {};
     return slots.reduce(
       (acc, slot) => {
         if (!acc[slot.date]) acc[slot.date] = [];
