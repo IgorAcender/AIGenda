@@ -29,11 +29,17 @@ export function ServiceSelector({
       try {
         setLoading(true);
         const apiUrl = getApiUrl();
+        console.log('[SERVICE SELECTOR] API URL:', apiUrl);
+        console.log('[SERVICE SELECTOR] Fetching:', `${apiUrl}/${tenantSlug}`);
         const res = await fetch(`${apiUrl}/${tenantSlug}`);
+        console.log('[SERVICE SELECTOR] Response status:', res.status);
         if (!res.ok) throw new Error('Erro ao carregar serviços');
         const data = await res.json();
+        console.log('[SERVICE SELECTOR] Data received:', data);
         setServices(data.data?.services || []);
+        console.log('[SERVICE SELECTOR] Services set:', data.data?.services?.length || 0);
       } catch (err) {
+        console.error('[SERVICE SELECTOR] Error:', err);
         setError(err instanceof Error ? err.message : 'Erro ao carregar serviços');
       } finally {
         setLoading(false);

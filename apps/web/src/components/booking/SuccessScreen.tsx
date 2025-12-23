@@ -11,7 +11,6 @@ interface SuccessScreenProps {
   time: string;
   customerName: string;
   customerPhone: string;
-  customerEmail: string;
   onNewBooking: () => void;
 }
 
@@ -23,7 +22,6 @@ export function SuccessScreen({
   time,
   customerName,
   customerPhone,
-  customerEmail,
   onNewBooking,
 }: SuccessScreenProps) {
   const formattedDate = new Date(date).toLocaleDateString('pt-BR');
@@ -34,11 +32,22 @@ export function SuccessScreen({
 
   return (
     <div className="booking-success-screen">
-      {/* Header com título */}
+      {/* Ícone e mensagem de sucesso */}
       <div className="booking-success-header">
-        <h1>Confirmar agendamento</h1>
-        <p>Verifique os detalhes e preencha suas informações para finalizar</p>
+        <div className="booking-success-icon">
+          <CheckCircle size={60} color="#10b981" />
+        </div>
+        <h1>Agendamento Confirmado!</h1>
+        <p>Seu agendamento foi registrado com sucesso. Você receberá uma confirmação por email/WhatsApp.</p>
       </div>
+
+      {/* Número do agendamento */}
+      {appointmentId && (
+        <div className="booking-success-appointment-box">
+          <p className="booking-success-appointment-label">Número do Agendamento</p>
+          <p className="booking-success-appointment-id">{appointmentId}</p>
+        </div>
+      )}
 
       {/* Caixa de detalhes do agendamento */}
       <div className="booking-success-details-box">
@@ -85,20 +94,23 @@ export function SuccessScreen({
         </div>
 
         <div className="booking-success-customer-field">
-          <label>Email *</label>
-          <div className="booking-success-customer-value">{customerEmail}</div>
-        </div>
-
-        <div className="booking-success-customer-field">
           <label>Nome *</label>
           <div className="booking-success-customer-value">{customerName}</div>
         </div>
       </div>
 
-      {/* Botão de confirmação */}
+      {/* Botão de nova ação */}
       <button onClick={onNewBooking} className="booking-btn booking-btn-primary booking-success-btn">
         <CheckCircle size={20} />
-        Confirmar agendamento
+        Agendar Outro Horário
+      </button>
+
+      {/* Link para voltar */}
+      <button 
+        onClick={() => window.location.href = '/'} 
+        className="booking-btn booking-btn-secondary booking-success-btn-secondary"
+      >
+        Voltar ao Início
       </button>
     </div>
   );

@@ -39,7 +39,6 @@ export default function BookingPage({ params }: PageProps) {
   // Estado dos dados do cliente
   const [customerName, setCustomerName] = useState<string>('');
   const [customerPhone, setCustomerPhone] = useState<string>('');
-  const [customerEmail, setCustomerEmail] = useState<string>('');
 
   const handleServiceSelect = (serviceId: string, service: Service) => {
     setSelectedService(service);
@@ -79,8 +78,9 @@ export default function BookingPage({ params }: PageProps) {
     setIsLoading(true);
 
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       const response = await fetch(
-        `/public/bookings/${tenantSlug}/create`,
+        `${apiUrl}/${tenantSlug}/create`,
         {
           method: 'POST',
           headers: {
@@ -89,15 +89,11 @@ export default function BookingPage({ params }: PageProps) {
           body: JSON.stringify({
             serviceId: selectedService.id,
             professionalId: selectedProfessional.id,
-            startTime: new Date(`${selectedDate}T${selectedTime}`).toISOString(),
-            endTime: new Date(
-              new Date(`${selectedDate}T${selectedTime}`).getTime() +
-                selectedService.duration * 60000
-            ).toISOString(),
+            date: selectedDate, // formato: yyyy-MM-dd
+            time: selectedTime, // formato: HH:mm
             customerName: formData.customerName,
             customerPhone: formData.customerPhone,
-            customerEmail: formData.customerEmail,
-            notes: formData.notes,
+            notes: formData.notes || undefined,
           }),
         }
       );
@@ -112,7 +108,6 @@ export default function BookingPage({ params }: PageProps) {
       // Armazena dados do cliente antes de ir para a tela de sucesso
       setCustomerName(formData.customerName);
       setCustomerPhone(formData.customerPhone);
-      setCustomerEmail(formData.customerEmail);
       setCurrentStep('success');
     } finally {
       setIsLoading(false);
@@ -291,7 +286,6 @@ export default function BookingPage({ params }: PageProps) {
               time={selectedTime}
               customerName={customerName}
               customerPhone={customerPhone}
-              customerEmail={customerEmail}
               onNewBooking={() => router.push(`/agendar/${tenantSlug}`)}
             />
           )}

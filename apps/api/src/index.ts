@@ -17,10 +17,12 @@ const app = Fastify({
   logger: true,
 })
 
-// Plugins
+// Plugins - CORS configurado para aceitar requisições de qualquer origem em dev
 app.register(cors, {
-  origin: true,
+  origin: true, // Em dev aceita qualquer origem
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 })
 
 app.register(jwt, {

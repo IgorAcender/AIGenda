@@ -27,7 +27,6 @@ export function ConfirmationScreen({
   const [formData, setFormData] = useState<BookingFormData>({
     customerName: '',
     customerPhone: '',
-    customerEmail: '',
     notes: '',
   });
 
@@ -72,7 +71,6 @@ export function ConfirmationScreen({
         setFormData((prev) => ({
           ...prev,
           customerName: '',
-          customerEmail: '',
         }));
       } else if (result.data?.customer) {
         // Cliente retornando
@@ -82,7 +80,6 @@ export function ConfirmationScreen({
         setFormData((prev) => ({
           ...prev,
           customerName: result.data.customer.name || '',
-          customerEmail: result.data.customer.email || '',
         }));
       }
     } catch (error) {
@@ -117,11 +114,16 @@ export function ConfirmationScreen({
       ...prev,
       [name]: value,
     }));
+    // Limpa erros de campo específico
     if (errors[name as keyof BookingFormData]) {
       setErrors((prev) => ({
         ...prev,
         [name]: undefined,
       }));
+    }
+    // Limpa erro geral de submit quando usuário começa a digitar
+    if (submitError) {
+      setSubmitError(null);
     }
   };
 
@@ -192,7 +194,7 @@ export function ConfirmationScreen({
       </div>
 
       {/* Formulário */}
-      <form onSubmit={handleSubmit} className="booking-confirmation-form">
+      <form onSubmit={handleSubmit} className="booking-confirmation-form" noValidate>
         {submitError && (
           <div className="booking-error">
             <AlertCircle size={20} style={{ flexShrink: 0 }} />
@@ -202,7 +204,7 @@ export function ConfirmationScreen({
 
         <div className="booking-confirmation-form-title">Suas informações</div>
 
-        {/* Campo Telefone - Sempre visível */}
+          {/* Campo Telefone - Sempre visível */}
         <div className="booking-confirmation-field">
           <label className="booking-confirmation-field-label">
             <Phone size={18} />
@@ -210,7 +212,7 @@ export function ConfirmationScreen({
           </label>
           <div className="booking-confirmation-input-wrapper">
             <input
-              type="tel"
+              type="text"
               name="customerPhone"
               value={formData.customerPhone}
               onChange={handleChange}
@@ -218,6 +220,7 @@ export function ConfirmationScreen({
               className={`booking-confirmation-input ${
                 errors.customerPhone ? 'error' : ''
               }`}
+              maxLength={15}
             />
             {isLoadingCustomer && (
               <div className="booking-confirmation-loading">

@@ -42,9 +42,9 @@ export function BookingForm({
       newErrors.customerPhone = 'Telefone inválido';
     }
 
-    if (!formData.customerEmail.trim()) {
+    if (formData.customerEmail && !formData.customerEmail.trim()) {
       newErrors.customerEmail = 'Email é obrigatório';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
+    } else if (formData.customerEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail)) {
       newErrors.customerEmail = 'Email inválido';
     }
 

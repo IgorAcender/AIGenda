@@ -45,12 +45,23 @@ export class AvailabilityService {
     const config = tenant.configs;
     const slotDuration = policy.slotDurationMinutes;
 
-    // 2. Validar datas
+    // 2. Validar datas - garantir que estamos comparando apenas as datas, sem horas
     const now = new Date();
-    const minDate = addDays(now, policy.minAdvanceBookingHours / 24);
-    const maxDate = addDays(now, policy.maxAdvanceBookingDays);
+    const minDate = startOfDay(addDays(now, policy.minAdvanceBookingHours / 24));
+    const maxDate = startOfDay(addDays(now, policy.maxAdvanceBookingDays));
+    
+    const startDateNormalized = startOfDay(startDate);
+    const endDateNormalized = startOfDay(endDate);
 
-    if (isBefore(startDate, minDate) || isAfter(endDate, maxDate)) {
+    console.log('[AVAILABILITY] Validação de datas:', { 
+      minDate: format(minDate, 'yyyy-MM-dd HH:mm'),
+      startDate: format(startDateNormalized, 'yyyy-MM-dd HH:mm'),
+      endDate: format(endDateNormalized, 'yyyy-MM-dd HH:mm'),
+      maxDate: format(maxDate, 'yyyy-MM-dd HH:mm'),
+    });
+
+    if (isBefore(startDateNormalized, minDate) || isAfter(endDateNormalized, maxDate)) {
+      console.error('[AVAILABILITY] Data fora do período permitido!');
       throw new Error('Data fora do período permitido');
     }
 
@@ -103,9 +114,9 @@ export class AvailabilityService {
 
     // 5. Calcular slots
     const slots: TimeSlot[] = [];
-    let currentDate = startOfDay(startDate);
+    let currentDate = startOfDay(startDateNormalized);
 
-    while (isBefore(currentDate, endDate)) {
+    while (isBefore(currentDate, addDays(endDateNormalized, 1))) {
       const dayOfWeek = currentDate.getDay();
       const dayLabel = format(currentDate, 'EEEE, dd/MM/yyyy', { locale: ptBR });
 

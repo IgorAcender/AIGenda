@@ -13,6 +13,8 @@ build
 .env.local
 .env.*.local
 !.env.example
+!.env.easypanel.api
+!.env.easypanel.web
 
 # IDE
 .vscode/*

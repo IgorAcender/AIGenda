@@ -161,6 +161,8 @@ export async function publicBookingRoutes(app: FastifyInstance) {
         const { tenantSlug } = request.params;
         const query = availableSlotsSchema.parse(request.query);
 
+        console.log('[SLOTS] Query recebido:', query);
+
         const tenant = await prisma.tenant.findUnique({
           where: { slug: tenantSlug },
         });
@@ -172,8 +174,13 @@ export async function publicBookingRoutes(app: FastifyInstance) {
         const [startYear, startMonth, startDay] = query.startDate.split('-').map(Number);
         const [endYear, endMonth, endDay] = query.endDate.split('-').map(Number);
 
-        const startDate = new Date(startYear, startMonth - 1, startDay);
-        const endDate = new Date(endYear, endMonth - 1, endDay);
+        console.log('[SLOTS] Datas parseadas:', { startYear, startMonth, startDay, endYear, endMonth, endDay });
+
+        // Usar horário local (00:00) sem problemas de timezone
+        const startDate = new Date(startYear, startMonth - 1, startDay, 0, 0, 0, 0);
+        const endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+
+        console.log('[SLOTS] Datas criadas:', { startDate, endDate });
 
         const slots = await availabilityService.getAvailableSlots({
           tenantId: tenant.id,
@@ -183,9 +190,11 @@ export async function publicBookingRoutes(app: FastifyInstance) {
           endDate,
         });
 
+        console.log('[SLOTS] Slots retornados:', slots.length);
         return { data: slots };
       } catch (error) {
         const err = error as Error;
+        console.error('[SLOTS] Erro:', err.message);
         return reply.status(400).send({ error: err.message });
       }
     }
@@ -263,7 +272,9 @@ export async function publicBookingRoutes(app: FastifyInstance) {
     async (request: FastifyRequest<{ Params: { tenantSlug: string }; Body: any }>, reply: FastifyReply) => {
       try {
         const { tenantSlug } = request.params;
+        console.log('[CREATE BOOKING] Request body:', JSON.stringify(request.body, null, 2));
         const data = createPublicBookingSchema.parse(request.body);
+        console.log('[CREATE BOOKING] Parsed data:', data);
 
         const tenant = await prisma.tenant.findUnique({
           where: { slug: tenantSlug },
@@ -301,11 +312,12 @@ export async function publicBookingRoutes(app: FastifyInstance) {
             date: bookingDate,
             startTime: data.time,
             endTime: format(endDate, 'HH:mm'),
+            customerName: data.customerName,
             customerPhone: data.customerPhone,
             customerEmail: data.customerEmail || null,
             status: 'SCHEDULED',
             notes: data.notes || null,
-            clientId: '', // Será preenchido depois se necessário
+            // clientId será null para agendamentos públicos sem cadastro
           },
           include: {
             service: true,

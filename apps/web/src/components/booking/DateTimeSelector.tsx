@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format, addDays, parse, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isBefore } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Clock, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -30,51 +30,42 @@ export function DateTimeSelector({
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Carregar slots disponíveis quando uma data é selecionada
+  // Carregar slots APENAS do dia selecionado (quando data OU profissional mudar)
   useEffect(() => {
-    if (!selectedDate) {
+    if (!selectedProfessional?.id || !serviceId || !selectedDate) {
       setSlots([]);
-      setSelectedTime('');
       return;
     }
 
     const fetchSlots = async () => {
+      console.log(`[SLOTS] Carregando horários para ${selectedDate}...`);
       setLoading(true);
       setError(null);
 
       try {
         const apiUrl = getApiUrl();
-        const endDate = addDays(parse(selectedDate, 'yyyy-MM-dd', new Date()), 1);
-
-        const params = new URLSearchParams({
-          serviceId,
-          startDate: selectedDate,
-          endDate: format(endDate, 'yyyy-MM-dd'),
-          ...(selectedProfessional?.id && { professionalId: selectedProfessional.id }),
-        });
-
-        const res = await fetch(
-          `${apiUrl}/${tenantSlug}/available-slots?${params}`
+        // API exige startDate e endDate - enviar o mesmo dia para ambos
+        const response = await fetch(
+          `${apiUrl}/${tenantSlug}/available-slots?serviceId=${serviceId}&professionalId=${selectedProfessional.id}&startDate=${selectedDate}&endDate=${selectedDate}`
         );
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Erro ao carregar horários');
+        if (!response.ok) {
+          throw new Error('Erro ao carregar horários disponíveis');
         }
 
-        const data = await res.json();
-        setSlots(data.data || []);
+        const data = await response.json();
+        console.log(`[SLOTS] ${data.length} horários carregados para ${selectedDate}`);
+        setSlots(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar horários');
+        console.error('[SLOTS] Erro:', err);
+        setError('Erro ao carregar horários. Tente novamente.');
         setSlots([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (serviceId) {
-      fetchSlots();
-    }
+    fetchSlots();
   }, [tenantSlug, serviceId, selectedDate, selectedProfessional?.id]);
 
   const handleTimeSelect = (date: string, time: string) => {
@@ -84,15 +75,17 @@ export function DateTimeSelector({
     }
   };
 
-  // Agrupar slots por data
-  const slotsByDate = slots.reduce(
-    (acc, slot) => {
-      if (!acc[slot.date]) acc[slot.date] = [];
-      acc[slot.date].push(slot);
-      return acc;
-    },
-    {} as Record<string, TimeSlot[]>
-  );
+  // Agrupar slots por data COM MEMOIZAÇÃO (otimização de performance)
+  const slotsByDate = useMemo(() => {
+    return slots.reduce(
+      (acc, slot) => {
+        if (!acc[slot.date]) acc[slot.date] = [];
+        acc[slot.date].push(slot);
+        return acc;
+      },
+      {} as Record<string, TimeSlot[]>
+    );
+  }, [slots]);
 
   // Calcular datas mínima e máxima para o calendário
   const today = new Date();
