@@ -1,7 +1,10 @@
 FROM node:20-alpine AS base
 
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl openssl-dev libc6-compat
+# Install OpenSSL 3.0 for Prisma (Alpine 3.18+ has openssl 3)
+RUN apk add --no-cache openssl libc6-compat
+
+# Set Prisma to use OpenSSL 3.0
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -17,11 +20,14 @@ COPY prisma ./prisma/
 # Install dependencies (without lockfile since we're in a subpackage)
 RUN pnpm install
 
+# Generate Prisma client here (no DB connection needed for generate)
+RUN npx prisma generate
+
 # Build stage
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
 COPY . .
-RUN pnpm run db:generate
 RUN pnpm run build
 
 # Production stage
