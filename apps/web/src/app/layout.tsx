@@ -5,7 +5,7 @@ import ptBR from 'antd/locale/pt_BR'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'AIGenda - Sistema de Agendamento',
+  title: 'Agende AI - Sistema de Agendamento',
   description: 'Sistema completo de agendamento e gestão para seu negócio',
 }
 

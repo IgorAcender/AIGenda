@@ -185,7 +185,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'aigenda-auth',
+      name: 'agende-ai-auth',
       partialize: (state) => ({
         user: state.user,
         tenant: state.tenant,

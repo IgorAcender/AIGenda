@@ -245,7 +245,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
       <div className="footer">
         <p>&copy; 2025 {tenant.name} - Todos os direitos reservados</p>
         <p>
-          Desenvolvido com <i className="fas fa-heart"></i> por AIGenda
+          Desenvolvido com <i className="fas fa-heart"></i> por Agende AI
         </p>
       </div>
     </div>

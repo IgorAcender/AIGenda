@@ -181,7 +181,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           textAlign: collapsed ? 'center' : 'left',
         }}>
           <Text strong style={{ fontSize: collapsed ? 16 : 24, color: themeToken.colorPrimary }}>
-            {collapsed ? 'AI' : 'AIGenda'}
+            {collapsed ? 'AI' : 'Agende AI'}
           </Text>
         </div>
 

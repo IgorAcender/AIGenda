@@ -75,7 +75,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || `${tenant.name} <noreply@aigenda.com>`,
+        from: process.env.SMTP_FROM || `${tenant.name} <noreply@agende-ai.com>`,
         to: appointment.customerEmail,
         subject: `✅ Agendamento Confirmado - ${tenant.name}`,
         html,
@@ -128,7 +128,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || `${tenant.name} <noreply@aigenda.com>`,
+        from: process.env.SMTP_FROM || `${tenant.name} <noreply@agende-ai.com>`,
         to: appointment.customerEmail,
         subject: `⏰ Lembrete - ${tenant.name}`,
         html,
@@ -181,7 +181,7 @@ export class NotificationService {
 
     try {
       await this.transporter.sendMail({
-        from: process.env.SMTP_FROM || `${tenant.name} <noreply@aigenda.com>`,
+        from: process.env.SMTP_FROM || `${tenant.name} <noreply@agende-ai.com>`,
         to: appointment.customerEmail,
         subject: `❌ Agendamento Cancelado - ${tenant.name}`,
         html,

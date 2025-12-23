@@ -102,7 +102,7 @@ export default function RegisterPage() {
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={2} style={{ color: '#505afb', margin: 0 }}>
-            AIGenda
+            Agende AI
           </Title>
           <Text type="secondary">Crie sua conta</Text>
         </div>
@@ -238,12 +238,12 @@ export default function RegisterPage() {
                   message: 'Use apenas letras minúsculas, números e hífens',
                 },
               ]}
-              extra="Esta será a URL para seus clientes agendarem: app.aigenda.com/seu-estabelecimento"
+              extra="Esta será a URL para seus clientes agendarem: app.agende-ai.com/seu-estabelecimento"
             >
               <Input
                 placeholder="salao-da-maria"
                 size="large"
-                addonBefore="app.aigenda.com/"
+                addonBefore="app.agende-ai.com/"
               />
             </Form.Item>
 

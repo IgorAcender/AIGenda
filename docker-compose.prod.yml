@@ -12,7 +12,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
-    container_name: aigenda-api
+    container_name: agende-ai-api
     restart: unless-stopped
     environment:
       # Configurar no EasyPanel com os valores reais
@@ -35,7 +35,7 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
-    container_name: aigenda-web
+    container_name: agende-ai-web
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}

@@ -7,7 +7,7 @@ async function main() {
   console.log('🌱 Iniciando seed...')
 
   // ============= CRIAR USUÁRIO MASTER =============
-  const masterEmail = 'igor@aigenda.com'
+  const masterEmail = 'igor@agende-ai.com'
   const masterPassword = 'Master@123' // MUDE DEPOIS!
   
   const existingMaster = await prisma.user.findUnique({
@@ -276,7 +276,7 @@ async function main() {
   console.log('📋 Logins disponíveis:')
   console.log('┌─────────────────────────────────────────────────────────────┐')
   console.log('│ MASTER (Você - Admin do SaaS)                               │')
-  console.log('│ Email: igor@aigenda.com                                     │')
+  console.log('│ Email: igor@agende-ai.com                                   │')
   console.log('│ Senha: Master@123                                           │')
   console.log('├─────────────────────────────────────────────────────────────┤')
   console.log('│ OWNER (Dono da Barbearia Exemplo)                           │')

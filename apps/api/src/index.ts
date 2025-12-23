@@ -26,7 +26,7 @@ app.register(cors, {
 })
 
 app.register(jwt, {
-  secret: process.env.JWT_SECRET || 'aigenda-secret-key',
+  secret: process.env.JWT_SECRET || 'agende-ai-secret-key',
   sign: {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },

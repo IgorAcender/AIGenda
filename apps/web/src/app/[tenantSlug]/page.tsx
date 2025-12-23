@@ -359,7 +359,7 @@ export default async function BarbershopLanding({ params }: LandingPageProps) {
       {/* Footer */}
       <footer className="landing-footer">
         <p className="landing-footer-text">© 2025 {tenant.name}. Todos os direitos reservados.</p>
-        <p className="landing-footer-text">Desenvolvido com ❤️ por Bora Agendar</p>
+        <p className="landing-footer-text">Desenvolvido com ❤️ por Agende AI</p>
       </footer>
     </div>
   );

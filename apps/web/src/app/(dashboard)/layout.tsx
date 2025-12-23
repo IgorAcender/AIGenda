@@ -316,7 +316,7 @@ export default function DashboardLayout({
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                AIGenda
+                Agende AI
               </span>
             )}
           </Link>

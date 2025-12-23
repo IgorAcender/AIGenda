@@ -62,7 +62,7 @@ export default function LoginPage() {
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Title level={2} style={{ color: '#505afb', margin: 0 }}>
-            AIGenda
+            Agende AI
           </Title>
           <Text type="secondary">Faça login para continuar</Text>
         </div>
