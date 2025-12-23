@@ -40,6 +40,9 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./
 
+# Regenerate Prisma client in production stage
+RUN npx prisma generate
+
 # Run migrations and start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
 
