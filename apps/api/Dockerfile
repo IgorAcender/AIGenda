@@ -7,31 +7,29 @@ WORKDIR /app
 
 # Dependencies stage
 FROM base AS deps
-# Copy workspace files
-COPY pnpm-lock.yaml package.json pnpm-workspace.yaml ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/api/prisma ./apps/api/prisma/
+# Copy package files
+COPY package.json ./
+COPY prisma ./prisma/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (without lockfile since we're in a subpackage)
+RUN pnpm install
 
 # Build stage
 FROM base AS builder
-WORKDIR /app/apps/api
-COPY --from=deps /app/node_modules /app/node_modules
-COPY apps/api ./
-RUN cd /app && pnpm --filter api run db:generate
-RUN cd /app && pnpm --filter api run build
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm run db:generate
+RUN pnpm run build
 
 # Production stage
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/prisma ./prisma
-COPY --from=builder /app/apps/api/package.json ./
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./
 
 # Run migrations and start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
