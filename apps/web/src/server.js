@@ -9,21 +9,11 @@ import ejs from 'ejs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// No EasyPanel, precisamos usar a URL interna para comunicação entre containers
-// A variável EASYPANEL_PROJECT existe apenas no EasyPanel
-const isEasyPanel = !!process.env.EASYPANEL_PROJECT
-
-let API_URL
-if (isEasyPanel) {
-  // No EasyPanel, usar URL interna (rede Docker)
-  API_URL = process.env.API_INTERNAL_URL || 'http://api:3001'
-} else {
-  // Local ou outro ambiente
-  API_URL = process.env.API_URL || 'http://localhost:3001'
-}
+// Usar API_URL configurada no EasyPanel
+// Se não tiver, usar localhost para desenvolvimento local
+const API_URL = process.env.API_URL || 'http://localhost:3001'
 
 console.log('🔧 Configuração do Frontend HTMX:')
-console.log('   Ambiente:', isEasyPanel ? 'EasyPanel' : 'Local')
 console.log('   API_URL:', API_URL)
 console.log('   NODE_ENV:', process.env.NODE_ENV)
 console.log('   PORT:', process.env.PORT || 3000)
