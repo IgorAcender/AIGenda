@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
+import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const professionalSchema = z.object({
   name: z.string().min(2),
@@ -22,6 +23,13 @@ export async function professionalRoutes(app: FastifyInstance) {
   app.get('/', async (request: any) => {
     const { tenantId } = request.user
     const { search, active } = request.query as any
+
+    // Tentar cache primeiro (só se não tiver busca)
+    const cacheKey = `professionals:${tenantId}:${active || 'all'}`
+    if (!search) {
+      const cached = await cacheGet<any>(cacheKey)
+      if (cached) return cached
+    }
 
     const where: any = { tenantId }
     
@@ -49,7 +57,14 @@ export async function professionalRoutes(app: FastifyInstance) {
       },
     })
 
-    return { data: professionals }
+    const result = { data: professionals }
+
+    // Salvar no cache (5 minutos)
+    if (!search) {
+      await cacheSet(cacheKey, result, 300)
+    }
+
+    return result
   })
 
   // Buscar profissional por ID

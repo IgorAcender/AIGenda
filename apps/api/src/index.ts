@@ -12,6 +12,7 @@ import { publicBookingRoutes } from './routes/public-bookings'
 import { transactionRoutes } from './routes/transactions'
 import { dashboardRoutes } from './routes/dashboard'
 import { tenantRoutes } from './routes/tenants'
+import { isRedisAvailable } from './lib/redis'
 
 const app = Fastify({
   logger: true,
@@ -60,7 +61,11 @@ app.decorate('authenticate', async function (request: any, reply: any) {
 
 // Health check
 app.get('/health', async () => {
-  return { status: 'ok', timestamp: new Date().toISOString() }
+  return { 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    redis: isRedisAvailable() ? 'connected' : 'disconnected'
+  }
 })
 
 // Routes

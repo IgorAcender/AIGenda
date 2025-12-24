@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
+import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const clientSchema = z.object({
   name: z.string().min(2),
@@ -25,6 +26,13 @@ export async function clientRoutes(app: FastifyInstance) {
     const pageNum = parseInt(page, 10)
     const limitNum = parseInt(limit, 10)
 
+    // Tentar cache primeiro (só se não tiver busca)
+    const cacheKey = `clients:${tenantId}:${page}:${limit}`
+    if (!search) {
+      const cached = await cacheGet<any>(cacheKey)
+      if (cached) return cached
+    }
+
     const where: any = { tenantId }
     
     if (search) {
@@ -45,7 +53,7 @@ export async function clientRoutes(app: FastifyInstance) {
       prisma.client.count({ where }),
     ])
 
-    return {
+    const result = {
       data: clients,
       pagination: {
         page: pageNum,
@@ -54,6 +62,13 @@ export async function clientRoutes(app: FastifyInstance) {
         pages: Math.ceil(total / limitNum),
       },
     }
+
+    // Salvar no cache (5 minutos)
+    if (!search) {
+      await cacheSet(cacheKey, result, 300)
+    }
+
+    return result
   })
 
   // Buscar cliente por ID
@@ -109,6 +124,9 @@ export async function clientRoutes(app: FastifyInstance) {
         },
       })
 
+      // Invalidar cache
+      await cacheDeletePattern(`clients:${tenantId}:*`)
+
       return reply.status(201).send(client)
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -141,6 +159,9 @@ export async function clientRoutes(app: FastifyInstance) {
         },
       })
 
+      // Invalidar cache
+      await cacheDeletePattern(`clients:${tenantId}:*`)
+
       return client
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -167,6 +188,9 @@ export async function clientRoutes(app: FastifyInstance) {
       where: { id },
       data: { active: false },
     })
+
+    // Invalidar cache
+    await cacheDeletePattern(`clients:${tenantId}:*`)
 
     return { message: 'Cliente desativado com sucesso' }
   })

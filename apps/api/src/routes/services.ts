@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
+import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const serviceSchema = z.object({
   name: z.string().min(2),
@@ -18,6 +19,13 @@ export async function serviceRoutes(app: FastifyInstance) {
   app.get('/', async (request: any) => {
     const { tenantId } = request.user
     const { search, category, active } = request.query as any
+
+    // Tentar cache primeiro (só se não tiver busca)
+    const cacheKey = `services:${tenantId}:${active || 'all'}`
+    if (!search && !category) {
+      const cached = await cacheGet<any>(cacheKey)
+      if (cached) return cached
+    }
 
     const where: any = { tenantId }
     
@@ -43,7 +51,14 @@ export async function serviceRoutes(app: FastifyInstance) {
       },
     })
 
-    return { data: services }
+    const result = { data: services }
+
+    // Salvar no cache (5 minutos)
+    if (!search && !category) {
+      await cacheSet(cacheKey, result, 300)
+    }
+
+    return result
   })
 
   // Buscar serviço por ID
