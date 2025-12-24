@@ -1,0 +1,394 @@
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
+import { Calendar, Star, MapPin, Phone, Clock, ChevronRight } from 'lucide-react';
+import { ScrollButton } from '@/components/ScrollButton';
+
+interface LandingPageProps {
+  params: Promise<{
+    tenantSlug: string;
+  }>;
+}
+
+interface TenantData {
+  data: {
+    tenant: {
+      id: string;
+      name: string;
+      slug: string;
+      description: string;
+      phone: string;
+      email: string;
+      address: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      website?: string;
+      instagram?: string;
+      facebook?: string;
+      whatsapp?: string;
+      logo?: string;
+      banner?: string;
+      theme?: string;
+    };
+    services: Array<{
+      id: string;
+      name: string;
+      description: string;
+      duration: number;
+      price: number;
+      category: {
+        id: string;
+        name: string;
+      };
+    }>;
+    categories: Array<{
+      id: string;
+      name: string;
+      description: string;
+    }>;
+    professionals: Array<{
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+      avatar?: string;
+    }>;
+  };
+}
+
+export default async function BarbershopLanding({ params }: LandingPageProps) {
+  const { tenantSlug } = await params;
+
+  // Buscar dados do tenant da API
+  let landingData: TenantData | null = null;
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const response = await fetch(`${apiUrl}/${tenantSlug}`, {
+      next: { revalidate: 3600 }, // Cache por 1 hora
+    });
+
+    if (response.ok) {
+      landingData = await response.json();
+    }
+  } catch (error) {
+    console.error('Erro ao buscar dados do tenant:', error);
+  }
+
+  // Se não conseguiu dados, redireciona
+  if (!landingData) {
+    redirect('/');
+  }
+
+  const tenant = landingData.data.tenant;
+  const services = landingData.data.services;
+  const professionals = landingData.data.professionals;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white overflow-x-hidden">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-slate-950/80 backdrop-blur-xl z-50 border-b border-slate-800/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+          <div className="flex items-center gap-3">
+            {tenant.logo ? (
+              <img src={tenant.logo} alt={tenant.name} className="h-8 w-8 rounded-full object-cover" />
+            ) : (
+              <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center font-bold text-sm">
+                ✂️
+              </div>
+            )}
+            <span className="text-lg font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">{tenant.name}</span>
+          </div>
+          <Link
+            href={`/agendar/${tenantSlug}`}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-6 py-2 rounded-lg font-semibold transition transform hover:scale-105 shadow-lg hover:shadow-amber-500/50"
+          >
+            Agendar Agora
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h1 className="text-6xl md:text-7xl font-black bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent leading-tight">
+                  {tenant.name}
+                </h1>
+                <p className="text-xl text-slate-300">
+                  Agendamentos online facilitados ✨
+                </p>
+              </div>
+
+              <p className="text-lg text-slate-400 leading-relaxed max-w-lg">
+                {tenant.description || 'Confira nossa página e agende seu horário de forma rápida e fácil! Profissionais experientes à sua espera.'}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Link
+                  href={`/agendar/${tenantSlug}`}
+                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition transform hover:scale-105 shadow-xl hover:shadow-amber-500/50"
+                >
+                  <Calendar size={24} />
+                  Agendar Agora
+                </Link>
+                <ScrollButton />
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-8 border-t border-slate-800">
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <p className="text-3xl font-bold text-amber-400">{professionals.length}</p>
+                  <p className="text-slate-400 text-sm mt-1">Profissionais</p>
+                </div>
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <p className="text-3xl font-bold text-amber-400">{services.length}</p>
+                  <p className="text-slate-400 text-sm mt-1">Serviços</p>
+                </div>
+                <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
+                  <p className="text-3xl font-bold text-amber-400">5</p>
+                  <p className="text-slate-400 text-sm mt-1">⭐ Avaliação</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Image */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-amber-600/10 rounded-3xl blur-3xl" />
+              <div className="relative aspect-square bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl flex items-center justify-center border border-amber-500/30 overflow-hidden">
+                {tenant.banner ? (
+                  <img src={tenant.banner} alt={tenant.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center space-y-6">
+                    <div className="text-7xl">💈</div>
+                    <p className="text-2xl font-bold text-slate-300">{tenant.name}</p>
+                    <p className="text-slate-400">Agendamento Online</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-slate-800/30 px-4 sm:px-6 lg:px-8 border-y border-slate-800/50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-5xl font-bold text-center mb-16">
+            Por que escolher a gente?
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/60 group">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                <Calendar className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Agendamento Online</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Escolha seu horário com facilidade em qualquer hora do dia
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/60 group">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                <Clock className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Atendimento Rápido</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Profissionais experientes que respeitam seu tempo
+              </p>
+            </div>
+
+            <div className="p-8 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/60 group">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                <Star className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Qualidade Garantida</h3>
+              <p className="text-slate-400 leading-relaxed">
+                Técnicas modernas e produtos de alta qualidade
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section id="services" className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4">Nossos Serviços</h2>
+            <p className="text-xl text-slate-400">Confira todas as opções disponíveis</p>
+          </div>
+
+          {services.length > 0 ? (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {services.map((service) => (
+                  <div
+                    key={service.id}
+                    className="group p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/70 hover:shadow-xl hover:shadow-amber-500/10"
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition">{service.name}</h3>
+                      {service.category && (
+                        <span className="text-xs bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full font-semibold">
+                          {service.category.name}
+                        </span>
+                      )}
+                    </div>
+                    {service.description && (
+                      <p className="text-slate-400 text-sm mb-4 leading-relaxed">{service.description}</p>
+                    )}
+                    <div className="flex justify-between items-center pt-4 border-t border-slate-700/50">
+                      <p className="text-amber-400 text-3xl font-bold">
+                        R$ {service.price.toFixed(2)}
+                      </p>
+                      <span className="text-slate-400 text-sm font-medium">{service.duration}min</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <p className="text-slate-300 mb-6 text-lg">
+                  Interessado em algum serviço? Clique abaixo para agendar!
+                </p>
+                <Link
+                  href={`/agendar/${tenantSlug}`}
+                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-2 transition transform hover:scale-105 shadow-xl hover:shadow-amber-500/50"
+                >
+                  Agendar Serviço
+                  <ChevronRight size={20} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-slate-400 text-lg">Nenhum serviço disponível no momento</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-20 bg-slate-800/30 px-4 sm:px-6 lg:px-8 border-y border-slate-800/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold mb-4">Entre em Contato</h2>
+            <p className="text-xl text-slate-400">Estamos aqui para ajudar</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="group p-8 text-center bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/70">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                <MapPin className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Localização</h3>
+              <p className="text-slate-400 leading-relaxed">
+                {tenant.address && (
+                  <>
+                    {tenant.address}<br />
+                  </>
+                )}
+                {tenant.city && tenant.state && (
+                  <>
+                    {tenant.city}, {tenant.state}<br />
+                  </>
+                )}
+                {tenant.zipCode && <span>CEP {tenant.zipCode}</span>}
+              </p>
+            </div>
+
+            <div className="group p-8 text-center bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/70">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                <Phone className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Telefone</h3>
+              <p className="text-slate-400">
+                {tenant.whatsapp ? (
+                  <a 
+                    href={`https://wa.me/${tenant.whatsapp.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-amber-400 transition font-semibold"
+                  >
+                    {tenant.whatsapp}
+                  </a>
+                ) : tenant.phone ? (
+                  <a href={`tel:${tenant.phone}`} className="hover:text-amber-400 transition font-semibold">
+                    {tenant.phone}
+                  </a>
+                ) : (
+                  <span>Não informado</span>
+                )}
+              </p>
+            </div>
+
+            <div className="group p-8 text-center bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-2xl border border-slate-700/50 hover:border-amber-500/50 transition hover:bg-slate-800/70">
+              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition">
+                <Clock className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Horários</h3>
+              <p className="text-slate-400">
+                Consulte nosso calendário<br />
+                de disponibilidade<br />
+                ao agendar seu horário
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-5xl font-bold">
+              Pronto para seu novo visual? ✨
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Agora é fácil! Agende seu horário em poucos cliques e aproveite a melhor experiência
+            </p>
+          </div>
+          <Link
+            href={`/agendar/${tenantSlug}`}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 px-10 py-4 rounded-xl font-bold text-lg transition transform hover:scale-105 inline-flex items-center gap-2 shadow-xl hover:shadow-amber-500/50"
+          >
+            <Calendar size={24} />
+            Agendar Agora
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-950/50 border-t border-slate-800/50 py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h3 className="text-xl font-bold text-amber-400 mb-4">{tenant.name}</h3>
+              <p className="text-slate-400">
+                {tenant.description || 'Seu agendamento de forma rápida, fácil e segura.'}
+              </p>
+            </div>
+            <div className="md:text-right">
+              <h4 className="text-sm font-semibold text-slate-300 mb-3">Links Rápidos</h4>
+              <div className="space-y-2">
+                <Link href={`/agendar/${tenantSlug}`} className="block text-slate-400 hover:text-amber-400 transition">
+                  Agendar
+                </Link>
+                <a href="#services" className="block text-slate-400 hover:text-amber-400 transition">
+                  Serviços
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-slate-800/50 pt-8 text-center text-slate-500 text-sm">
+            <p>© 2025 {tenant.name}. Todos os direitos reservados.</p>
+            <p className="mt-2">Desenvolvido com ❤️ para sua melhor experiência</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
