@@ -9,9 +9,20 @@ import ejs from 'ejs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// API_URL - Configure no EasyPanel como URL interna: http://api:3001
-// ou use a variável de ambiente que já existe
-const API_URL = process.env.API_URL || 'http://localhost:3001'
+// Para HTMX SSR, precisamos de URL interna do Docker
+// Configure API_URL no EasyPanel como: http://robo_de_agendamento_agendeai_api:3001
+// Fallback para NEXT_PUBLIC_API_URL (sem https) ou localhost
+let API_URL = process.env.API_URL
+
+if (!API_URL && process.env.NEXT_PUBLIC_API_URL) {
+  // Tentar converter URL pública para interna
+  // https://api-agendeai.ivhjcm.easypanel.host -> http://robo_de_agendamento_agendeai_api:3001
+  API_URL = 'http://robo_de_agendamento_agendeai_api:3001'
+}
+
+if (!API_URL) {
+  API_URL = 'http://localhost:3001'
+}
 
 console.log('════════════════════════════════════════')
 console.log('🔧 Frontend HTMX - Agende AI')
