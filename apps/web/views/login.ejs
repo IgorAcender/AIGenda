@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="/public/login.js" defer></script>
   <style>
     * { font-family: 'Poppins', sans-serif; }
     .htmx-request .htmx-indicator { display: inline-block; }
@@ -63,9 +62,9 @@
       <form 
         hx-post="/api/login"
         hx-indicator=".htmx-indicator"
-        hx-headers='{"Content-Type": "application/json"}'
-        hx-encoding="json"
+        hx-on="htmx:responseError: handleLoginError(event)"
         class="space-y-5"
+        id="login-form"
       >
         <!-- Email -->
         <div>
@@ -141,6 +140,7 @@
     </p>
   </div>
 
+  <script src="/public/login.js" defer></script>
   <script>
     function togglePassword() {
       const password = document.getElementById('password');
