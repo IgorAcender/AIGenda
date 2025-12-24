@@ -49,7 +49,7 @@ export function OptimizedClientsList() {
         return await api.post('/api/clients', clientData)
       }
     },
-    [['clients', 'page', page]] // Invalidar este query após salvar
+    [['clients', 'page', String(page)]] // Invalidar este query após salvar
   )
 
   // Mutation para deletar cliente
@@ -57,7 +57,7 @@ export function OptimizedClientsList() {
     async (clientId: string) => {
       return await api.delete(`/api/clients/${clientId}`)
     },
-    [['clients', 'page', page]]
+    [['clients', 'page', String(page)]]
   )
 
   const columns: ColumnsType<Client> = [
