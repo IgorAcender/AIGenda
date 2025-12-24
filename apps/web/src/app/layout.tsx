@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { AntdRegistry } from '@ant-design/nextjs-registry'
 import { ConfigProvider } from 'antd'
 import ptBR from 'antd/locale/pt_BR'
+import { QueryProvider } from '@/providers/QueryProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body>
         <AntdRegistry>
           <ConfigProvider locale={ptBR} theme={theme}>
-            {children}
+            <QueryProvider>
+              {children}
+            </QueryProvider>
           </ConfigProvider>
         </AntdRegistry>
       </body>
