@@ -1,97 +1,192 @@
-<!-- Configurações -->
-<div class="space-y-6">
-  <!-- Dados da Empresa -->
-  <div class="card">
-    <div class="p-4 border-b">
-      <h3 class="text-lg font-semibold text-gray-800">Dados da Empresa</h3>
-    </div>
-    <form hx-put="/api/tenant/settings" hx-target="#toast-container" class="p-4 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa</label>
-          <input type="text" name="name" value="<%= tenant?.name || '' %>"
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Slug (URL)</label>
-          <input type="text" name="slug" value="<%= tenant?.slug || '' %>" disabled
-            class="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-500"/>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
-          <input type="tel" name="phone" value="<%= tenant?.phone || '' %>"
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" name="email" value="<%= tenant?.email || '' %>"
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-        </div>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
-        <input type="text" name="address" value="<%= tenant?.address || '' %>"
-          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-      </div>
-      <button type="submit" class="btn-primary">Salvar Alterações</button>
-    </form>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">
+      <i class="fas fa-cog text-slate-500 mr-2"></i>Configurações
+    </h1>
+    <p class="text-slate-500 mt-1">Personalize o sistema de acordo com suas necessidades</p>
   </div>
+</div>
 
-  <!-- Horário de Funcionamento -->
-  <div class="card">
-    <div class="p-4 border-b">
-      <h3 class="text-lg font-semibold text-gray-800">Horário de Funcionamento</h3>
-    </div>
-    <form hx-put="/api/tenant/schedule" hx-target="#toast-container" class="p-4 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- Left Column - Settings -->
+  <div class="lg:col-span-2 space-y-6">
+    
+    <!-- Business Info -->
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <h3 class="text-lg font-semibold text-slate-900">
+          <i class="fas fa-building mr-2 text-blue-500"></i>Informações do Negócio
+        </h3>
+      </div>
+      <div class="p-6 space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Abertura</label>
-          <input type="time" name="openTime" value="<%= tenant?.openTime || '09:00' %>"
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Nome do Estabelecimento</label>
+          <input type="text" name="businessName" value="<%= tenant?.name || '' %>"
+                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
+            <input type="tel" name="phone" value="<%= tenant?.phone || '' %>"
+                   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">WhatsApp</label>
+            <input type="tel" name="whatsapp" value="<%= tenant?.whatsapp || '' %>"
+                   class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Fechamento</label>
-          <input type="time" name="closeTime" value="<%= tenant?.closeTime || '18:00' %>"
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          <label class="block text-sm font-medium text-slate-700 mb-2">Endereço</label>
+          <input type="text" name="address" value="<%= tenant?.address || '' %>"
+                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Dias de Funcionamento</label>
-        <div class="flex flex-wrap gap-2">
-          <% ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].forEach((day, i) => { %>
-            <label class="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-              <input type="checkbox" name="workDays" value="<%= i %>" 
-                <%= tenant?.workDays?.includes(i) ? 'checked' : '' %> class="rounded"/>
-              <span class="text-sm"><%= day %></span>
-            </label>
+    </div>
+
+    <!-- Business Hours -->
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <h3 class="text-lg font-semibold text-slate-900">
+          <i class="fas fa-clock mr-2 text-green-500"></i>Horário de Funcionamento
+        </h3>
+      </div>
+      <div class="p-6">
+        <div class="space-y-3">
+          <% const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']; %>
+          <% days.forEach((day, index) => { %>
+            <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="day-<%= index %>" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                       <%= (index < 6) ? 'checked' : '' %>>
+                <label for="day-<%= index %>" class="font-medium text-slate-900"><%= day %></label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="time" value="08:00" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm">
+                <span class="text-slate-400">às</span>
+                <input type="time" value="18:00" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm">
+              </div>
+            </div>
           <% }) %>
         </div>
       </div>
-      <button type="submit" class="btn-primary">Salvar Horários</button>
-    </form>
-  </div>
-
-  <!-- Aparência -->
-  <div class="card">
-    <div class="p-4 border-b">
-      <h3 class="text-lg font-semibold text-gray-800">Aparência</h3>
     </div>
-    <form hx-put="/api/tenant/appearance" hx-target="#toast-container" class="p-4 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Cor Principal</label>
-          <input type="color" name="primaryColor" value="<%= tenant?.primaryColor || '#3b82f6' %>"
-            class="w-full h-10 border rounded-lg cursor-pointer"/>
+
+    <!-- Notifications -->
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <h3 class="text-lg font-semibold text-slate-900">
+          <i class="fas fa-bell mr-2 text-yellow-500"></i>Notificações
+        </h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-slate-900">Lembrete de Agendamento</p>
+            <p class="text-sm text-slate-500">Enviar lembrete via WhatsApp antes do horário</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Logo (URL)</label>
-          <input type="url" name="logo" value="<%= tenant?.logo || '' %>" placeholder="https://..."
-            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-slate-900">Confirmação de Agendamento</p>
+            <p class="text-sm text-slate-500">Enviar mensagem quando cliente agendar</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-medium text-slate-900">Notificação de Cancelamento</p>
+            <p class="text-sm text-slate-500">Notificar quando cliente cancelar</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
         </div>
       </div>
-      <button type="submit" class="btn-primary">Salvar Aparência</button>
-    </form>
+    </div>
+  </div>
+
+  <!-- Right Column - Account & Actions -->
+  <div class="space-y-6">
+    
+    <!-- Account Info -->
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <h3 class="text-lg font-semibold text-slate-900">
+          <i class="fas fa-user mr-2 text-purple-500"></i>Minha Conta
+        </h3>
+      </div>
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+            <%= userName?.charAt(0).toUpperCase() || 'U' %>
+          </div>
+          <div>
+            <p class="font-semibold text-slate-900 text-lg"><%= userName || 'Usuário' %></p>
+            <p class="text-sm text-slate-500"><%= userEmail || 'email@exemplo.com' %></p>
+            <span class="badge-success mt-1 inline-block"><%= userRole || 'Admin' %></span>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <button class="w-full btn-secondary flex items-center justify-center gap-2">
+            <i class="fas fa-key"></i> Alterar Senha
+          </button>
+          <button 
+            hx-post="/api/logout"
+            hx-confirm="Tem certeza que deseja sair?"
+            class="w-full btn-danger flex items-center justify-center gap-2">
+            <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-md p-6 text-white">
+      <h4 class="font-semibold mb-2">Salvar Alterações</h4>
+      <p class="text-sm text-blue-100 mb-4">Clique para salvar todas as configurações</p>
+      <button 
+        hx-post="/api/settings"
+        hx-indicator="#save-indicator"
+        class="w-full bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-slate-100 transition flex items-center justify-center gap-2">
+        <span id="save-indicator" class="htmx-indicator">
+          <i class="fas fa-spinner fa-spin"></i>
+        </span>
+        <i class="fas fa-save"></i> Salvar Configurações
+      </button>
+    </div>
+
+    <!-- System Info -->
+    <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
+      <h4 class="font-semibold text-slate-900 mb-4">
+        <i class="fas fa-info-circle text-blue-500 mr-2"></i>Informações do Sistema
+      </h4>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Versão</span>
+          <span class="font-medium text-slate-900">1.0.0 (HTMX)</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Última atualização</span>
+          <span class="font-medium text-slate-900"><%= new Date().toLocaleDateString('pt-BR') %></span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Suporte</span>
+          <a href="mailto:suporte@agendeai.com" class="font-medium text-blue-600 hover:text-blue-700">suporte@agendeai.com</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>

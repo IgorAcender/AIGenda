@@ -1,85 +1,178 @@
-<!-- Transações -->
-<div class="card">
-  <div class="p-4 border-b flex items-center justify-between">
-    <h3 class="text-lg font-semibold text-gray-800">Transações</h3>
-    <div class="flex items-center gap-3">
-      <select name="filter" hx-get="/partials/transacoes" hx-trigger="change" hx-target="#transacoes-table"
-        class="px-3 py-2 border rounded-lg text-sm">
-        <option value="all">Todas</option>
-        <option value="income">Receitas</option>
-        <option value="expense">Despesas</option>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">
+      <i class="fas fa-exchange-alt text-indigo-500 mr-2"></i>Transações
+    </h1>
+    <p class="text-slate-500 mt-1">Histórico de movimentações financeiras</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <button 
+      hx-get="/partials/transacoes/export"
+      class="btn-secondary flex items-center gap-2">
+      <i class="fas fa-download"></i> Exportar
+    </button>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-xl shadow-md border border-slate-100 p-4 mb-6">
+  <div class="flex flex-col md:flex-row gap-4">
+    <div class="flex-1">
+      <label class="block text-sm font-medium text-slate-700 mb-1">Período</label>
+      <div class="flex items-center gap-2">
+        <input type="date" name="dateFrom" value="<%= dateFrom %>" 
+               class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <span class="text-slate-400">até</span>
+        <input type="date" name="dateTo" value="<%= dateTo %>"
+               class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Tipo</label>
+      <select name="type" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="">Todos</option>
+        <option value="in" <%= filterType === 'in' ? 'selected' : '' %>>Entradas</option>
+        <option value="out" <%= filterType === 'out' ? 'selected' : '' %>>Saídas</option>
       </select>
-      <button hx-get="/partials/transacoes/form" hx-target="#modal-container" class="btn-primary flex items-center gap-2">
-        <span>➕</span> Nova Transação
+    </div>
+    <div class="flex items-end">
+      <button 
+        hx-get="/partials/transacoes"
+        hx-include="[name='dateFrom'], [name='dateTo'], [name='type']"
+        hx-target="#main-content"
+        class="btn-primary flex items-center gap-2">
+        <i class="fas fa-filter"></i> Filtrar
       </button>
     </div>
   </div>
+</div>
 
-  <div id="transacoes-table">
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+      <i class="fas fa-arrow-up text-xl"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-green-600">R$ <%= (summary?.totalIn || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2}) %></p>
+      <p class="text-sm text-slate-500">Total Entradas</p>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
+      <i class="fas fa-arrow-down text-xl"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-red-600">R$ <%= (summary?.totalOut || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2}) %></p>
+      <p class="text-sm text-slate-500">Total Saídas</p>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+      <i class="fas fa-balance-scale text-xl"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-bold <%= (summary?.balance || 0) >= 0 ? 'text-green-600' : 'text-red-600' %>">R$ <%= (summary?.balance || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2}) %></p>
+      <p class="text-sm text-slate-500">Saldo</p>
+    </div>
+  </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+  <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
+    <h3 class="text-lg font-semibold text-slate-900">
+      <i class="fas fa-list mr-2 text-blue-500"></i>Lista de Transações
+    </h3>
+  </div>
+  
+  <div class="overflow-x-auto">
     <table class="w-full">
-      <thead class="bg-gray-50">
+      <thead class="bg-slate-50 border-b border-slate-200">
         <tr>
-          <th class="text-left p-4 text-sm font-medium text-gray-600">Data</th>
-          <th class="text-left p-4 text-sm font-medium text-gray-600">Descrição</th>
-          <th class="text-left p-4 text-sm font-medium text-gray-600">Categoria</th>
-          <th class="text-left p-4 text-sm font-medium text-gray-600">Método</th>
-          <th class="text-right p-4 text-sm font-medium text-gray-600">Valor</th>
-          <th class="text-center p-4 text-sm font-medium text-gray-600">Ações</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Data</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Descrição</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Forma Pagto.</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Tipo</th>
+          <th class="text-right px-6 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Valor</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-slate-100">
         <% if (transactions && transactions.length > 0) { %>
           <% transactions.forEach(tx => { %>
-            <tr class="border-b table-row" id="tx-row-<%= tx.id %>">
-              <td class="p-4 text-gray-600"><%= new Date(tx.date).toLocaleDateString('pt-BR') %></td>
-              <td class="p-4 text-gray-800"><%= tx.description %></td>
-              <td class="p-4">
-                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"><%= tx.category %></span>
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-6 py-4 text-sm text-slate-500">
+                <%= new Date(tx.createdAt).toLocaleDateString('pt-BR') %>
+                <span class="text-xs text-slate-400 ml-1"><%= new Date(tx.createdAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) %></span>
               </td>
-              <td class="p-4 text-gray-600">
-                <% if (tx.method === 'PIX') { %>💳 PIX
-                <% } else if (tx.method === 'CASH') { %>💵 Dinheiro
-                <% } else if (tx.method === 'CREDIT') { %>💳 Crédito
-                <% } else if (tx.method === 'DEBIT') { %>💳 Débito
-                <% } else { %><%= tx.method %><% } %>
+              <td class="px-6 py-4">
+                <p class="font-medium text-slate-900"><%= tx.description %></p>
+                <% if (tx.clientName) { %>
+                  <p class="text-xs text-slate-500">Cliente: <%= tx.clientName %></p>
+                <% } %>
               </td>
-              <td class="p-4 text-right font-medium <%= tx.type === 'INCOME' ? 'text-green-600' : 'text-red-600' %>">
-                <%= tx.type === 'INCOME' ? '+' : '-' %> R$ <%= tx.amount.toFixed(2).replace('.', ',') %>
+              <td class="px-6 py-4 text-sm text-slate-600">
+                <span class="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium">
+                  <%= tx.paymentMethod || 'Dinheiro' %>
+                </span>
               </td>
-              <td class="p-4 text-center">
-                <button hx-delete="/api/transactions/<%= tx.id %>" hx-confirm="Excluir transação?"
-                  hx-target="#tx-row-<%= tx.id %>" hx-swap="outerHTML"
-                  class="text-red-500 hover:text-red-700">🗑️</button>
+              <td class="px-6 py-4">
+                <% if (tx.type === 'in' || tx.type === 'INCOME') { %>
+                  <span class="badge-success">Entrada</span>
+                <% } else { %>
+                  <span class="badge-danger">Saída</span>
+                <% } %>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <p class="font-bold <%= (tx.type === 'in' || tx.type === 'INCOME') ? 'text-green-600' : 'text-red-600' %>">
+                  <%= (tx.type === 'in' || tx.type === 'INCOME') ? '+' : '-' %> R$ <%= (tx.amount || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2}) %>
+                </p>
               </td>
             </tr>
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="6" class="p-8 text-center text-gray-500">
-              Nenhuma transação encontrada
+            <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exchange-alt text-3xl text-slate-400"></i>
+              </div>
+              <p class="font-medium">Nenhuma transação encontrada</p>
+              <p class="text-sm mt-1">Ajuste os filtros ou registre uma nova transação</p>
             </td>
           </tr>
         <% } %>
       </tbody>
     </table>
-
-    <!-- Pagination -->
-    <% if (totalPages > 1) { %>
-      <div class="p-4 border-t flex items-center justify-between">
-        <span class="text-sm text-gray-500">Página <%= currentPage %> de <%= totalPages %></span>
-        <div class="flex gap-2">
-          <% if (currentPage > 1) { %>
-            <button hx-get="/partials/transacoes?page=<%= currentPage - 1 %>" hx-target="#transacoes-table"
-              class="px-3 py-1 border rounded hover:bg-gray-50">← Anterior</button>
-          <% } %>
-          <% if (currentPage < totalPages) { %>
-            <button hx-get="/partials/transacoes?page=<%= currentPage + 1 %>" hx-target="#transacoes-table"
-              class="px-3 py-1 border rounded hover:bg-gray-50">Próximo →</button>
-          <% } %>
-        </div>
-      </div>
-    <% } %>
   </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+      <p class="text-sm text-slate-500">
+        Página <strong><%= page %></strong> de <strong><%= totalPages %></strong>
+      </p>
+      <div class="flex items-center gap-2">
+        <% if (page > 1) { %>
+          <button 
+            hx-get="/partials/transacoes?page=<%= page - 1 %>"
+            hx-target="#main-content"
+            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 transition">
+            <i class="fas fa-chevron-left mr-1"></i> Anterior
+          </button>
+        <% } %>
+        <% if (page < totalPages) { %>
+          <button 
+            hx-get="/partials/transacoes?page=<%= page + 1 %>"
+            hx-target="#main-content"
+            class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-100 transition">
+            Próximo <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
 </div>
 
+<!-- Modal Container -->
 <div id="modal-container"></div>
