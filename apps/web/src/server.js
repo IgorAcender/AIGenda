@@ -11,6 +11,11 @@ const __dirname = path.dirname(__filename)
 
 const API_URL = process.env.API_URL || 'http://localhost:3001'
 
+console.log('🔧 Configuração do Frontend HTMX:')
+console.log('   API_URL:', API_URL)
+console.log('   NODE_ENV:', process.env.NODE_ENV)
+console.log('   PORT:', process.env.PORT || 3000)
+
 const app = Fastify({ logger: true })
 
 // Registrar plugins
