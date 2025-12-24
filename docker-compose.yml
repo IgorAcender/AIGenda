@@ -72,7 +72,8 @@ services:
     container_name: agende-ai-web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://api:3001
+      # Deixar vazio para usar a mesma origem automaticamente
+      NEXT_PUBLIC_API_URL: 
     ports:
       - "3000:3000"
     depends_on:

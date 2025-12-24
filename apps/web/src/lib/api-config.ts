@@ -11,5 +11,13 @@ export function getApiUrl(): string {
   
   // Client-side - usa o hostname atual para funcionar em qualquer IP
   const hostname = window.location.hostname;
-  return process.env.NEXT_PUBLIC_API_URL || `http://${hostname}:3001`;
+  const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+  
+  // Se NEXT_PUBLIC_API_URL está definido, usa ele
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Caso contrário, constrói a URL baseado no protocolo atual
+  return `${protocol}://${hostname}:3001`;
 }
