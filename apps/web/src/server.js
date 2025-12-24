@@ -279,10 +279,10 @@ async function getPageData(token, page, query = {}) {
     case 'dashboard':
       try {
         const [stats, appointments] = await Promise.all([
-          apiRequest(token, '/api/dashboard/stats').catch(() => ({})),
+          apiRequest(token, '/api/dashboard').catch(() => ({ stats: {} })),
           apiRequest(token, `/api/appointments?date=${today}`).catch(() => ({ data: [] })),
         ])
-        return { stats, appointments: appointments.data || [] }
+        return { stats: stats.stats || stats, appointments: appointments.data || [] }
       } catch {
         return { stats: {}, appointments: [] }
       }
@@ -370,7 +370,7 @@ async function getPageData(token, page, query = {}) {
 
     case 'configuracoes':
       try {
-        const tenant = await apiRequest(token, '/api/tenant').catch(() => ({}))
+        const tenant = await apiRequest(token, '/api/tenants/me').catch(() => ({}))
         return { tenant }
       } catch {
         return { tenant: {} }
