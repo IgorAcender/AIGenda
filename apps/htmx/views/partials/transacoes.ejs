@@ -1,0 +1,85 @@
+<!-- Transações -->
+<div class="card">
+  <div class="p-4 border-b flex items-center justify-between">
+    <h3 class="text-lg font-semibold text-gray-800">Transações</h3>
+    <div class="flex items-center gap-3">
+      <select name="filter" hx-get="/partials/transacoes" hx-trigger="change" hx-target="#transacoes-table"
+        class="px-3 py-2 border rounded-lg text-sm">
+        <option value="all">Todas</option>
+        <option value="income">Receitas</option>
+        <option value="expense">Despesas</option>
+      </select>
+      <button hx-get="/partials/transacoes/form" hx-target="#modal-container" class="btn-primary flex items-center gap-2">
+        <span>➕</span> Nova Transação
+      </button>
+    </div>
+  </div>
+
+  <div id="transacoes-table">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Data</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Descrição</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Categoria</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Método</th>
+          <th class="text-right p-4 text-sm font-medium text-gray-600">Valor</th>
+          <th class="text-center p-4 text-sm font-medium text-gray-600">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (transactions && transactions.length > 0) { %>
+          <% transactions.forEach(tx => { %>
+            <tr class="border-b table-row" id="tx-row-<%= tx.id %>">
+              <td class="p-4 text-gray-600"><%= new Date(tx.date).toLocaleDateString('pt-BR') %></td>
+              <td class="p-4 text-gray-800"><%= tx.description %></td>
+              <td class="p-4">
+                <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"><%= tx.category %></span>
+              </td>
+              <td class="p-4 text-gray-600">
+                <% if (tx.method === 'PIX') { %>💳 PIX
+                <% } else if (tx.method === 'CASH') { %>💵 Dinheiro
+                <% } else if (tx.method === 'CREDIT') { %>💳 Crédito
+                <% } else if (tx.method === 'DEBIT') { %>💳 Débito
+                <% } else { %><%= tx.method %><% } %>
+              </td>
+              <td class="p-4 text-right font-medium <%= tx.type === 'INCOME' ? 'text-green-600' : 'text-red-600' %>">
+                <%= tx.type === 'INCOME' ? '+' : '-' %> R$ <%= tx.amount.toFixed(2).replace('.', ',') %>
+              </td>
+              <td class="p-4 text-center">
+                <button hx-delete="/api/transactions/<%= tx.id %>" hx-confirm="Excluir transação?"
+                  hx-target="#tx-row-<%= tx.id %>" hx-swap="outerHTML"
+                  class="text-red-500 hover:text-red-700">🗑️</button>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6" class="p-8 text-center text-gray-500">
+              Nenhuma transação encontrada
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="p-4 border-t flex items-center justify-between">
+        <span class="text-sm text-gray-500">Página <%= currentPage %> de <%= totalPages %></span>
+        <div class="flex gap-2">
+          <% if (currentPage > 1) { %>
+            <button hx-get="/partials/transacoes?page=<%= currentPage - 1 %>" hx-target="#transacoes-table"
+              class="px-3 py-1 border rounded hover:bg-gray-50">← Anterior</button>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <button hx-get="/partials/transacoes?page=<%= currentPage + 1 %>" hx-target="#transacoes-table"
+              class="px-3 py-1 border rounded hover:bg-gray-50">Próximo →</button>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<div id="modal-container"></div>

@@ -1,0 +1,109 @@
+<!-- Profissionais List -->
+<div class="card">
+  <!-- Header -->
+  <div class="p-4 border-b flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <h3 class="text-lg font-semibold text-gray-800">Profissionais</h3>
+      <span class="text-sm text-gray-500">(<%= total || 0 %> registros)</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <input 
+        type="text" 
+        name="search"
+        placeholder="Buscar profissional..."
+        hx-get="/partials/profissionais"
+        hx-trigger="keyup changed delay:300ms"
+        hx-target="#profissionais-table"
+        hx-include="[name='search']"
+        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button 
+        hx-get="/partials/profissionais/form"
+        hx-target="#modal-container"
+        class="btn-primary flex items-center gap-2">
+        <span>➕</span> Novo Profissional
+      </button>
+    </div>
+  </div>
+
+  <!-- Grid View -->
+  <div id="profissionais-table" class="p-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% if (professionals && professionals.length > 0) { %>
+        <% professionals.forEach(prof => { %>
+          <div class="card p-4 hover:shadow-md transition-shadow" id="prof-card-<%= prof.id %>">
+            <div class="flex items-start gap-4">
+              <!-- Avatar -->
+              <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                <span class="text-white text-2xl font-semibold"><%= prof.name?.charAt(0).toUpperCase() %></span>
+              </div>
+              
+              <!-- Info -->
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-800"><%= prof.name %></h4>
+                <p class="text-sm text-gray-500"><%= prof.speciality || 'Profissional' %></p>
+                
+                <!-- Status -->
+                <div class="mt-2 flex items-center gap-2">
+                  <% if (prof.active) { %>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Ativo</span>
+                  <% } else { %>
+                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Inativo</span>
+                  <% } %>
+                  <% if (prof.commissionRate) { %>
+                    <span class="text-xs text-gray-500"><%= prof.commissionRate %>% comissão</span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Contact -->
+            <div class="mt-4 pt-4 border-t space-y-2">
+              <% if (prof.phone) { %>
+                <a href="tel:<%= prof.phone %>" class="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500">
+                  📱 <%= prof.phone %>
+                </a>
+              <% } %>
+              <% if (prof.email) { %>
+                <a href="mailto:<%= prof.email %>" class="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500">
+                  ✉️ <%= prof.email %>
+                </a>
+              <% } %>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-4 pt-4 border-t flex gap-2">
+              <button 
+                hx-get="/partials/profissionais/form?id=<%= prof.id %>"
+                hx-target="#modal-container"
+                class="flex-1 px-3 py-2 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-50">
+                ✏️ Editar
+              </button>
+              <button 
+                hx-delete="/api/professionals/<%= prof.id %>"
+                hx-confirm="Excluir <%= prof.name %>?"
+                hx-target="#prof-card-<%= prof.id %>"
+                hx-swap="outerHTML"
+                class="px-3 py-2 text-sm text-red-500 border border-red-500 rounded hover:bg-red-50">
+                🗑️
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="col-span-full text-center py-12 text-gray-500">
+          <p class="text-4xl mb-2">👨‍💼</p>
+          <p>Nenhum profissional cadastrado</p>
+          <button 
+            hx-get="/partials/profissionais/form"
+            hx-target="#modal-container"
+            class="mt-4 btn-primary">
+            Cadastrar primeiro profissional
+          </button>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div id="modal-container"></div>

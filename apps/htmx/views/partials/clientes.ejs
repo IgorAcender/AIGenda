@@ -1,0 +1,140 @@
+<!-- Clientes List -->
+<div class="card">
+  <!-- Header -->
+  <div class="p-4 border-b flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <h3 class="text-lg font-semibold text-gray-800">Clientes</h3>
+      <span class="text-sm text-gray-500">(<%= total || 0 %> registros)</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Search -->
+      <input 
+        type="text" 
+        name="search"
+        placeholder="Buscar cliente..."
+        hx-get="/partials/clientes"
+        hx-trigger="keyup changed delay:300ms"
+        hx-target="#clientes-table"
+        hx-include="[name='search']"
+        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <!-- New Button -->
+      <button 
+        hx-get="/partials/clientes/form"
+        hx-target="#modal-container"
+        class="btn-primary flex items-center gap-2">
+        <span>➕</span> Novo Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div id="clientes-table">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Nome</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Telefone</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Email</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Última Visita</th>
+          <th class="text-center p-4 text-sm font-medium text-gray-600">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (clients && clients.length > 0) { %>
+          <% clients.forEach(client => { %>
+            <tr class="table-row border-b" id="client-row-<%= client.id %>">
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span class="text-blue-600 font-semibold"><%= client.name?.charAt(0).toUpperCase() %></span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800"><%= client.name %></p>
+                    <% if (client.birthDate) { %>
+                      <p class="text-xs text-gray-500">🎂 <%= new Date(client.birthDate).toLocaleDateString('pt-BR') %></p>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <td class="p-4">
+                <a href="https://wa.me/55<%= client.phone?.replace(/\D/g, '') %>" 
+                   target="_blank"
+                   class="text-green-600 hover:underline flex items-center gap-1">
+                  📱 <%= client.phone || '-' %>
+                </a>
+              </td>
+              <td class="p-4 text-gray-600"><%= client.email || '-' %></td>
+              <td class="p-4 text-gray-500 text-sm">
+                <%= client.lastVisit ? new Date(client.lastVisit).toLocaleDateString('pt-BR') : 'Nunca' %>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center justify-center gap-2">
+                  <button 
+                    hx-get="/partials/clientes/form?id=<%= client.id %>"
+                    hx-target="#modal-container"
+                    class="p-2 text-blue-500 hover:bg-blue-50 rounded"
+                    title="Editar">
+                    ✏️
+                  </button>
+                  <button 
+                    hx-delete="/api/clients/<%= client.id %>"
+                    hx-confirm="Tem certeza que deseja excluir <%= client.name %>?"
+                    hx-target="#client-row-<%= client.id %>"
+                    hx-swap="outerHTML"
+                    class="p-2 text-red-500 hover:bg-red-50 rounded"
+                    title="Excluir">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="5" class="p-8 text-center text-gray-500">
+              <p class="text-4xl mb-2">👤</p>
+              <p>Nenhum cliente cadastrado</p>
+              <button 
+                hx-get="/partials/clientes/form"
+                hx-target="#modal-container"
+                class="mt-4 btn-primary">
+                Cadastrar primeiro cliente
+              </button>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <% if (totalPages > 1) { %>
+      <div class="p-4 border-t flex items-center justify-between">
+        <span class="text-sm text-gray-500">
+          Página <%= currentPage %> de <%= totalPages %>
+        </span>
+        <div class="flex gap-2">
+          <% if (currentPage > 1) { %>
+            <button 
+              hx-get="/partials/clientes?page=<%= currentPage - 1 %>"
+              hx-target="#clientes-table"
+              class="px-3 py-1 border rounded hover:bg-gray-50">
+              ← Anterior
+            </button>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <button 
+              hx-get="/partials/clientes?page=<%= currentPage + 1 %>"
+              hx-target="#clientes-table"
+              class="px-3 py-1 border rounded hover:bg-gray-50">
+              Próximo →
+            </button>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>

@@ -1,0 +1,62 @@
+<!-- Modal de Serviço -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="service-modal">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div class="p-4 border-b flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <%= service ? 'Editar Serviço' : 'Novo Serviço' %>
+      </h3>
+      <button onclick="document.getElementById('service-modal').remove()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+    </div>
+
+    <form 
+      hx-<%= service ? 'put' : 'post' %>="/api/services<%= service ? '/' + service.id : '' %>"
+      hx-target="#servicos-table"
+      hx-swap="innerHTML"
+      hx-on::after-request="if(event.detail.successful) document.getElementById('service-modal').remove()"
+      class="p-4 space-y-4">
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Serviço *</label>
+        <input type="text" name="name" value="<%= service?.name || '' %>" required
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: Corte de Cabelo"/>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+        <textarea name="description" rows="2"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Descrição do serviço..."><%= service?.description || '' %></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Preço (R$) *</label>
+          <input type="number" name="price" value="<%= service?.price || '' %>" required step="0.01" min="0"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="50.00"/>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Duração (min) *</label>
+          <input type="number" name="duration" value="<%= service?.duration || 30 %>" required min="5" step="5"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cor</label>
+        <input type="color" name="color" value="<%= service?.color || '#3b82f6' %>"
+          class="w-full h-10 border rounded-lg cursor-pointer"/>
+      </div>
+
+      <div>
+        <label class="flex items-center gap-2">
+          <input type="checkbox" name="active" <%= service?.active !== false ? 'checked' : '' %> class="rounded"/>
+          <span class="text-sm text-gray-700">Serviço ativo</span>
+        </label>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="document.getElementById('service-modal').remove()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+        <button type="submit" class="flex-1 btn-primary"><%= service ? 'Salvar' : 'Cadastrar' %></button>
+      </div>
+    </form>
+  </div>
+</div>

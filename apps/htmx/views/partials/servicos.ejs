@@ -1,0 +1,91 @@
+<!-- Serviços List -->
+<div class="card">
+  <div class="p-4 border-b flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <h3 class="text-lg font-semibold text-gray-800">Serviços</h3>
+      <span class="text-sm text-gray-500">(<%= total || 0 %> registros)</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <input type="text" name="search" placeholder="Buscar serviço..."
+        hx-get="/partials/servicos" hx-trigger="keyup changed delay:300ms" hx-target="#servicos-table"
+        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+      <button hx-get="/partials/servicos/form" hx-target="#modal-container" class="btn-primary flex items-center gap-2">
+        <span>➕</span> Novo Serviço
+      </button>
+    </div>
+  </div>
+
+  <div id="servicos-table">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Serviço</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Duração</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Preço</th>
+          <th class="text-center p-4 text-sm font-medium text-gray-600">Status</th>
+          <th class="text-center p-4 text-sm font-medium text-gray-600">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (services && services.length > 0) { %>
+          <% services.forEach(service => { %>
+            <tr class="table-row border-b" id="service-row-<%= service.id %>">
+              <td class="p-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg flex items-center justify-center" 
+                       style="background: <%= service.color || '#3b82f6' %>20">
+                    <span style="color: <%= service.color || '#3b82f6' %>">💇</span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800"><%= service.name %></p>
+                    <% if (service.description) { %>
+                      <p class="text-xs text-gray-500"><%= service.description.substring(0, 50) %>...</p>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <td class="p-4 text-gray-600">
+                <span class="flex items-center gap-1">
+                  ⏱️ <%= service.duration || 30 %> min
+                </span>
+              </td>
+              <td class="p-4">
+                <span class="font-semibold text-green-600">
+                  R$ <%= service.price?.toFixed(2).replace('.', ',') || '0,00' %>
+                </span>
+              </td>
+              <td class="p-4 text-center">
+                <% if (service.active) { %>
+                  <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Ativo</span>
+                <% } else { %>
+                  <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Inativo</span>
+                <% } %>
+              </td>
+              <td class="p-4">
+                <div class="flex items-center justify-center gap-2">
+                  <button hx-get="/partials/servicos/form?id=<%= service.id %>" hx-target="#modal-container"
+                    class="p-2 text-blue-500 hover:bg-blue-50 rounded" title="Editar">✏️</button>
+                  <button hx-delete="/api/services/<%= service.id %>" hx-confirm="Excluir <%= service.name %>?"
+                    hx-target="#service-row-<%= service.id %>" hx-swap="outerHTML"
+                    class="p-2 text-red-500 hover:bg-red-50 rounded" title="Excluir">🗑️</button>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="5" class="p-8 text-center text-gray-500">
+              <p class="text-4xl mb-2">💇</p>
+              <p>Nenhum serviço cadastrado</p>
+              <button hx-get="/partials/servicos/form" hx-target="#modal-container" class="mt-4 btn-primary">
+                Cadastrar primeiro serviço
+              </button>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="modal-container"></div>

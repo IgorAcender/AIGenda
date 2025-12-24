@@ -1,0 +1,134 @@
+<!-- Dashboard Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  <!-- Agendamentos Hoje -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Agendamentos Hoje</p>
+        <p class="text-2xl font-bold text-gray-800"><%= stats?.appointmentsToday || 0 %></p>
+      </div>
+      <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+        <span class="text-2xl">📅</span>
+      </div>
+    </div>
+    <p class="text-xs text-green-500 mt-2">↗ +12% vs ontem</p>
+  </div>
+
+  <!-- Clientes -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Total de Clientes</p>
+        <p class="text-2xl font-bold text-gray-800"><%= stats?.totalClients || 0 %></p>
+      </div>
+      <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+        <span class="text-2xl">👤</span>
+      </div>
+    </div>
+    <p class="text-xs text-green-500 mt-2">↗ +5 este mês</p>
+  </div>
+
+  <!-- Faturamento -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Faturamento Mensal</p>
+        <p class="text-2xl font-bold text-gray-800">R$ <%= stats?.monthlyRevenue?.toLocaleString('pt-BR') || '0,00' %></p>
+      </div>
+      <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+        <span class="text-2xl">💰</span>
+      </div>
+    </div>
+    <p class="text-xs text-green-500 mt-2">↗ +8% vs mês anterior</p>
+  </div>
+
+  <!-- Profissionais -->
+  <div class="card p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Profissionais Ativos</p>
+        <p class="text-2xl font-bold text-gray-800"><%= stats?.activeProfessionals || 0 %></p>
+      </div>
+      <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+        <span class="text-2xl">👨‍💼</span>
+      </div>
+    </div>
+    <p class="text-xs text-gray-500 mt-2">Todos disponíveis</p>
+  </div>
+</div>
+
+<!-- Próximos Agendamentos -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-gray-800">Próximos Agendamentos</h3>
+    <a href="/agenda" hx-get="/partials/agenda" hx-target="#main-content" hx-push-url="/agenda" class="text-blue-500 text-sm hover:underline">
+      Ver todos →
+    </a>
+  </div>
+  
+  <div class="space-y-3">
+    <% if (appointments && appointments.length > 0) { %>
+      <% appointments.slice(0, 5).forEach(apt => { %>
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-blue-600 font-semibold"><%= apt.clientName?.charAt(0) || '?' %></span>
+            </div>
+            <div>
+              <p class="font-medium text-gray-800"><%= apt.clientName %></p>
+              <p class="text-sm text-gray-500"><%= apt.serviceName %></p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-medium text-gray-800"><%= apt.time %></p>
+            <p class="text-sm text-gray-500"><%= apt.professionalName %></p>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="text-center py-8 text-gray-500">
+        <p class="text-4xl mb-2">📅</p>
+        <p>Nenhum agendamento para hoje</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <button 
+    hx-get="/partials/clientes?action=new" 
+    hx-target="#modal-container"
+    class="card p-4 hover:shadow-md transition-shadow flex items-center gap-3">
+    <span class="text-2xl">➕</span>
+    <div class="text-left">
+      <p class="font-medium text-gray-800">Novo Cliente</p>
+      <p class="text-sm text-gray-500">Cadastrar cliente</p>
+    </div>
+  </button>
+  
+  <button 
+    hx-get="/partials/agenda?action=new" 
+    hx-target="#modal-container"
+    class="card p-4 hover:shadow-md transition-shadow flex items-center gap-3">
+    <span class="text-2xl">📅</span>
+    <div class="text-left">
+      <p class="font-medium text-gray-800">Novo Agendamento</p>
+      <p class="text-sm text-gray-500">Agendar horário</p>
+    </div>
+  </button>
+  
+  <button 
+    hx-get="/partials/caixa?action=new" 
+    hx-target="#modal-container"
+    class="card p-4 hover:shadow-md transition-shadow flex items-center gap-3">
+    <span class="text-2xl">💵</span>
+    <div class="text-left">
+      <p class="font-medium text-gray-800">Registrar Venda</p>
+      <p class="text-sm text-gray-500">Nova transação</p>
+    </div>
+  </button>
+</div>
+
+<!-- Modal Container -->
+<div id="modal-container"></div>

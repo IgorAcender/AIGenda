@@ -1,0 +1,96 @@
+<!-- Caixa -->
+<div class="space-y-6">
+  <!-- Resumo do Caixa -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Saldo Inicial</p>
+      <p class="text-xl font-bold text-gray-800">R$ <%= (cashRegister?.openingBalance || 0).toFixed(2).replace('.', ',') %></p>
+    </div>
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Entradas</p>
+      <p class="text-xl font-bold text-green-600">+ R$ <%= (cashRegister?.totalIn || 0).toFixed(2).replace('.', ',') %></p>
+    </div>
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Saídas</p>
+      <p class="text-xl font-bold text-red-600">- R$ <%= (cashRegister?.totalOut || 0).toFixed(2).replace('.', ',') %></p>
+    </div>
+    <div class="card p-4">
+      <p class="text-sm text-gray-500">Saldo Atual</p>
+      <p class="text-xl font-bold text-blue-600">R$ <%= (cashRegister?.currentBalance || 0).toFixed(2).replace('.', ',') %></p>
+    </div>
+  </div>
+
+  <!-- Ações do Caixa -->
+  <div class="card p-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h3 class="text-lg font-semibold text-gray-800">Caixa do Dia</h3>
+        <% if (cashRegister?.isOpen) { %>
+          <span class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">🟢 Aberto</span>
+        <% } else { %>
+          <span class="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">🔴 Fechado</span>
+        <% } %>
+      </div>
+      <div class="flex gap-2">
+        <% if (!cashRegister?.isOpen) { %>
+          <button hx-post="/api/cash-register/open" hx-target="#main-content" class="btn-primary">
+            🔓 Abrir Caixa
+          </button>
+        <% } else { %>
+          <button hx-get="/partials/caixa/sangria" hx-target="#modal-container" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            💸 Sangria
+          </button>
+          <button hx-get="/partials/caixa/suprimento" hx-target="#modal-container" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+            💰 Suprimento
+          </button>
+          <button hx-post="/api/cash-register/close" hx-confirm="Fechar o caixa?" hx-target="#main-content" class="btn-danger">
+            🔐 Fechar Caixa
+          </button>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Movimentações do Dia -->
+  <div class="card">
+    <div class="p-4 border-b">
+      <h3 class="text-lg font-semibold text-gray-800">Movimentações de Hoje</h3>
+    </div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Hora</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Descrição</th>
+          <th class="text-left p-4 text-sm font-medium text-gray-600">Tipo</th>
+          <th class="text-right p-4 text-sm font-medium text-gray-600">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (movements && movements.length > 0) { %>
+          <% movements.forEach(mov => { %>
+            <tr class="border-b">
+              <td class="p-4 text-gray-600"><%= mov.time %></td>
+              <td class="p-4 text-gray-800"><%= mov.description %></td>
+              <td class="p-4">
+                <span class="px-2 py-1 text-xs rounded-full <%= mov.type === 'IN' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                  <%= mov.type === 'IN' ? 'Entrada' : 'Saída' %>
+                </span>
+              </td>
+              <td class="p-4 text-right font-medium <%= mov.type === 'IN' ? 'text-green-600' : 'text-red-600' %>">
+                <%= mov.type === 'IN' ? '+' : '-' %> R$ <%= mov.amount.toFixed(2).replace('.', ',') %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="4" class="p-8 text-center text-gray-500">
+              Nenhuma movimentação hoje
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="modal-container"></div>
