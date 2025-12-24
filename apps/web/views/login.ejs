@@ -34,8 +34,7 @@
       <!-- Formulário de login -->
       <form 
         hx-post="/api/login"
-        hx-indicator="#loading"
-        hx-on::after-request="if(event.detail.xhr.status === 200) window.location.href = '/dashboard'"
+        hx-indicator=".htmx-indicator"
         class="space-y-4"
       >
         <!-- Email -->

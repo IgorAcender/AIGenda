@@ -33,14 +33,21 @@ async function apiRequest(token, endpoint, options = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   })
   if (!response.ok) {
+    const text = await response.text()
+    console.error(`API Error ${response.status} on ${endpoint}:`, text)
     throw new Error(`API Error: ${response.status}`)
   }
-  return response.json()
+  const contentType = response.headers.get('content-type')
+  if (contentType?.includes('application/json')) {
+    return response.json()
+  }
+  return text || {}
 }
 
 // Middleware de autenticação
@@ -381,15 +388,36 @@ app.post('/api/login', async (request, reply) => {
   try {
     const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(request.body),
     })
     
-    const data = await response.json()
+    const contentType = response.headers.get('content-type')
+    let data = {}
+    
+    if (contentType?.includes('application/json')) {
+      data = await response.json()
+    } else {
+      const text = await response.text()
+      console.error('API response not JSON:', text)
+    }
     
     if (!response.ok) {
-      reply.header('HX-Trigger', JSON.stringify({ showToast: { message: 'Credenciais inválidas', type: 'error' } }))
+      reply.header('HX-Reswap', 'none')
+      reply.header('HX-Trigger', JSON.stringify({ 
+        showToast: { 
+          message: data.error || 'Credenciais inválidas', 
+          type: 'error' 
+        } 
+      }))
       return reply.status(401).send({ error: 'Credenciais inválidas' })
+    }
+    
+    if (!data.token) {
+      return reply.status(401).send({ error: 'Token não fornecido' })
     }
     
     reply.setCookie('token', data.token, {
@@ -401,7 +429,7 @@ app.post('/api/login', async (request, reply) => {
     })
     
     reply.header('HX-Redirect', '/dashboard')
-    return { success: true }
+    return reply.status(200).send({ success: true })
   } catch (error) {
     console.error('Login error:', error)
     return reply.status(500).send({ error: 'Erro interno' })
