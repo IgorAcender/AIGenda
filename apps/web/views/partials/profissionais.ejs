@@ -1,109 +1,115 @@
-<!-- Profissionais List -->
-<div class="card">
-  <!-- Header -->
-  <div class="p-4 border-b flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <h3 class="text-lg font-semibold text-gray-800">Profissionais</h3>
-      <span class="text-sm text-gray-500">(<%= total || 0 %> registros)</span>
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900">
+      <i class="fas fa-user-tie text-blue-500 mr-2"></i>Profissionais
+    </h1>
+    <p class="text-slate-500 mt-1">Gerencie sua equipe de profissionais</p>
+  </div>
+  <button 
+    hx-get="/partials/profissionais/form"
+    hx-target="#modal-container"
+    class="btn-primary flex items-center gap-2">
+    <i class="fas fa-plus"></i> Novo Profissional
+  </button>
+</div>
+
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+      <i class="fas fa-user-tie text-xl"></i>
     </div>
-    <div class="flex items-center gap-3">
-      <input 
-        type="text" 
-        name="search"
-        placeholder="Buscar profissional..."
-        hx-get="/partials/profissionais"
-        hx-trigger="keyup changed delay:300ms"
-        hx-target="#profissionais-table"
-        hx-include="[name='search']"
-        class="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <button 
-        hx-get="/partials/profissionais/form"
-        hx-target="#modal-container"
-        class="btn-primary flex items-center gap-2">
-        <span>➕</span> Novo Profissional
-      </button>
+    <div>
+      <p class="text-2xl font-bold text-slate-900"><%= total || 0 %></p>
+      <p class="text-sm text-slate-500">Total de Profissionais</p>
     </div>
   </div>
-
-  <!-- Grid View -->
-  <div id="profissionais-table" class="p-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <% if (professionals && professionals.length > 0) { %>
-        <% professionals.forEach(prof => { %>
-          <div class="card p-4 hover:shadow-md transition-shadow" id="prof-card-<%= prof.id %>">
-            <div class="flex items-start gap-4">
-              <!-- Avatar -->
-              <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                <span class="text-white text-2xl font-semibold"><%= prof.name?.charAt(0).toUpperCase() %></span>
-              </div>
-              
-              <!-- Info -->
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-800"><%= prof.name %></h4>
-                <p class="text-sm text-gray-500"><%= prof.speciality || 'Profissional' %></p>
-                
-                <!-- Status -->
-                <div class="mt-2 flex items-center gap-2">
-                  <% if (prof.active) { %>
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Ativo</span>
-                  <% } else { %>
-                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Inativo</span>
-                  <% } %>
-                  <% if (prof.commissionRate) { %>
-                    <span class="text-xs text-gray-500"><%= prof.commissionRate %>% comissão</span>
-                  <% } %>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Contact -->
-            <div class="mt-4 pt-4 border-t space-y-2">
-              <% if (prof.phone) { %>
-                <a href="tel:<%= prof.phone %>" class="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500">
-                  📱 <%= prof.phone %>
-                </a>
-              <% } %>
-              <% if (prof.email) { %>
-                <a href="mailto:<%= prof.email %>" class="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-500">
-                  ✉️ <%= prof.email %>
-                </a>
-              <% } %>
-            </div>
-
-            <!-- Actions -->
-            <div class="mt-4 pt-4 border-t flex gap-2">
-              <button 
-                hx-get="/partials/profissionais/form?id=<%= prof.id %>"
-                hx-target="#modal-container"
-                class="flex-1 px-3 py-2 text-sm text-blue-500 border border-blue-500 rounded hover:bg-blue-50">
-                ✏️ Editar
-              </button>
-              <button 
-                hx-delete="/api/professionals/<%= prof.id %>"
-                hx-confirm="Excluir <%= prof.name %>?"
-                hx-target="#prof-card-<%= prof.id %>"
-                hx-swap="outerHTML"
-                class="px-3 py-2 text-sm text-red-500 border border-red-500 rounded hover:bg-red-50">
-                🗑️
-              </button>
-            </div>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <div class="col-span-full text-center py-12 text-gray-500">
-          <p class="text-4xl mb-2">👨‍💼</p>
-          <p>Nenhum profissional cadastrado</p>
-          <button 
-            hx-get="/partials/profissionais/form"
-            hx-target="#modal-container"
-            class="mt-4 btn-primary">
-            Cadastrar primeiro profissional
-          </button>
-        </div>
-      <% } %>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+      <i class="fas fa-check-circle text-xl"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-slate-900"><%= activeCount || total || 0 %></p>
+      <p class="text-sm text-slate-500">Ativos</p>
+    </div>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+    <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
+      <i class="fas fa-calendar-check text-xl"></i>
+    </div>
+    <div>
+      <p class="text-2xl font-bold text-slate-900"><%= appointmentsToday || 0 %></p>
+      <p class="text-sm text-slate-500">Atendimentos Hoje</p>
     </div>
   </div>
 </div>
 
+<!-- Profissionais Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <% if (professionals && professionals.length > 0) { %>
+    <% professionals.forEach(prof => { %>
+      <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden card-hover" id="prof-row-<%= prof.id %>">
+        <div class="p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+              <%= prof.name?.charAt(0).toUpperCase() %>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-slate-900 text-lg"><%= prof.name %></h3>
+              <p class="text-sm text-slate-500"><%= prof.specialty || 'Profissional' %></p>
+              <div class="flex items-center gap-2 mt-2">
+                <% if (prof.isActive !== false) { %>
+                  <span class="badge-success">Ativo</span>
+                <% } else { %>
+                  <span class="badge-danger">Inativo</span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
+            <% if (prof.phone) { %>
+              <p class="text-sm text-slate-600 flex items-center gap-2">
+                <i class="fas fa-phone text-slate-400"></i> <%= prof.phone %>
+              </p>
+            <% } %>
+            <% if (prof.email) { %>
+              <p class="text-sm text-slate-600 flex items-center gap-2">
+                <i class="fas fa-envelope text-slate-400"></i> <%= prof.email %>
+              </p>
+            <% } %>
+          </div>
+        </div>
+        
+        <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+          <button 
+            hx-get="/partials/profissionais/form?id=<%= prof.id %>"
+            hx-target="#modal-container"
+            class="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center gap-1">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button 
+            hx-delete="/api/professionals/<%= prof.id %>"
+            hx-confirm="Tem certeza que deseja excluir este profissional?"
+            hx-target="#prof-row-<%= prof.id %>"
+            hx-swap="outerHTML"
+            class="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-1">
+            <i class="fas fa-trash"></i> Excluir
+          </button>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <div class="col-span-full bg-white rounded-xl shadow-md border border-slate-100 p-12 text-center">
+      <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-user-tie text-4xl text-slate-400"></i>
+      </div>
+      <p class="text-lg font-medium text-slate-900">Nenhum profissional cadastrado</p>
+      <p class="text-slate-500 mt-1">Clique em "Novo Profissional" para adicionar</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- Modal Container -->
 <div id="modal-container"></div>
