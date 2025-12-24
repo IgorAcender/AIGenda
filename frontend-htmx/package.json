@@ -1,0 +1,17 @@
+{
+  "name": "frontend-htmx",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "build": "echo 'No build needed for HTMX'",
+    "start": "NODE_ENV=production node src/server.js"
+  },
+  "dependencies": {
+    "fastify": "^4.25.2",
+    "ejs": "^3.1.9"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
