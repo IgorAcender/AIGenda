@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
       retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       refetchOnWindowFocus: false, // Não refetch quando voltar pra aba
-      refetchOnMount: 'stale', // Refetch só se dados forem stale
+      refetchOnMount: true, // Refetch quando montar se dados forem stale
     },
     mutations: {
       retry: 1,
