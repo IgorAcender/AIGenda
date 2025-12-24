@@ -16,6 +16,21 @@ const app = Fastify({ logger: true })
 // Registrar plugins
 await app.register(cookie)
 
+// Adicionar suporte a JSON parsing com tamanho maior
+app.addContentTypeParser('application/json', { parseAs: 'string' }, async (req, body) => {
+  return JSON.parse(body)
+})
+
+// Suportar também form-urlencoded e converter para JSON
+app.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'string' }, async (req, body) => {
+  const params = new URLSearchParams(body)
+  const obj = {}
+  for (const [key, value] of params) {
+    obj[key] = value
+  }
+  return obj
+})
+
 await app.register(view, {
   engine: { ejs },
   root: path.join(__dirname, '..', 'views'),
@@ -386,6 +401,9 @@ async function getPageData(token, page, query = {}) {
 // Login
 app.post('/api/login', async (request, reply) => {
   try {
+    console.log('Login attempt - Content-Type:', request.headers['content-type'])
+    console.log('Login attempt - Body:', JSON.stringify(request.body))
+    
     const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 
@@ -406,6 +424,7 @@ app.post('/api/login', async (request, reply) => {
     }
     
     if (!response.ok) {
+      console.error('Login failed:', response.status, data)
       reply.header('HX-Reswap', 'none')
       reply.header('HX-Trigger', JSON.stringify({ 
         showToast: { 
