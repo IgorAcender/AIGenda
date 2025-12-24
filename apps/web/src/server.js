@@ -9,14 +9,17 @@ import ejs from 'ejs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Usar API_URL configurada no EasyPanel
-// Se não tiver, usar localhost para desenvolvimento local
+// API_URL - Configure no EasyPanel como URL interna: http://api:3001
+// ou use a variável de ambiente que já existe
 const API_URL = process.env.API_URL || 'http://localhost:3001'
 
-console.log('🔧 Configuração do Frontend HTMX:')
+console.log('════════════════════════════════════════')
+console.log('🔧 Frontend HTMX - Agende AI')
+console.log('════════════════════════════════════════')
 console.log('   API_URL:', API_URL)
-console.log('   NODE_ENV:', process.env.NODE_ENV)
+console.log('   NODE_ENV:', process.env.NODE_ENV || 'development')
 console.log('   PORT:', process.env.PORT || 3000)
+console.log('════════════════════════════════════════')
 
 const app = Fastify({ logger: true })
 
