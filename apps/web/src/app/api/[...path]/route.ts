@@ -16,7 +16,7 @@ function getApiUrl(): string {
   return 'http://localhost:3001'
 }
 
-export async function handler(
+async function proxyRequest(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
@@ -83,8 +83,8 @@ export async function handler(
 }
 
 // Exportar handlers para todos os métodos HTTP
-export const GET = handler
-export const POST = handler
-export const PUT = handler
-export const DELETE = handler
-export const PATCH = handler
+export const GET = proxyRequest
+export const POST = proxyRequest
+export const PUT = proxyRequest
+export const DELETE = proxyRequest
+export const PATCH = proxyRequest
