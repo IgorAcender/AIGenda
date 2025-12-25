@@ -20,30 +20,63 @@ export async function handler(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { path } = await params
-  const pathStr = path?.join('/') || ''
-  const url = new URL(`${getApiUrl()}/${pathStr}`)
-
-  // Copiar query parameters
-  url.search = request.nextUrl.search
-
   try {
-    const response = await fetch(url, {
+    const { path } = await params
+    const pathStr = path?.join('/') || ''
+    
+    // Construir URL corretamente
+    const apiUrl = getApiUrl()
+    const fullUrl = `${apiUrl}/api/${pathStr}${request.nextUrl.search}`
+
+    console.log(`[API Proxy] ${request.method} ${fullUrl}`)
+
+    // Preparar headers
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+
+    // Copiar headers importantes do request original
+    const forwardHeaders = ['authorization', 'cookie', 'user-agent']
+    for (const header of forwardHeaders) {
+      const value = request.headers.get(header)
+      if (value) {
+        headers[header] = value
+      }
+    }
+
+    // Preparar body para POST/PUT/PATCH
+    let body: string | undefined
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      try {
+        body = await request.text()
+      } catch (e) {
+        console.error('Erro ao ler body:', e)
+      }
+    }
+
+    const response = await fetch(fullUrl, {
       method: request.method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...Object.fromEntries(request.headers),
-      },
-      body: request.method !== 'GET' ? request.body : undefined,
+      headers,
+      body,
     })
 
-    const data = await response.json()
+    // Tentar fazer parse do response como JSON
+    let data: any
+    const contentType = response.headers.get('content-type')
+    
+    if (contentType?.includes('application/json')) {
+      data = await response.json()
+    } else {
+      data = await response.text()
+    }
+
+    console.log(`[API Proxy] Response: ${response.status}`)
 
     return NextResponse.json(data, { status: response.status })
   } catch (error: any) {
-    console.error(`API Proxy Error [${request.method} /${pathStr}]:`, error.message)
+    console.error(`[API Proxy Error]:`, error.message)
     return NextResponse.json(
-      { error: 'Erro ao conectar com a API' },
+      { error: 'Erro ao conectar com a API', details: error.message },
       { status: 500 }
     )
   }
