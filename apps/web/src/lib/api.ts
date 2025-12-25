@@ -1,6 +1,24 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api`
+// Função para obter a URL da API de forma segura
+function getApiBaseUrl(): string {
+  // Se NEXT_PUBLIC_API_URL está definido, usa ele
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return `${process.env.NEXT_PUBLIC_API_URL}/api`
+  }
+
+  // Client-side: detectar protocolo automaticamente
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'https' : 'http'
+    const hostname = window.location.hostname
+    return `${protocol}://${hostname}:3001/api`
+  }
+
+  // Server-side fallback
+  return 'http://localhost:3001/api'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 // Create axios instance
 export const api: AxiosInstance = axios.create({
