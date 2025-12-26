@@ -110,16 +110,44 @@ model Client {
 // ============= PROFISSIONAIS =============
 model Professional {
   id          String   @id @default(cuid())
-  name        String
+  name        String  // Nome completo (mantido para compatibilidade)
+  firstName   String?
+  lastName    String?
   email       String?
   phone       String?
   cpf         String?
+  rg          String?
+  birthDate   DateTime?
+  profession  String?
   specialty   String?
   bio         String?
   avatar      String?
   color       String?
-  commission  Float    @default(0)
-  isActive    Boolean  @default(true)
+  
+  // Endereço
+  address           String?
+  addressNumber     String?
+  addressComplement String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  zipCode           String?
+  
+  // Assinatura digital
+  signature   String?
+  
+  // Configurações
+  isActive            Boolean @default(true)
+  availableOnline     Boolean @default(true)
+  generateSchedule    Boolean @default(true)
+  receivesCommission  Boolean @default(true)
+  partnershipContract Boolean @default(false)
+  
+  // Financeiro
+  commission     Float   @default(0)  // Mantido para compatibilidade
+  commissionRate Decimal @default(0) @db.Decimal(5, 2)
+  
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

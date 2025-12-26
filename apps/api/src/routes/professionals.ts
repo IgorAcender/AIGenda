@@ -5,12 +5,40 @@ import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const professionalSchema = z.object({
   name: z.string().min(2),
+  firstName: z.string().optional().nullable(),
+  lastName: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   email: z.string().email().optional().nullable(),
+  cpf: z.string().optional().nullable(),
+  rg: z.string().optional().nullable(),
+  birthDate: z.string().optional().nullable().transform(val => val ? new Date(val) : null),
+  profession: z.string().optional().nullable(),
   specialty: z.string().optional().nullable(),
   avatar: z.string().optional().nullable(),
   color: z.string().optional().nullable(),
+  
+  // Endereço
+  address: z.string().optional().nullable(),
+  addressNumber: z.string().optional().nullable(),
+  addressComplement: z.string().optional().nullable(),
+  neighborhood: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  zipCode: z.string().optional().nullable(),
+  
+  // Assinatura
+  signature: z.string().optional().nullable(),
+  
+  // Configurações
+  availableOnline: z.boolean().optional(),
+  generateSchedule: z.boolean().optional(),
+  receivesCommission: z.boolean().optional(),
+  partnershipContract: z.boolean().optional(),
+  
+  // Financeiro
   commissionRate: z.number().min(0).max(100).default(0),
+  
+  notes: z.string().optional().nullable(),
   workingHours: z.any().optional(),
   workingDays: z.array(z.number()).default([1, 2, 3, 4, 5, 6]),
   active: z.boolean().optional(),
