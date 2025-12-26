@@ -141,54 +141,48 @@ export function OptimizedDashboard() {
       <Title level={2} style={{ marginBottom: 24 }}>Dashboard</Title>
 
       {/* Cards Grandes - Status dos Agendamentos */}
-      <Row gutter={[12, 16]} style={{ marginBottom: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {topCards.map((card, index) => (
-          <Col span={24 / 5} key={index}>
+          <Col flex="1" key={index}>
             <Card
               style={{
                 background: card.color,
-                borderRadius: 8,
+                borderRadius: 12,
                 border: 'none',
                 height: '100%',
               }}
-              bodyStyle={{ padding: '16px 12px' }}
+              bodyStyle={{ padding: 24 }}
             >
               <div style={{ color: 'white' }}>
                 <div style={{ 
-                  fontSize: 10, 
+                  fontSize: 12, 
                   fontWeight: 600, 
-                  marginBottom: 8,
+                  marginBottom: 12,
                   opacity: 0.9,
-                  letterSpacing: '0.5px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  letterSpacing: '0.5px'
                 }}>
                   {card.title}
                 </div>
                 <div style={{ 
-                  fontSize: 36, 
+                  fontSize: 48, 
                   fontWeight: 700, 
-                  marginBottom: 4,
+                  marginBottom: 8,
                   lineHeight: 1,
                 }}>
                   {card.value}
                 </div>
                 <div style={{ 
-                  fontSize: 11, 
-                  opacity: 0.85,
-                  marginBottom: 2,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  fontSize: 13, 
+                  opacity: 0.9,
+                  marginBottom: 4 
                 }}>
                   {card.subtitle}
                 </div>
                 {card.percent && (
                   <div style={{ 
-                    fontSize: 16, 
+                    fontSize: 20, 
                     fontWeight: 600,
-                    marginTop: 4 
+                    marginTop: 8 
                   }}>
                     {card.percent}
                   </div>
