@@ -671,8 +671,8 @@ export default function ProfessionalsPage() {
                   min={0} 
                   max={100} 
                   style={{ width: '100%' }} 
-                  formatter={value => `${value}%`}
-                  parser={value => value!.replace('%', '')}
+                  formatter={(value: number | string | undefined) => `${value}%`}
+                  parser={(value: string | undefined) => Number(value?.replace('%', '') || 0)}
                 />
               </Form.Item>
 
