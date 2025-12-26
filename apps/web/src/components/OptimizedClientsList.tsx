@@ -31,7 +31,7 @@ export function OptimizedClientsList() {
   // Query otimizada com cache - dados serão reutilizados entre navegações
   const { data, isLoading, isFetching, refetch } = useApiPaginatedQuery(
     'clients',
-    '/api/clients',
+    '/clients',
     page,
     20,
     {
@@ -44,9 +44,9 @@ export function OptimizedClientsList() {
   const { mutate: saveClient, isPending: isSaving } = useApiMutation(
     async (clientData) => {
       if (editingClient) {
-        return await api.put(`/api/clients/${editingClient.id}`, clientData)
+        return await api.put(`/clients/${editingClient.id}`, clientData)
       } else {
-        return await api.post('/api/clients', clientData)
+        return await api.post('/clients', clientData)
       }
     },
     [['clients', 'page', String(page)]] // Invalidar este query após salvar
@@ -55,7 +55,7 @@ export function OptimizedClientsList() {
   // Mutation para deletar cliente
   const { mutate: deleteClient, isPending: isDeleting } = useApiMutation(
     async (clientId: string) => {
-      return await api.delete(`/api/clients/${clientId}`)
+      return await api.delete(`/clients/${clientId}`)
     },
     [['clients', 'page', String(page)]]
   )
