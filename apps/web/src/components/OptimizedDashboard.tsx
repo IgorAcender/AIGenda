@@ -18,7 +18,7 @@ import { useApiQuery } from '@/hooks/useApi'
 const { Title } = Typography
 
 export function OptimizedDashboard() {
-  const { data, isLoading } = useApiQuery<any>(
+  const { data, isLoading } = useApiQuery(
     ['dashboard'],
     '/dashboard',
     {
