@@ -37,7 +37,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
       // Todos os agendamentos do tenant
       prisma.appointment.findMany({
         where: { tenantId },
-        orderBy: { startTime: 'desc' },
+        orderBy: { date: 'desc' },
         take: 100,
         include: {
           client: { select: { name: true } },
@@ -59,7 +59,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
 
     // Filtrar agendamentos do mês
     const appointmentsThisMonth = allAppointments.filter((a: any) => {
-      const appointmentDate = new Date(a.startTime)
+      const appointmentDate = new Date(a.date)
       return appointmentDate >= startOfMonth && appointmentDate <= endOfMonth
     })
 
@@ -77,10 +77,10 @@ export async function dashboardRoutes(app: FastifyInstance) {
     const noShowPercent = totalScheduled > 0 ? Math.round((noShowCount / totalScheduled) * 100) : 0
 
     // Agendamentos de hoje
-    const appointmentsToday = allAppointments.filter((a: any) => 
-      a.startTime >= todayStr && a.startTime < tomorrowStr &&
-      ['SCHEDULED', 'CONFIRMED'].includes(a.status)
-    ).length
+    const appointmentsToday = allAppointments.filter((a: any) => {
+      const appointmentDate = new Date(a.date).toISOString().split('T')[0]
+      return appointmentDate === todayStr && ['SCHEDULED', 'CONFIRMED'].includes(a.status)
+    }).length
 
     // Calcular receita do mês
     const revenueMonth = allTransactions
@@ -95,7 +95,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
 
     // Calcular métricas adicionais
     const todayAppointments = allAppointments.filter((a: any) => {
-      const appointmentDate = new Date(a.startTime).toISOString().split('T')[0]
+      const appointmentDate = new Date(a.date).toISOString().split('T')[0]
       return appointmentDate === todayStr
     })
 
@@ -134,10 +134,10 @@ export async function dashboardRoutes(app: FastifyInstance) {
 
     // Próximos agendamentos
     const upcomingAppointments = allAppointments
-      .filter((a: any) => 
-        a.startTime >= todayStr &&
-        ['SCHEDULED', 'CONFIRMED'].includes(a.status)
-      )
+      .filter((a: any) => {
+        const appointmentDate = new Date(a.date)
+        return appointmentDate >= today && ['SCHEDULED', 'CONFIRMED'].includes(a.status)
+      })
       .slice(0, 5)
 
     // Últimas transações
