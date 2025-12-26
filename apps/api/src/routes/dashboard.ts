@@ -93,6 +93,45 @@ export async function dashboardRoutes(app: FastifyInstance) {
       })
       .reduce((sum: number, t: any) => sum + t.amount, 0)
 
+    // Calcular métricas adicionais
+    const todayAppointments = allAppointments.filter((a: any) => {
+      const appointmentDate = new Date(a.startTime).toISOString().split('T')[0]
+      return appointmentDate === todayStr
+    })
+
+    const todayConfirmed = todayAppointments.filter((a: any) => a.status === 'CONFIRMED').length
+    
+    // Taxa de conversão (confirmados / total agendado)
+    const conversionRate = totalScheduled > 0 
+      ? Math.round((confirmedCount / totalScheduled) * 100 * 10) / 10 
+      : 0
+
+    // Taxa de cancelamento
+    const cancellationRate = totalScheduled > 0 
+      ? Math.round((cancelledCount / totalScheduled) * 100 * 10) / 10 
+      : 0
+
+    // Remarcações (agendamentos que foram reagendados)
+    const rescheduledCount = appointmentsThisMonth.filter((a: any) => a.rescheduled).length
+
+    // Média de agendamentos por dia (considerando dias úteis do mês)
+    const daysInMonth = endOfMonth.getDate()
+    const averagePerDay = totalScheduled > 0 
+      ? Math.round((totalScheduled / daysInMonth) * 10) / 10 
+      : 0
+
+    // Média de agendamentos por profissional
+    const averagePerProfessional = totalProfessionals > 0 && totalScheduled > 0
+      ? Math.round((totalScheduled / totalProfessionals) * 10) / 10
+      : 0
+
+    // Taxa de ocupação (agendamentos confirmados hoje / total possível)
+    // Considerando 8 horas/dia * 60min / 30min por atendimento = ~16 slots/profissional
+    const maxSlotsPerDay = totalProfessionals * 16
+    const occupationRate = maxSlotsPerDay > 0
+      ? Math.round((todayConfirmed / maxSlotsPerDay) * 100 * 10) / 10
+      : 0
+
     // Próximos agendamentos
     const upcomingAppointments = allAppointments
       .filter((a: any) => 
@@ -121,6 +160,14 @@ export async function dashboardRoutes(app: FastifyInstance) {
         cancelledPercent,
         noShowCount,
         noShowPercent,
+        // Métricas adicionais
+        todayConfirmed,
+        conversionRate,
+        cancellationRate,
+        rescheduledCount,
+        averagePerDay,
+        averagePerProfessional,
+        occupationRate,
       },
       upcomingAppointments,
       recentTransactions,
