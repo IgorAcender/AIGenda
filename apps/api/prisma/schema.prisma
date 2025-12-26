@@ -165,6 +165,7 @@ model Professional {
   availabilityRules AvailabilityRule[]
 
   @@index([tenantId])
+  @@index([tenantId, name]) // Índice composto para buscas otimizadas
 }
 
 model ProfessionalService {
@@ -215,6 +216,7 @@ model Service {
 
   @@index([tenantId])
   @@index([categoryId])
+  @@index([tenantId, name]) // Índice composto para buscas otimizadas
 }
 
 // ============= CATEGORIAS =============
@@ -234,6 +236,7 @@ model Category {
   products Product[]
 
   @@index([tenantId])
+  @@index([tenantId, name]) // Índice composto para buscas otimizadas
 }
 
 // ============= PRODUTOS =============
@@ -285,6 +288,7 @@ model Supplier {
   tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+  @@index([tenantId, name]) // Índice composto para buscas otimizadas
 }
 
 // ============= PACOTES =============
