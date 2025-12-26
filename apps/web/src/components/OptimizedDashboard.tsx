@@ -143,35 +143,36 @@ export function OptimizedDashboard() {
       {/* Cards Grandes - Status dos Agendamentos */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {topCards.map((card, index) => (
-          <Col xs={24} sm={12} lg={24 / 5} key={index}>
+          <Col span={24 / 5} key={index}>
             <Card
               style={{
                 background: card.color,
                 borderRadius: 12,
                 border: 'none',
+                height: '100%',
               }}
-              bodyStyle={{ padding: 24 }}
+              bodyStyle={{ padding: 20 }}
             >
               <div style={{ color: 'white' }}>
                 <div style={{ 
-                  fontSize: 12, 
+                  fontSize: 11, 
                   fontWeight: 600, 
-                  marginBottom: 12,
+                  marginBottom: 10,
                   opacity: 0.9,
                   letterSpacing: '0.5px'
                 }}>
                   {card.title}
                 </div>
                 <div style={{ 
-                  fontSize: 48, 
+                  fontSize: 40, 
                   fontWeight: 700, 
-                  marginBottom: 8,
+                  marginBottom: 6,
                   lineHeight: 1,
                 }}>
                   {card.value}
                 </div>
                 <div style={{ 
-                  fontSize: 13, 
+                  fontSize: 12, 
                   opacity: 0.9,
                   marginBottom: 4 
                 }}>
@@ -179,9 +180,9 @@ export function OptimizedDashboard() {
                 </div>
                 {card.percent && (
                   <div style={{ 
-                    fontSize: 20, 
+                    fontSize: 18, 
                     fontWeight: 600,
-                    marginTop: 8 
+                    marginTop: 6 
                   }}>
                     {card.percent}
                   </div>
