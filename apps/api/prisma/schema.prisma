@@ -105,6 +105,7 @@ model Client {
   @@index([tenantId])
   @@index([email])
   @@index([phone])
+  @@index([tenantId, name]) // Índice composto para buscas otimizadas
 }
 
 // ============= PROFISSIONAIS =============
