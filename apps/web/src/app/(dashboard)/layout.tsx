@@ -24,12 +24,14 @@ import {
   GlobalOutlined,
   TagOutlined,
   TruckOutlined,
+  LinkOutlined,
+  CommentOutlined,
+  CrownOutlined,
   WalletOutlined,
   BankOutlined,
   PercentageOutlined,
   BarChartOutlined,
   ShoppingCartOutlined,
-  CrownOutlined,
   SafetyOutlined,
 } from '@ant-design/icons'
 import Link from 'next/link'
@@ -101,9 +103,12 @@ function getMenuItems(role: UserRole | null): MenuItem[] {
     
     // Marketing
     getItem('Marketing', 'marketing', <StarOutlined />, [
-      getItem(<Link href="/marketing/agendamento-online">Agendamento Online</Link>, '/marketing/agendamento-online', <GlobalOutlined />),
-      getItem(<Link href="/marketing/avaliacoes">Avaliações</Link>, '/marketing/avaliacoes', <StarOutlined />),
+      getItem(<Link href="/marketing/link-agendamento">Link de Agendamento</Link>, '/marketing/link-agendamento', <LinkOutlined />),
+      getItem(<Link href="/marketing/agendamento-online">Agendamento Online</Link>, '/marketing/agendamento-online', <CalendarOutlined />),
       getItem(<Link href="/marketing/whatsapp">WhatsApp Marketing</Link>, '/marketing/whatsapp', <WhatsAppOutlined />),
+      getItem(<Link href="/marketing/promocoes">Promoções</Link>, '/marketing/promocoes', <TagOutlined />),
+      getItem(<Link href="/marketing/vendas-assinatura">Vendas por Assinatura</Link>, '/marketing/vendas-assinatura', <CrownOutlined />),
+      getItem(<Link href="/marketing/avaliacoes">Avaliações</Link>, '/marketing/avaliacoes', <StarOutlined />),
     ]),
     
     // Configurações
