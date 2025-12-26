@@ -111,8 +111,8 @@ export async function dashboardRoutes(app: FastifyInstance) {
       ? Math.round((cancelledCount / totalScheduled) * 100 * 10) / 10 
       : 0
 
-    // Remarcações (agendamentos que foram reagendados)
-    const rescheduledCount = appointmentsThisMonth.filter((a: any) => a.rescheduled).length
+    // Remarcações (agendamentos que foram reagendados - que têm originalAppointmentId)
+    const rescheduledCount = appointmentsThisMonth.filter((a: any) => a.originalAppointmentId).length
 
     // Média de agendamentos por dia (considerando dias úteis do mês)
     const daysInMonth = endOfMonth.getDate()
