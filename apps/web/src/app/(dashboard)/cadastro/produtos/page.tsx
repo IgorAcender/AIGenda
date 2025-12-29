@@ -12,8 +12,6 @@ import {
   Form,
   message,
   Typography,
-  Row,
-  Col,
   Select,
   Switch,
   InputNumber,
@@ -309,44 +307,37 @@ export default function ProductsPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={8}>
-              <Input
-                placeholder="Buscar por nome, SKU ou código de barras..."
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-            </Col>
-            <Col xs={24} sm={8} md={6}>
-              <Select
-                placeholder="Categoria"
-                style={{ width: '100%' }}
-                value={filterCategory}
-                onChange={setFilterCategory}
-                allowClear
-              >
-                {categories.map((cat) => (
-                  <Select.Option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Col>
-            <Col>
-              <Button
-                icon={<ReloadOutlined />}
-                onClick={() => {
-                  setSearchText('')
-                  setFilterCategory(null)
-                }}
-              >
-                Limpar
-              </Button>
-            </Col>
-          </Row>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+          <Input
+            placeholder="Buscar por nome, SKU ou código de barras..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Select
+            placeholder="Categoria"
+            style={{ width: 150 }}
+            value={filterCategory}
+            onChange={setFilterCategory}
+            allowClear
+          >
+            {categories.map((cat) => (
+              <Select.Option key={cat.id} value={cat.id}>
+                {cat.name}
+              </Select.Option>
+            ))}
+          </Select>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              setSearchText('')
+              setFilterCategory(null)
+            }}
+          >
+            Limpar
+          </Button>
         </div>
 
         <Table
