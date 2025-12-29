@@ -233,15 +233,19 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
               </Col>
             </Row>
 
-            {/* Indicado por */}
-            <Form.Item name="referredBy" label="Indicado por">
-              <Select placeholder="Selecionar cliente" />
-            </Form.Item>
-
-            {/* Hashtags */}
-            <Form.Item name="tags" label="Hashtags">
-              <Input placeholder="Hashtags" />
-            </Form.Item>
+            {/* Indicado por e Hashtags */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="referredBy" label="Indicado por">
+                  <Select placeholder="Selecionar cliente" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="tags" label="Hashtags">
+                  <Input placeholder="Hashtags" />
+                </Form.Item>
+              </Col>
+            </Row>
 
             {/* Observações */}
             <Form.Item name="notes" label="Observações">
