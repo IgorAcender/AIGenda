@@ -665,7 +665,99 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Agendamentos */}
         {activeTab === 'agendamentos' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Histórico de agendamentos</p>
+            {/* Header com Filtro de Datas */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Agendamentos</h3>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <DatePicker 
+                  value={dayjs('2025-10-01')} 
+                  format="DD/MM/YYYY"
+                  style={{ width: 120 }}
+                  onChange={() => {}}
+                />
+                <span style={{ color: '#666' }}>até</span>
+                <DatePicker 
+                  value={dayjs('2025-12-31')} 
+                  format="DD/MM/YYYY"
+                  style={{ width: 120 }}
+                  onChange={() => {}}
+                />
+                <Button type="text" icon={<CalendarOutlined />} />
+              </div>
+            </div>
+
+            {/* Tabela de Agendamentos */}
+            <Table
+              dataSource={editingClient?.appointments || []}
+              columns={[
+                {
+                  title: 'Data',
+                  dataIndex: 'date',
+                  key: 'date',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Serviço',
+                  dataIndex: 'service',
+                  key: 'service',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Status',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (status) => {
+                    let color = '#f0f0f0'
+                    let textColor = '#666'
+                    if (status === 'Confirmado') {
+                      color = '#f6ffed'
+                      textColor = '#22c55e'
+                    } else if (status === 'Pendente') {
+                      color = '#fffbe6'
+                      textColor = '#faad14'
+                    } else if (status === 'Cancelado') {
+                      color = '#fff1f0'
+                      textColor = '#ff4d4f'
+                    }
+                    return (
+                      <span style={{
+                        backgroundColor: color,
+                        color: textColor,
+                        padding: '4px 12px',
+                        borderRadius: 4,
+                        fontSize: 12,
+                        fontWeight: 500
+                      }}>
+                        {status}
+                      </span>
+                    )
+                  }
+                },
+                {
+                  title: 'Profissional',
+                  dataIndex: 'professional',
+                  key: 'professional',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Comanda',
+                  dataIndex: 'command',
+                  key: 'command',
+                  render: (text) => <span style={{ color: '#1890ff' }}>+ {text}</span>
+                },
+                {
+                  title: 'Ações',
+                  key: 'actions',
+                  render: () => (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button type="text" icon={<CameraOutlined />} size="small" />
+                    </div>
+                  )
+                }
+              ]}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Sem agendamentos" /> }}
+            />
           </>
         )}
 
