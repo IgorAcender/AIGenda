@@ -117,8 +117,18 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
       isSaving={isSaving}
       tabs={[
         { key: 'cadastro', label: 'Cadastro' },
-        { key: 'endereco', label: 'Endereço' },
-        { key: 'configuracoes', label: 'Configurações' },
+        { key: 'painel', label: 'Painel' },
+        { key: 'debitos', label: 'Débitos' },
+        { key: 'creditos', label: 'Créditos' },
+        { key: 'cashback', label: 'Cashback' },
+        { key: 'agendamentos', label: 'Agendamentos' },
+        { key: 'vendas', label: 'Vendas' },
+        { key: 'pacotes', label: 'Pacotes' },
+        { key: 'mensagens', label: 'Mensagens' },
+        { key: 'anotacoes', label: 'Anotações' },
+        { key: 'imagens', label: 'Imagens e Arquivos' },
+        { key: 'anamneses', label: 'Anamneses' },
+        { key: 'vendas-assinatura', label: 'Vendas por Assinatura' },
       ]}
       activeTab={activeTab}
       onTabChange={setActiveTab}
@@ -153,232 +163,91 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Cadastro */}
         {activeTab === 'cadastro' && (
           <>
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item
-                  name="name"
-                  label="* Nome Completo"
-                  rules={[{ required: true, message: 'Nome é obrigatório' }]}
-                >
-                  <Input placeholder="Nome completo do cliente" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="apelido" label="Apelido">
-                  <Input placeholder="Como chamá-lo" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="email"
-                  label="E-mail"
-                  rules={[{ type: 'email', message: 'E-mail inválido' }]}
-                >
-                  <Input placeholder="email@exemplo.com" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="phone"
-                  label="* Celular"
-                  rules={[{ required: true, message: 'Telefone é obrigatório' }]}
-                >
-                  <Input placeholder="(11) 99999-9999" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="phone2" label="Telefone Fixo">
-                  <Input placeholder="(11) 3333-3333" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="birthDate" label="Aniversário">
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    format="DD/MM/YYYY"
-                    placeholder="DD/MM/YYYY"
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="gender" label="Gênero">
-                  <Input placeholder="M / F" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="cpf" label="CPF">
-                  <Input placeholder="000.000.000-00" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="cnpj" label="CNPJ">
-                  <Input placeholder="00.000.000/0000-00" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="rg" label="RG">
-                  <Input placeholder="0000000-0" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="referredBy" label="Indicado por">
-                  <Input placeholder="Nome de um cliente" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item name="tags" label="Hashtags / Tags">
-                  <Input placeholder="#tag1 #tag2 #tag3" />
-                </Form.Item>
-              </Col>
-            </Row>
+            <p style={{ color: '#999', marginBottom: 16 }}>Base de dados do cliente</p>
           </>
         )}
 
-        {/* Aba Endereço */}
-        {activeTab === 'endereco' && (
+        {/* Aba Painel */}
+        {activeTab === 'painel' && (
           <>
-            <Row gutter={16}>
-              <Col span={18}>
-                <Form.Item name="address" label="Endereço">
-                  <Input placeholder="Rua, número, bairro" />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item name="city" label="Cidade">
-                  <Input placeholder="São Paulo" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="state" label="Estado">
-                  <Input placeholder="SP" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="zipCode" label="CEP">
-                  <Input placeholder="00000-000" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item name="notes" label="Observações">
-                  <Input.TextArea rows={6} placeholder="Anotações sobre o cliente..." />
-                </Form.Item>
-              </Col>
-            </Row>
+            <p style={{ color: '#999', marginBottom: 16 }}>Painel de controle do cliente</p>
           </>
         )}
 
-        {/* Aba Configurações */}
-        {activeTab === 'configuracoes' && (
+        {/* Aba Débitos */}
+        {activeTab === 'debitos' && (
           <>
-            <div style={{ marginBottom: 24 }}>
-              <Typography.Title level={5}>Desconto Padrão</Typography.Title>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="defaultDiscount" label="Desconto (%)">
-                    <InputNumber
-                      min={0}
-                      max={100}
-                      style={{ width: '100%' }}
-                      placeholder="0.00"
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="discountType" label="Tipo">
-                    <Input placeholder="Na comanda / Cupom" />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </div>
+            <p style={{ color: '#999', marginBottom: 16 }}>Débitos em aberto</p>
+          </>
+        )}
 
-            <Divider />
+        {/* Aba Créditos */}
+        {activeTab === 'creditos' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Créditos disponíveis</p>
+          </>
+        )}
 
-            <div style={{ marginBottom: 24 }}>
-              <Row gutter={16} align="middle">
-                <Col span={20}>
-                  <div>
-                    <Typography.Text strong>Ativo</Typography.Text>
-                    <Typography.Paragraph
-                      type="secondary"
-                      style={{ fontSize: 12, margin: '4px 0 0 0' }}
-                    >
-                      Desative um cliente para que ele não apareça em agendamentos, comandas etc.
-                    </Typography.Paragraph>
-                  </div>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name="active" valuePropName="checked" initialValue={true}>
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </div>
+        {/* Aba Cashback */}
+        {activeTab === 'cashback' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Programa de cashback</p>
+          </>
+        )}
 
-            <div style={{ marginBottom: 24 }}>
-              <Row gutter={16} align="middle">
-                <Col span={20}>
-                  <div>
-                    <Typography.Text strong>Notificações</Typography.Text>
-                    <Typography.Paragraph
-                      type="secondary"
-                      style={{ fontSize: 12, margin: '4px 0 0 0' }}
-                    >
-                      O cliente irá receber notificações (WhatsApp e SMS) sobre agendamentos e lembretes.
-                    </Typography.Paragraph>
-                  </div>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name="notifications" valuePropName="checked" initialValue={true}>
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </div>
+        {/* Aba Agendamentos */}
+        {activeTab === 'agendamentos' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Histórico de agendamentos</p>
+          </>
+        )}
 
-            <div>
-              <Row gutter={16} align="middle">
-                <Col span={20}>
-                  <div>
-                    <Typography.Text strong>Bloquear Acesso</Typography.Text>
-                    <Typography.Paragraph
-                      type="secondary"
-                      style={{ fontSize: 12, margin: '4px 0 0 0' }}
-                    >
-                      Ao bloquear, o cliente não terá acesso ao Agendamento Online ou Aplicativo Personalizado.
-                    </Typography.Paragraph>
-                  </div>
-                </Col>
-                <Col span={4}>
-                  <Form.Item name="blocked" valuePropName="checked" initialValue={false}>
-                    <Switch />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </div>
+        {/* Aba Vendas */}
+        {activeTab === 'vendas' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Histórico de vendas</p>
+          </>
+        )}
+
+        {/* Aba Pacotes */}
+        {activeTab === 'pacotes' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Pacotes adquiridos</p>
+          </>
+        )}
+
+        {/* Aba Mensagens */}
+        {activeTab === 'mensagens' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Mensagens com o cliente</p>
+          </>
+        )}
+
+        {/* Aba Anotações */}
+        {activeTab === 'anotacoes' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Anotações sobre o cliente</p>
+          </>
+        )}
+
+        {/* Aba Imagens e Arquivos */}
+        {activeTab === 'imagens' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Imagens e arquivos do cliente</p>
+          </>
+        )}
+
+        {/* Aba Anamneses */}
+        {activeTab === 'anamneses' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Fichas de anamnese</p>
+          </>
+        )}
+
+        {/* Aba Vendas por Assinatura */}
+        {activeTab === 'vendas-assinatura' && (
+          <>
+            <p style={{ color: '#999', marginBottom: 16 }}>Assinaturas ativas</p>
           </>
         )}
       </Form>
