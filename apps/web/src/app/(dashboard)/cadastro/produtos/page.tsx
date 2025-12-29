@@ -30,6 +30,7 @@ import {
   ShoppingOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { ProductFormModal } from '@/components/ProductFormModal'
 
 const { Title } = Typography
 
@@ -133,7 +134,6 @@ export default function ProductsPage() {
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [form] = Form.useForm()
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -146,50 +146,40 @@ export default function ProductsPage() {
 
   const handleCreate = () => {
     setEditingProduct(null)
-    form.resetFields()
-    form.setFieldsValue({ price: 0, costPrice: 0, stock: 0, minStock: 5 })
     setIsModalOpen(true)
   }
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
-    form.setFieldsValue(product)
     setIsModalOpen(true)
   }
 
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields()
-      
-      const category = categories.find((c) => c.id === values.categoryId)
-      const productData = {
-        ...values,
-        categoryName: category?.name || null,
-      }
-
-      if (editingProduct) {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === editingProduct.id ? { ...p, ...productData } : p
-          )
-        )
-        message.success('Produto atualizado!')
-      } else {
-        const newProduct: Product = {
-          id: Date.now().toString(),
-          ...productData,
-          active: true,
-          createdAt: new Date().toISOString(),
-        }
-        setProducts((prev) => [newProduct, ...prev])
-        message.success('Produto criado!')
-      }
-
-      setIsModalOpen(false)
-      form.resetFields()
-    } catch (error) {
-      console.error('Erro ao salvar:', error)
+  const handleSave = async (productData: any) => {
+    const category = categories.find((c) => c.id === productData.categoryId)
+    const newProductData = {
+      ...productData,
+      categoryName: category?.name || null,
     }
+
+    if (editingProduct) {
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === editingProduct.id ? { ...p, ...newProductData } : p
+        )
+      )
+      message.success('Produto atualizado!')
+    } else {
+      const newProduct: Product = {
+        id: Date.now().toString(),
+        ...newProductData,
+        active: true,
+        createdAt: new Date().toISOString(),
+      }
+      setProducts((prev) => [newProduct, ...prev])
+      message.success('Produto criado!')
+    }
+
+    setIsModalOpen(false)
   }
 
   const handleDelete = (id: string) => {
@@ -375,108 +365,17 @@ export default function ProductsPage() {
         />
       </Card>
 
-      <Modal
-        title={editingProduct ? 'Editar Produto' : 'Novo Produto'}
+      <ProductFormModal
         open={isModalOpen}
-        onOk={handleSave}
-        onCancel={() => {
+        onClose={() => {
           setIsModalOpen(false)
-          form.resetFields()
+          setEditingProduct(null)
         }}
-        okText="Salvar"
-        cancelText="Cancelar"
-        width={600}
-      >
-        <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-          <Form.Item
-            name="name"
-            label="Nome do Produto"
-            rules={[{ required: true, message: 'Nome é obrigatório' }]}
-          >
-            <Input placeholder="Ex: Shampoo Profissional" />
-          </Form.Item>
-
-          <Form.Item name="description" label="Descrição">
-            <Input.TextArea rows={2} placeholder="Descrição do produto" />
-          </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="sku" label="SKU">
-                <Input placeholder="Código interno" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="barcode" label="Código de Barras">
-                <Input placeholder="EAN/GTIN" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="categoryId" label="Categoria">
-                <Select placeholder="Selecione" allowClear>
-                  {categories.map((cat) => (
-                    <Select.Option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="costPrice"
-                label="Preço de Custo"
-                rules={[{ required: true }]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  min={0}
-                  precision={2}
-                  addonBefore="R$"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="price"
-                label="Preço de Venda"
-                rules={[{ required: true }]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  min={0}
-                  precision={2}
-                  addonBefore="R$"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="stock"
-                label="Estoque Atual"
-                rules={[{ required: true }]}
-              >
-                <InputNumber style={{ width: '100%' }} min={0} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="minStock"
-                label="Estoque Mínimo"
-                rules={[{ required: true }]}
-              >
-                <InputNumber style={{ width: '100%' }} min={0} />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Modal>
+        onSuccess={(product) => {
+          handleSave(product)
+        }}
+        editingProduct={editingProduct as any}
+      />
     </div>
   )
 }
