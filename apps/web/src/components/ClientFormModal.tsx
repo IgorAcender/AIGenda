@@ -951,7 +951,99 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Mensagens */}
         {activeTab === 'mensagens' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Mensagens com o cliente</p>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+              <div>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: 18, fontWeight: 600 }}>Enviar mensagem</h3>
+              </div>
+              <div style={{ textAlign: 'right', color: '#666', fontSize: 14 }}>
+                0 mensagens restantes
+              </div>
+            </div>
+
+            {/* Formulário de envio */}
+            <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid #f0f0f0' }}>
+              <Row gutter={16} style={{ marginBottom: 12 }}>
+                <Col span={8}>
+                  <Input 
+                    placeholder="+55"
+                    disabled
+                    prefix={<span style={{ color: '#999' }}>🇧🇷</span>}
+                  />
+                </Col>
+                <Col span={16}>
+                  <Select 
+                    placeholder="Mensagens pré-definidas"
+                    style={{ width: '100%' }}
+                    options={[
+                      { label: 'Lembrete de agendamento', value: 'lembrete' },
+                      { label: 'Confirmação de presença', value: 'confirmacao' },
+                      { label: 'Pesquisa de satisfação', value: 'pesquisa' },
+                      { label: 'Promoção especial', value: 'promocao' }
+                    ]}
+                    onChange={() => {}}
+                  />
+                </Col>
+              </Row>
+
+              {/* Campo de mensagem */}
+              <div style={{ marginBottom: 12, position: 'relative' }}>
+                <Input.TextArea 
+                  placeholder="Informe a mensagem que deseja enviar"
+                  rows={4}
+                />
+                <span style={{ position: 'absolute', bottom: 8, right: 12, color: '#999', fontSize: 12 }}>
+                  0 / 155
+                </span>
+              </div>
+
+              {/* Botão de envio */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button 
+                  type="primary"
+                  size="large"
+                  style={{ backgroundColor: '#22c55e', borderColor: '#22c55e' }}
+                  icon={<span>📱</span>}
+                >
+                  Enviar WhatsApp
+                </Button>
+              </div>
+            </div>
+
+            {/* Histórico de mensagens */}
+            <div>
+              <h4 style={{ marginBottom: 16, fontWeight: 600 }}>Histórico de mensagens</h4>
+              {editingClient?.messages && editingClient.messages.length > 0 ? (
+                <div>
+                  {editingClient.messages.map((msg: any, index: number) => (
+                    <div 
+                      key={index}
+                      style={{
+                        marginBottom: 12,
+                        padding: 12,
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: 8,
+                        borderLeft: '3px solid #1890ff'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontWeight: 500, color: '#333' }}>
+                          {msg.type === 'sent' ? '📤 Enviado' : '📥 Recebido'}
+                        </span>
+                        <span style={{ color: '#999', fontSize: 12 }}>
+                          {msg.date}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, color: '#333', lineHeight: 1.6 }}>
+                        {msg.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Empty description="Nenhum item encontrado" />
+              )}
+            </div>
           </>
         )}
 
