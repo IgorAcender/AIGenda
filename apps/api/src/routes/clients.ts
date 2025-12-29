@@ -12,6 +12,9 @@ const clientSchema = z.object({
   cpf: z.string().optional().nullable(),
   birthDate: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  active: z.boolean().optional(),
+  notifications: z.boolean().optional(),
+  blocked: z.boolean().optional(),
 })
 
 export async function clientRoutes(app: FastifyInstance) {
