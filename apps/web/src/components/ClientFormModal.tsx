@@ -37,6 +37,7 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
   const [form] = Form.useForm()
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<string>('cadastro')
+  const [activeImageTab, setActiveImageTab] = useState<string>('imagens')
 
   // Mutation para salvar cliente
   const { mutate: saveClient, isPending: isSaving } = useApiMutation(
@@ -655,7 +656,64 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Cashback */}
         {activeTab === 'cashback' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Programa de cashback</p>
+            {/* Header com Saldo */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Histórico de cashback</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>
+                  <DollarOutlined style={{ marginRight: 4, color: '#8b5cf6' }} />
+                  Saldo R$ {(editingClient?.cashbackBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+                <Button type="text" icon={<EditOutlined />} />
+              </div>
+            </div>
+
+            {/* Tabela de Histórico */}
+            <Table
+              columns={[
+                {
+                  title: 'Data',
+                  dataIndex: 'date',
+                  key: 'date',
+                  width: '25%',
+                },
+                {
+                  title: 'Valor',
+                  dataIndex: 'amount',
+                  key: 'amount',
+                  width: '20%',
+                  render: (amount) => (
+                    <span style={{ color: amount > 0 ? '#22c55e' : '#d97706' }}>
+                      {amount > 0 ? '+' : ''} R$ {Math.abs(amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  ),
+                },
+                {
+                  title: 'Movimentação',
+                  dataIndex: 'type',
+                  key: 'type',
+                  width: '25%',
+                  render: (type) => {
+                    const typeColors: Record<string, string> = {
+                      'Resgate': '#8b5cf6',
+                      'Acúmulo': '#22c55e',
+                      'Cancelamento': '#ef4444',
+                      'Ajuste': '#3b82f6',
+                    }
+                    return <span style={{ color: typeColors[type as string] || '#999' }}>{type || 'Movimentação'}</span>
+                  },
+                },
+                {
+                  title: 'Motivo',
+                  dataIndex: 'reason',
+                  key: 'reason',
+                  width: '30%',
+                },
+              ]}
+              dataSource={editingClient?.cashbackHistory || []}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Não há dados" /> }}
+            />
           </>
         )}
 
@@ -1120,21 +1178,351 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Imagens e Arquivos */}
         {activeTab === 'imagens' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Imagens e arquivos do cliente</p>
+            {/* Abas internas */}
+            <div style={{ marginBottom: 24, borderBottom: '1px solid #f0f0f0' }}>
+              <div style={{ display: 'flex', gap: 24 }}>
+                <div 
+                  onClick={() => setActiveImageTab('imagens')}
+                  style={{
+                    paddingBottom: 12,
+                    cursor: 'pointer',
+                    borderBottom: activeImageTab === 'imagens' ? '2px solid #6366f1' : 'none',
+                    color: activeImageTab === 'imagens' ? '#6366f1' : '#999',
+                    fontWeight: activeImageTab === 'imagens' ? 600 : 400,
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  Imagens
+                </div>
+                <div 
+                  onClick={() => setActiveImageTab('arquivos')}
+                  style={{
+                    paddingBottom: 12,
+                    cursor: 'pointer',
+                    borderBottom: activeImageTab === 'arquivos' ? '2px solid #6366f1' : 'none',
+                    color: activeImageTab === 'arquivos' ? '#6366f1' : '#999',
+                    fontWeight: activeImageTab === 'arquivos' ? 600 : 400,
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  Arquivos
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo Imagens */}
+            {activeImageTab === 'imagens' && (
+              <>
+                <div>
+                  <h3 style={{ marginBottom: 16, fontSize: 16, fontWeight: 600 }}>Imagens</h3>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '24px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 8
+                  }}>
+                    <div style={{
+                      width: 60,
+                      height: 60,
+                      backgroundColor: '#e5e7eb',
+                      borderRadius: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 28
+                    }}>
+                      📷
+                    </div>
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<span style={{ marginRight: 8 }}>📤</span>}
+                      style={{ backgroundColor: '#6366f1' }}
+                    >
+                      Enviar
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Conteúdo Arquivos */}
+            {activeImageTab === 'arquivos' && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Arquivos</h3>
+                  <Button
+                    type="primary"
+                    icon={<span style={{ marginRight: 8 }}>📤</span>}
+                    style={{ backgroundColor: '#6366f1' }}
+                  >
+                    Enviar arquivo
+                  </Button>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '48px 24px',
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 8,
+                  textAlign: 'center'
+                }}>
+                  <div style={{
+                    width: 60,
+                    height: 60,
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 28,
+                    margin: '0 auto 12px'
+                  }}>
+                    📁
+                  </div>
+                  <p style={{ color: '#999', margin: 0 }}>
+                    Adicione seu primeiro arquivo clicando no botão acima
+                  </p>
+                </div>
+              </>
+            )}
           </>
         )}
 
         {/* Aba Anamneses */}
         {activeTab === 'anamneses' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Fichas de anamnese</p>
+            {/* Header com botão */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Anamneses</h3>
+              <Button
+                type="primary"
+                size="large"
+                icon={<span style={{ marginRight: 8 }}>+</span>}
+                style={{ backgroundColor: '#6366f1' }}
+              >
+                Nova Ficha
+              </Button>
+            </div>
+
+            {/* Timeline de Anamneses */}
+            {editingClient?.anamneses && editingClient.anamneses.length > 0 ? (
+              <div>
+                {editingClient.anamneses.map((anamnesis: any, index: number) => (
+                  <div 
+                    key={index}
+                    style={{
+                      marginBottom: 24,
+                      padding: 16,
+                      border: '1px solid #f0f0f0',
+                      borderRadius: 8,
+                      position: 'relative',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e: any) => {
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+                      e.currentTarget.style.borderColor = '#6366f1'
+                    }}
+                    onMouseLeave={(e: any) => {
+                      e.currentTarget.style.boxShadow = 'none'
+                      e.currentTarget.style.borderColor = '#f0f0f0'
+                    }}
+                  >
+                    {/* Header da Ficha */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: 12 }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: 14, fontWeight: 600, color: '#333' }}>
+                          📋 {anamnesis.title || 'Ficha de Anamnese'}
+                        </h4>
+                        <span style={{ color: '#999', fontSize: 12 }}>
+                          {anamnesis.date} • Por {anamnesis.professional}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <Button type="text" size="small" style={{ color: '#3b82f6' }}>✎</Button>
+                        <Button type="text" size="small" style={{ color: '#ef4444' }}>✕</Button>
+                      </div>
+                    </div>
+
+                    {/* Tags de Especialidade */}
+                    <div style={{ marginBottom: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {anamnesis.specialties?.map((spec: string, i: number) => (
+                        <span 
+                          key={i}
+                          style={{
+                            backgroundColor: '#f0f0f0',
+                            color: '#666',
+                            padding: '4px 12px',
+                            borderRadius: 16,
+                            fontSize: 12
+                          }}
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Preview do conteúdo */}
+                    <p style={{ 
+                      margin: '0 0 12px 0',
+                      color: '#555',
+                      lineHeight: 1.6,
+                      fontSize: 13
+                    }}>
+                      {anamnesis.content?.substring(0, 150)}...
+                    </p>
+
+                    {/* Status e Info */}
+                    <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+                      <div style={{ color: '#999' }}>
+                        <span style={{ color: '#666', fontWeight: 500 }}>Queixa Principal:</span> {anamnesis.mainComplaint}
+                      </div>
+                      <div style={{ color: '#999' }}>
+                        <span style={{ color: '#666', fontWeight: 500 }}>Duração:</span> {anamnesis.duration}
+                      </div>
+                    </div>
+
+                    {/* Ver Ficha */}
+                    <Button 
+                      type="link" 
+                      style={{ marginTop: 12, padding: 0, color: '#6366f1' }}
+                    >
+                      Ver ficha completa →
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{
+                padding: '48px 24px',
+                textAlign: 'center',
+                backgroundColor: '#f5f5f5',
+                borderRadius: 8
+              }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
+                <p style={{ color: '#999', margin: '0 0 12px 0' }}>
+                  Nenhuma ficha de anamnese cadastrada
+                </p>
+                <p style={{ color: '#ccc', fontSize: 12, margin: 0 }}>
+                  Clique no botão "Nova Ficha" para criar a primeira
+                </p>
+              </div>
+            )}
           </>
         )}
 
         {/* Aba Vendas por Assinatura */}
         {activeTab === 'vendas-assinatura' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Assinaturas ativas</p>
+            {/* Header com título e botão */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Vendas por Assinatura</h3>
+              <Button
+                type="primary"
+                size="large"
+                icon={<span style={{ marginRight: 8 }}>+</span>}
+                style={{ backgroundColor: '#6366f1' }}
+              >
+                Criar
+              </Button>
+            </div>
+
+            {/* Tabela de Assinaturas */}
+            <Table
+              dataSource={editingClient?.subscriptions || []}
+              columns={[
+                {
+                  title: 'Código',
+                  dataIndex: 'code',
+                  key: 'code',
+                  width: '12%',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Modelo',
+                  dataIndex: 'model',
+                  key: 'model',
+                  width: '18%',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Vencimento',
+                  dataIndex: 'dueDate',
+                  key: 'dueDate',
+                  width: '15%',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Status',
+                  dataIndex: 'status',
+                  key: 'status',
+                  width: '12%',
+                  render: (status) => {
+                    let color = '#f0f0f0'
+                    let textColor = '#666'
+                    if (status === 'Ativo') {
+                      color = '#f6ffed'
+                      textColor = '#22c55e'
+                    } else if (status === 'Expirado') {
+                      color = '#fff1f0'
+                      textColor = '#ff4d4f'
+                    } else if (status === 'Pausado') {
+                      color = '#fffbe6'
+                      textColor = '#faad14'
+                    }
+                    return (
+                      <span style={{
+                        backgroundColor: color,
+                        color: textColor,
+                        padding: '4px 12px',
+                        borderRadius: 4,
+                        fontSize: 12,
+                        fontWeight: 500
+                      }}>
+                        {status}
+                      </span>
+                    )
+                  }
+                },
+                {
+                  title: 'Renovação',
+                  dataIndex: 'renewal',
+                  key: 'renewal',
+                  width: '18%',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Total',
+                  dataIndex: 'total',
+                  key: 'total',
+                  width: '15%',
+                  render: (value) => {
+                    return (
+                      <span style={{ color: '#22c55e', fontWeight: 500 }}>
+                        R$ {value ? parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
+                      </span>
+                    )
+                  }
+                },
+                {
+                  title: 'Ações',
+                  key: 'actions',
+                  width: '10%',
+                  render: () => (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button type="text" size="small" style={{ color: '#3b82f6' }}>⋮</Button>
+                    </div>
+                  )
+                }
+              ]}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Não há dados" /> }}
+            />
           </>
         )}
 
