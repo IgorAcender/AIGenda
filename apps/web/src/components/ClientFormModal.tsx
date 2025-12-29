@@ -18,6 +18,7 @@ import {
   Statistic,
   Table,
   Empty,
+  Tooltip,
 } from 'antd'
 import { UserOutlined, CameraOutlined, CalendarOutlined, StarOutlined, DollarOutlined, ShoppingCartOutlined, PercentageOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -134,6 +135,7 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         { key: 'imagens', label: 'Imagens e Arquivos' },
         { key: 'anamneses', label: 'Anamneses' },
         { key: 'vendas-assinatura', label: 'Vendas por Assinatura' },
+        { key: 'configuracoes', label: 'Configurações' },
       ]}
       activeTab={activeTab}
       onTabChange={setActiveTab}
@@ -1133,6 +1135,96 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {activeTab === 'vendas-assinatura' && (
           <>
             <p style={{ color: '#999', marginBottom: 16 }}>Assinaturas ativas</p>
+          </>
+        )}
+
+        {/* Aba Configurações */}
+        {activeTab === 'configuracoes' && (
+          <>
+            {/* Seção Configurações */}
+            <div>
+              <h3 style={{ marginBottom: 24, fontSize: 18, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                Configurações
+              </h3>
+
+              {/* Desconto Padrão */}
+              <div style={{ marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid #f0f0f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>Desconto padrão</h4>
+                  <Tooltip title="Desconto aplicado automaticamente em comandas do cliente">
+                    <span style={{ cursor: 'help', color: '#999', fontSize: 12 }}>ⓘ</span>
+                  </Tooltip>
+                </div>
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Input 
+                      placeholder="% 0,00"
+                      value="0,00"
+                      style={{ fontSize: 14 }}
+                    />
+                  </Col>
+                  <Col span={16}>
+                    <Select 
+                      placeholder="Na comanda"
+                      value="na-comanda"
+                      options={[
+                        { label: 'Na comanda', value: 'na-comanda' },
+                        { label: 'No crédito', value: 'no-credito' },
+                        { label: 'Na fatura', value: 'na-fatura' },
+                      ]}
+                    />
+                  </Col>
+                </Row>
+              </div>
+
+              {/* Ativo */}
+              <div style={{ marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid #f0f0f0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Ativo</h4>
+                    <p style={{ margin: 0, color: '#666', fontSize: 13, maxWidth: 500 }}>
+                      Desative um cliente para que ele não apareça mais em agendamentos, comandas etc.
+                    </p>
+                  </div>
+                  <Switch 
+                    defaultChecked={true}
+                    style={{ marginLeft: 16 }}
+                  />
+                </div>
+              </div>
+
+              {/* Notificações */}
+              <div style={{ marginBottom: 28, paddingBottom: 28, borderBottom: '1px solid #f0f0f0' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Notificações</h4>
+                    <p style={{ margin: 0, color: '#666', fontSize: 13, maxWidth: 500 }}>
+                      O cliente irá receber notificações (Whatsapp e SMS) sobre novos agendamentos, lembretes etc.
+                    </p>
+                  </div>
+                  <Switch 
+                    defaultChecked={true}
+                    style={{ marginLeft: 16 }}
+                  />
+                </div>
+              </div>
+
+              {/* Bloquear acesso */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Bloquear acesso</h4>
+                    <p style={{ margin: 0, color: '#666', fontSize: 13, maxWidth: 500 }}>
+                      Ao bloquear o cliente não terá acesso ao Agendamento Online ou Aplicativo Personalizado.
+                    </p>
+                  </div>
+                  <Switch 
+                    defaultChecked={false}
+                    style={{ marginLeft: 16 }}
+                  />
+                </div>
+              </div>
+            </div>
           </>
         )}
       </Form>
