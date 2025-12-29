@@ -80,9 +80,26 @@ const modalStyle = `
   .sidebar-modal-content {
     flex: 1;
     padding: 24px;
-    overflow-y: auto;
+    overflow-y: scroll;
     display: flex;
     flex-direction: column;
+  }
+  
+  .sidebar-modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .sidebar-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .sidebar-modal-content::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+  
+  .sidebar-modal-content::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
   }
   
   .sidebar-modal-content form {
