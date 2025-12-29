@@ -79,7 +79,7 @@ const modalStyle = `
   
   .sidebar-modal-content {
     flex: 1;
-    padding: 24px;
+    padding: 24px 0 24px 24px;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
@@ -87,6 +87,8 @@ const modalStyle = `
   
   .sidebar-modal-content::-webkit-scrollbar {
     width: 8px;
+    position: absolute;
+    right: 0;
   }
   
   .sidebar-modal-content::-webkit-scrollbar-track {
@@ -256,7 +258,9 @@ export function ModalWithSidebar({
           </div>
 
           {/* Conteúdo */}
-          <div className="sidebar-modal-content">{children}</div>
+          <div className="sidebar-modal-content">
+            <div style={{ paddingRight: '24px' }}>{children}</div>
+          </div>
         </div>
       </Modal>
     </>
