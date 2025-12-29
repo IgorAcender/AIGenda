@@ -23,6 +23,11 @@ const modalStyle = `
     border-radius: 0 !important;
     display: flex !important;
     flex-direction: column !important;
+    overflow: hidden !important;
+  }
+  
+  .sidebar-modal .ant-modal-wrap {
+    overflow: hidden !important;
   }
   
   .sidebar-modal .ant-modal-header {
@@ -38,6 +43,7 @@ const modalStyle = `
     padding: 0 !important;
     flex: 1 !important;
     display: flex !important;
+    width: 100% !important;
   }
   
   .sidebar-modal .ant-modal-footer {
