@@ -23,6 +23,82 @@ import { api } from '@/lib/api'
 
 const { Title } = Typography
 
+// Estilo para o Modal como slide-out panel
+const modalStyle = `
+  .client-modal .ant-modal {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .client-modal .ant-modal-content {
+    height: 100vh !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .client-modal .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0 !important;
+    padding: 16px 24px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .client-modal .ant-modal-body {
+    height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+    flex: 1 !important;
+    display: flex !important;
+  }
+  
+  .client-modal .ant-modal-footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .client-modal-avatar-section {
+    width: 25%;
+    min-width: 25%;
+    border-right: 1px solid #f0f0f0;
+    padding: 24px;
+    text-align: center;
+    overflow-y: auto;
+  }
+  
+  .client-modal-form-section {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+  }
+  
+  @media (max-width: 768px) {
+    .client-modal .ant-modal {
+      width: 100% !important;
+    }
+    
+    .client-modal-avatar-section {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 16px;
+    }
+    
+    .client-modal .ant-modal-body {
+      flex-direction: column;
+    }
+  }
+`
+
 interface ClientFormModalProps {
   open: boolean
   onClose: () => void
@@ -111,85 +187,81 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
   }
 
   return (
-    <Modal
-      title={editingClient ? 'Editar Cliente' : 'Novo Cliente'}
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      width="90%"
-      style={{ maxWidth: '1200px' }}
-      bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
-      wrapClassName="client-form-modal"
-    >
-      <div style={{ display: 'flex', height: '100%' }}>
-        {/* Coluna Esquerda - Avatar */}
-        <div
-          style={{
-            width: '25%',
-            borderRight: '1px solid #f0f0f0',
-            padding: '24px',
-            textAlign: 'center',
-            overflowY: 'auto',
-          }}
-        >
-          <Avatar
-            size={120}
-            src={avatarPreview}
-            icon={!avatarPreview ? <UserOutlined /> : undefined}
-            style={{ marginBottom: 16, backgroundColor: '#505afb' }}
-          />
-          <input
-            type="file"
-            id="avatar-upload"
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            style={{ display: 'none' }}
-          />
-          <Button
-            type="primary"
-            icon={<CameraOutlined />}
-            style={{ marginBottom: 24, width: '100%' }}
-            onClick={() => document.getElementById('avatar-upload')?.click()}
-          >
-            Alterar Avatar
-          </Button>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: modalStyle }} />
+      <Modal
+        title={editingClient ? 'Editar Cliente' : 'Novo Cliente'}
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width="50%"
+        bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
+        wrapClassName="client-modal"
+        styles={{ 
+          content: { padding: 0, borderRadius: 0 }
+        }}
+      >
+        <div style={{ display: 'flex', height: '100%' }}>
+          {/* Coluna Esquerda - Avatar */}
+          <div className="client-modal-avatar-section">
+            <Avatar
+              size={120}
+              src={avatarPreview}
+              icon={!avatarPreview ? <UserOutlined /> : undefined}
+              style={{ marginBottom: 16, backgroundColor: '#505afb' }}
+            />
+            <input
+              type="file"
+              id="avatar-upload"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              style={{ display: 'none' }}
+            />
+            <Button
+              type="primary"
+              icon={<CameraOutlined />}
+              style={{ marginBottom: 24, width: '100%' }}
+              onClick={() => document.getElementById('avatar-upload')?.click()}
+            >
+              Alterar Avatar
+            </Button>
 
-          <Divider />
+            <Divider />
 
-          {/* Painéis informativos */}
-          <div style={{ marginTop: 24, textAlign: 'left' }}>
-            <div style={{ marginBottom: 16 }}>
-              <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Histórico
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Ver agendamentos anteriores
-              </Typography.Text>
-            </div>
+            {/* Painéis informativos */}
+            <div style={{ marginTop: 24, textAlign: 'left' }}>
+              <div style={{ marginBottom: 16 }}>
+                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
+                  Histórico
+                </Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Ver agendamentos anteriores
+                </Typography.Text>
+              </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Estatísticas
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Frequência de atendimento
-              </Typography.Text>
-            </div>
+              <div style={{ marginBottom: 16 }}>
+                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
+                  Estatísticas
+                </Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Frequência de atendimento
+                </Typography.Text>
+              </div>
 
-            <div>
-              <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Preferências
-              </Typography.Text>
-              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                Serviços e horários favoritos
-              </Typography.Text>
+              <div>
+                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>
+                  Preferências
+                </Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  Serviços e horários favoritos
+                </Typography.Text>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Coluna Direita - Formulário com Abas */}
-        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
-          <Form form={form} layout="vertical" onFinish={handleSave}>
+          {/* Coluna Direita - Formulário com Abas */}
+          <div className="client-modal-form-section">
+            <Form form={form} layout="vertical" onFinish={handleSave}>
             <Tabs
               defaultActiveKey="cadastro"
               items={[
@@ -450,9 +522,10 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                 {editingClient ? 'Atualizar' : 'Criar'} Cliente
               </Button>
             </div>
-          </Form>
+            </Form>
+          </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+    </>
   )
 }
