@@ -89,6 +89,55 @@ const timeSlots = Array.from({ length: 48 }, (_, i) => {
 const businessHoursStart = '08:00'
 const businessHoursEnd = '20:00'
 
+// Estilos do modal de novo agendamento
+const appointmentModalStyle = `
+  .appointment-modal .ant-modal {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .appointment-modal .ant-modal-content {
+    height: 100vh !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .appointment-modal .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0 !important;
+    padding: 16px 24px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .appointment-modal .ant-modal-body {
+    height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
+    flex: 1 !important;
+  }
+  
+  .appointment-modal .ant-modal-footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  @media (max-width: 768px) {
+    .appointment-modal .ant-modal {
+      width: 100% !important;
+    }
+  }
+`
+
 export default function AgendaPage() {
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs())
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
@@ -706,18 +755,25 @@ export default function AgendaPage() {
       </Card>
 
       {/* Modal de Novo Agendamento */}
-      <Modal
-        title="Novo agendamento"
-        open={isModalOpen}
-        onOk={handleCreateAppointment}
-        onCancel={() => {
-          setIsModalOpen(false)
-          form.resetFields()
-        }}
-        okText="Salvar"
-        cancelText="Cancelar"
-        width="60%"
-      >
+      <>
+        <style dangerouslySetInnerHTML={{ __html: appointmentModalStyle }} />
+        <Modal
+          title="Novo agendamento"
+          open={isModalOpen}
+          onOk={handleCreateAppointment}
+          onCancel={() => {
+            setIsModalOpen(false)
+            form.resetFields()
+          }}
+          okText="Salvar"
+          cancelText="Cancelar"
+          width="60%"
+          wrapClassName="appointment-modal"
+          styles={{ 
+            content: { padding: 0, borderRadius: 0 }
+          }}
+          bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
+        >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           {/* Linha 1: Cliente, Data, Status, Cor */}
           <Row gutter={16}>
@@ -879,7 +935,8 @@ export default function AgendaPage() {
             <Input.TextArea rows={3} placeholder="Escreva aqui" />
           </Form.Item>
         </Form>
-      </Modal>
+        </Modal>
+      </>
 
       {/* Modal de Detalhes/Edição */}
       <Modal
