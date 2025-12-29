@@ -464,7 +464,130 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Débitos */}
         {activeTab === 'debitos' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Débitos em aberto</p>
+            {/* Header com Total */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Débitos</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 600 }}>
+                <DollarOutlined style={{ color: '#d97706' }} />
+                Total R$ {(editingClient?.totalDebt || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            {/* Seção Débitos */}
+            <div style={{ marginBottom: 32 }}>
+              <h4 style={{ marginBottom: 16, fontSize: 14, fontWeight: 600 }}>Débitos</h4>
+              <Table
+                columns={[
+                  {
+                    title: 'Descrição',
+                    dataIndex: 'description',
+                    key: 'description',
+                    width: '30%',
+                  },
+                  {
+                    title: 'Vencimento',
+                    dataIndex: 'dueDate',
+                    key: 'dueDate',
+                    width: '20%',
+                  },
+                  {
+                    title: 'Valor',
+                    dataIndex: 'amount',
+                    key: 'amount',
+                    width: '15%',
+                    render: (amount) => `R$ ${(amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  },
+                  {
+                    title: 'Status',
+                    dataIndex: 'status',
+                    key: 'status',
+                    width: '15%',
+                    render: (status) => {
+                      const statusColors: Record<string, string> = {
+                        PENDING: 'orange',
+                        OVERDUE: 'red',
+                        PAID: 'green',
+                        CANCELLED: 'default',
+                      }
+                      return <span style={{ color: statusColors[status as string] || '#999' }}>{status || 'Pendente'}</span>
+                    },
+                  },
+                  {
+                    title: 'Pagar',
+                    key: 'pay',
+                    width: '10%',
+                    render: () => <Button type="primary" size="small">Pagar</Button>,
+                  },
+                  {
+                    title: 'Ações',
+                    key: 'actions',
+                    width: '10%',
+                    render: () => <a href="#" style={{ color: '#3b82f6' }}>Editar</a>,
+                  },
+                ]}
+                dataSource={editingClient?.debts || []}
+                pagination={false}
+                locale={{ emptyText: <Empty description="Nenhum item encontrado" /> }}
+              />
+            </div>
+
+            {/* Seção Comandas em aberto */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
+                <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>Comandas em aberto</h4>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>
+                  <DollarOutlined style={{ marginRight: 4, color: '#d97706' }} />
+                  Total R$ {(editingClient?.openOrdersTotal || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+              <Table
+                columns={[
+                  {
+                    title: 'Comanda',
+                    dataIndex: 'orderId',
+                    key: 'orderId',
+                    width: '25%',
+                  },
+                  {
+                    title: 'Data',
+                    dataIndex: 'date',
+                    key: 'date',
+                    width: '25%',
+                  },
+                  {
+                    title: 'Valor',
+                    dataIndex: 'amount',
+                    key: 'amount',
+                    width: '20%',
+                    render: (amount) => `R$ ${(amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  },
+                  {
+                    title: 'Status',
+                    dataIndex: 'status',
+                    key: 'status',
+                    width: '20%',
+                    render: (status) => {
+                      const statusColors: Record<string, string> = {
+                        OPEN: 'orange',
+                        PENDING: 'blue',
+                        CLOSED: 'green',
+                        CANCELLED: 'default',
+                      }
+                      return <span style={{ color: statusColors[status as string] || '#999' }}>{status || 'Aberto'}</span>
+                    },
+                  },
+                  {
+                    title: 'Ações',
+                    key: 'actions',
+                    width: '10%',
+                    render: () => <a href="#" style={{ color: '#3b82f6' }}>Editar</a>,
+                  },
+                ]}
+                dataSource={editingClient?.openOrders || []}
+                pagination={false}
+                locale={{ emptyText: <Empty description="Nenhum item encontrado" /> }}
+              />
+            </div>
           </>
         )}
 
