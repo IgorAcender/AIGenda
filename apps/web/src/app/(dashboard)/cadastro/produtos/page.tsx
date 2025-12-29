@@ -11,12 +11,10 @@ import {
   Modal,
   Form,
   message,
-  Popconfirm,
   Typography,
   Row,
   Col,
   Select,
-  Tooltip,
   Switch,
   InputNumber,
   Image,
@@ -269,26 +267,24 @@ export default function ProductsPage() {
     {
       title: 'Ações',
       key: 'actions',
-      width: 100,
       render: (_, record: Product) => (
         <Space>
-          <Tooltip title="Editar">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Excluir produto"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Sim"
-            cancelText="Não"
+          <Button
+            type="primary"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
           >
-            <Tooltip title="Excluir">
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
-          </Popconfirm>
+            Editar
+          </Button>
+          <Button
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+          >
+            Excluir
+          </Button>
         </Space>
       ),
     },
