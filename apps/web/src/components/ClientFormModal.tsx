@@ -13,6 +13,7 @@ import {
   InputNumber,
   DatePicker,
   Button,
+  Select,
 } from 'antd'
 import { UserOutlined, CameraOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -163,7 +164,137 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Cadastro */}
         {activeTab === 'cadastro' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Base de dados do cliente</p>
+            {/* Nome */}
+            <Form.Item
+              name="name"
+              label="* Nome"
+              rules={[{ required: true, message: 'Nome é obrigatório' }]}
+            >
+              <Input placeholder="Nome" />
+            </Form.Item>
+
+            {/* Apelido */}
+            <Form.Item name="apelido" label="Apelido">
+              <Input placeholder="Apelido" />
+            </Form.Item>
+
+            {/* Celular e Telefone */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="phone" label="Celular">
+                  <Input placeholder="+55" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="phone2" label="Telefone">
+                  <Input placeholder="+55" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* E-mail */}
+            <Form.Item name="email" label="E-mail">
+              <Input placeholder="E-mail" />
+            </Form.Item>
+
+            {/* Aniversário e CNPJ */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="birthDate" label="Aniversário">
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    format="DD/MM/YYYY"
+                    placeholder="01/01/2000"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="cnpj" label="CNPJ">
+                  <Input placeholder="CNPJ" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* CPF e RG */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="cpf" label="CPF">
+                  <Input placeholder="CPF" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="rg" label="RG">
+                  <Input placeholder="RG" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* Indicado por */}
+            <Form.Item name="referredBy" label="Indicado por">
+              <Select placeholder="Selecionar cliente" />
+            </Form.Item>
+
+            {/* Hashtags */}
+            <Form.Item name="tags" label="Hashtags">
+              <Input placeholder="Hashtags" />
+            </Form.Item>
+
+            {/* Observações */}
+            <Form.Item name="notes" label="Observações">
+              <Input.TextArea placeholder="Observações" rows={6} />
+            </Form.Item>
+
+            {/* Endereço - Seção colapsável */}
+            <Divider orientation="left" style={{ marginTop: 24, marginBottom: 16 }}>
+              Endereço
+            </Divider>
+
+            {/* CEP, Logradouro, Número */}
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item name="cep" label="CEP">
+                  <Input placeholder="CEP" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="street" label="Logradouro">
+                  <Input placeholder="Rua, Avenida, Travessa..." />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item name="number" label="Número">
+                  <Input placeholder="Número" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* Complemento e Bairro */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="complement" label="Complemento">
+                  <Input placeholder="Complemento" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="neighborhood" label="Bairro">
+                  <Input placeholder="Bairro" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* Estado e Cidade */}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="state" label="Estado">
+                  <Select placeholder="Estado" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="city" label="Cidade">
+                  <Select placeholder="Cidade" />
+                </Form.Item>
+              </Col>
+            </Row>
           </>
         )}
 
