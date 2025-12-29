@@ -347,7 +347,11 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
             {/* Grid de informações - 2x3 */}
             <Row gutter={16} style={{ marginBottom: 24 }}>
               <Col xs={24} sm={12}>
-                <Card style={{ height: '100%' }}>
+                <Card 
+                  style={{ height: '100%', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                  onClick={() => setActiveTab('debitos')}
+                  hoverable
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Débitos</div>
@@ -374,7 +378,11 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
 
             <Row gutter={16} style={{ marginBottom: 24 }}>
               <Col xs={24} sm={12}>
-                <Card style={{ height: '100%' }}>
+                <Card 
+                  style={{ height: '100%', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                  onClick={() => setActiveTab('creditos')}
+                  hoverable
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Crédito</div>
@@ -387,7 +395,11 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                 </Card>
               </Col>
               <Col xs={24} sm={12}>
-                <Card style={{ height: '100%' }}>
+                <Card 
+                  style={{ height: '100%', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                  onClick={() => setActiveTab('cashback')}
+                  hoverable
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Cashback</div>
