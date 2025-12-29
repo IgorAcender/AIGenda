@@ -364,7 +364,11 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                 </Card>
               </Col>
               <Col xs={24} sm={12}>
-                <Card style={{ height: '100%' }}>
+                <Card 
+                  style={{ height: '100%', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                  onClick={() => setActiveTab('pacotes')}
+                  hoverable
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Pacotes em aberto</div>
