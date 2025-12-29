@@ -14,8 +14,12 @@ import {
   DatePicker,
   Button,
   Select,
+  Card,
+  Statistic,
+  Table,
+  Empty,
 } from 'antd'
-import { UserOutlined, CameraOutlined } from '@ant-design/icons'
+import { UserOutlined, CameraOutlined, CalendarOutlined, StarOutlined, DollarOutlined, ShoppingCartOutlined, PercentageOutlined, ClockCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
@@ -301,7 +305,145 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Painel */}
         {activeTab === 'painel' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Painel de controle do cliente</p>
+            {/* Cards principais - 3 colunas */}
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={8}>
+                <Card style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', color: 'white', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <CalendarOutlined style={{ fontSize: 32 }} />
+                    <div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0</div>
+                      <div style={{ fontSize: 12, opacity: 0.9 }}>0 dia sem vir</div>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', color: 'white', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <StarOutlined style={{ fontSize: 32 }} />
+                    <div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>Sem avaliação</div>
+                      <div style={{ fontSize: 12, opacity: 0.9 }}>Última avaliação</div>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={8}>
+                <Card style={{ background: 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)', color: 'white', borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <DollarOutlined style={{ fontSize: 32 }} />
+                    <div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>R$ 0.00</div>
+                      <div style={{ fontSize: 12, opacity: 0.9 }}>Faturamento</div>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Grid de informações - 2x3 */}
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Débitos</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#d97706' }}>R$ 0,00</div>
+                    </div>
+                    <ShoppingCartOutlined style={{ fontSize: 24, color: '#999' }} />
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Pacotes em aberto</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0</div>
+                    </div>
+                    <ShoppingCartOutlined style={{ fontSize: 24, color: '#999' }} />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Crédito</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#22c55e' }}>R$ 0,00</div>
+                    </div>
+                    <DollarOutlined style={{ fontSize: 24, color: '#22c55e' }} />
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Cashback</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#8b5cf6' }}>R$ 0,00</div>
+                    </div>
+                    <DollarOutlined style={{ fontSize: 24, color: '#8b5cf6' }} />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <Row gutter={16} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Taxa de cancelamento</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0.0%</div>
+                    </div>
+                    <PercentageOutlined style={{ fontSize: 24, color: '#999' }} />
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Card style={{ height: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ color: '#999', fontSize: 12 }}>Tempo como cliente</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>3 Dias</div>
+                    </div>
+                    <ClockCircleOutlined style={{ fontSize: 24, color: '#22c55e' }} />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            {/* Últimos serviços */}
+            <Divider style={{ margin: '24px 0 16px' }}>Últimos serviços</Divider>
+            <Card>
+              <Table
+                columns={[
+                  {
+                    title: 'Descrição',
+                    dataIndex: 'description',
+                    key: 'description',
+                  },
+                  {
+                    title: 'Profissional',
+                    dataIndex: 'professional',
+                    key: 'professional',
+                  },
+                  {
+                    title: 'Data',
+                    dataIndex: 'date',
+                    key: 'date',
+                  },
+                ]}
+                dataSource={[]}
+                pagination={false}
+                locale={{ emptyText: <Empty description="Não há dados" /> }}
+              />
+            </Card>
           </>
         )}
 
