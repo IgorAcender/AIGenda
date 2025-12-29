@@ -768,7 +768,71 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Vendas */}
         {activeTab === 'vendas' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Histórico de vendas</p>
+            {/* Header com Filtro de Datas */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Vendas</h3>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <DatePicker 
+                  value={dayjs('2025-10-01')} 
+                  format="DD/MM/YYYY"
+                  style={{ width: 120 }}
+                  onChange={() => {}}
+                />
+                <span style={{ color: '#666' }}>até</span>
+                <DatePicker 
+                  value={dayjs('2025-12-31')} 
+                  format="DD/MM/YYYY"
+                  style={{ width: 120 }}
+                  onChange={() => {}}
+                />
+                <Button type="text" icon={<CalendarOutlined />} />
+              </div>
+            </div>
+
+            {/* Tabela de Vendas */}
+            <Table
+              dataSource={editingClient?.sales || []}
+              columns={[
+                {
+                  title: 'Comanda',
+                  dataIndex: 'command',
+                  key: 'command',
+                  render: (text) => <span style={{ color: '#1890ff' }}>+ {text}</span>
+                },
+                {
+                  title: 'Data',
+                  dataIndex: 'date',
+                  key: 'date',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Descrição',
+                  dataIndex: 'description',
+                  key: 'description',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Valor',
+                  dataIndex: 'value',
+                  key: 'value',
+                  render: (value) => {
+                    return (
+                      <span style={{ color: '#22c55e', fontWeight: 500 }}>
+                        R$ {value ? parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'}
+                      </span>
+                    )
+                  }
+                },
+                {
+                  title: 'Profissional',
+                  dataIndex: 'professional',
+                  key: 'professional',
+                  render: (text) => text || '-'
+                }
+              ]}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Nenhum item encontrado" /> }}
+            />
           </>
         )}
 
