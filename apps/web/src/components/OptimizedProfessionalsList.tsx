@@ -5,7 +5,7 @@ import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useApiPaginatedQuery } from '@/hooks/useApi'
-import { useRouter } from 'next/navigation'
+import { ProfessionalFormModal } from './ProfessionalFormModal'
 
 interface Professional {
   id: string
@@ -21,9 +21,10 @@ interface Professional {
  * Usa TanStack Query para cache inteligente e refetch automático
  */
 export function OptimizedProfessionalsList() {
-  const router = useRouter()
   const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
+  const [modalVisible, setModalVisible] = useState(false)
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>()
 
   // Query otimizada com cache - dados serão reutilizados entre navegações
   const { data, isLoading, refetch } = useApiPaginatedQuery(
@@ -81,7 +82,10 @@ export function OptimizedProfessionalsList() {
             type="primary"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => router.push(`/cadastro/profissionais/${record.id}`)}
+            onClick={() => {
+              setSelectedProfessionalId(record.id)
+              setModalVisible(true)
+            }}
           >
             Editar
           </Button>
@@ -107,7 +111,10 @@ export function OptimizedProfessionalsList() {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => router.push('/cadastro/profissionais/novo')}
+          onClick={() => {
+            setSelectedProfessionalId(undefined)
+            setModalVisible(true)
+          }}
         >
           Novo Profissional
         </Button>
@@ -143,6 +150,16 @@ export function OptimizedProfessionalsList() {
           }}
         />
       </Card>
+
+      <ProfessionalFormModal
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false)
+          setSelectedProfessionalId(undefined)
+        }}
+        onSuccess={() => refetch()}
+        professionalId={selectedProfessionalId}
+      />
     </div>
   )
 }
