@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Card,
   Form,
@@ -19,6 +19,7 @@ import {
   Divider,
   Switch,
   InputNumber,
+  Spin,
 } from 'antd'
 import {
   SaveOutlined,
@@ -30,6 +31,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 
 const { Title, Text } = Typography
 
@@ -44,49 +46,71 @@ const weekDays = [
 ]
 
 export default function SettingsPage() {
-  const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
 
-  // Mock initial values
-  const initialValues = {
-    name: 'Meu Salão de Beleza',
-    phone: '(11) 99999-9999',
-    email: 'contato@meusalao.com',
-    address: 'Rua das Flores, 123',
-    city: 'São Paulo - SP',
-    workDays: [1, 2, 3, 4, 5, 6],
-    workStart: dayjs('09:00', 'HH:mm'),
-    workEnd: dayjs('19:00', 'HH:mm'),
-    slotDuration: 30,
-    timezone: 'America/Sao_Paulo',
-    currency: 'BRL',
-    // Notifications
-    emailNotifications: true,
-    smsNotifications: false,
-    whatsappNotifications: true,
-    reminderHours: 24,
-    // Online booking
-    onlineBookingEnabled: true,
-    requireApproval: false,
-    maxAdvanceDays: 30,
-    minAdvanceHours: 2,
-  }
+  // Buscar configurações atuais da API
+  const { data: configData, isLoading } = useApiQuery(
+    ['config'],
+    '/tenants/config',
+    { staleTime: 5 * 60 * 1000 }
+  )
+
+  // Mutation para salvar
+  const { mutate: saveConfig, isPending: saving } = useApiMutation(
+    async (payload: any) => {
+      const { data } = await import('@/lib/api').then(m => m.api.put('/tenants/config', payload))
+      return data
+    },
+    [['config']]
+  )
+
+  // Preencher form quando dados carregarem
+  useEffect(() => {
+    if (configData) {
+      const workDaysArray = configData.workDays
+        ? configData.workDays.split(',').map(Number)
+        : [1, 2, 3, 4, 5, 6]
+
+      form.setFieldsValue({
+        ...configData,
+        workDays: workDaysArray,
+        workStart: configData.workStartTime ? dayjs(configData.workStartTime, 'HH:mm') : dayjs('08:00', 'HH:mm'),
+        workEnd: configData.workEndTime ? dayjs(configData.workEndTime, 'HH:mm') : dayjs('18:00', 'HH:mm'),
+      })
+    }
+  }, [configData, form])
 
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      setLoading(true)
       
-      // Simular chamada API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      
-      message.success('Configurações salvas com sucesso!')
+      // Converter para formato da API
+      const payload = {
+        ...values,
+        workDays: values.workDays.join(','),
+        workStartTime: values.workStart?.format('HH:mm') || '08:00',
+        workEndTime: values.workEnd?.format('HH:mm') || '18:00',
+      }
+
+      // Remover campos temporários
+      delete payload.workStart
+      delete payload.workEnd
+
+      saveConfig(payload, {
+        onSuccess: () => message.success('Configurações salvas com sucesso!'),
+        onError: () => message.error('Erro ao salvar configurações'),
+      })
     } catch (error) {
-      console.error('Erro ao salvar:', error)
-      message.error('Erro ao salvar configurações')
-    } finally {
-      setLoading(false)
+      console.error('Erro ao validar:', error)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+        <Spin size="large" />
+      </div>
+    )
   }
 
   const tabItems = [
@@ -405,7 +429,7 @@ export default function SettingsPage() {
           type="primary"
           icon={<SaveOutlined />}
           onClick={handleSave}
-          loading={loading}
+          loading={saving}
         >
           Salvar Alterações
         </Button>
@@ -414,7 +438,6 @@ export default function SettingsPage() {
       <Form
         form={form}
         layout="vertical"
-        initialValues={initialValues}
       >
         <Tabs items={tabItems} />
       </Form>
