@@ -48,6 +48,7 @@ import {
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/pt-br'
 import { appointmentService, Appointment as ApiAppointment } from '@/services/appointmentService'
+import { ClientFormModal } from '@/components/ClientFormModal'
 import { clientService, Client } from '@/services/clientService'
 import { professionalService, Professional as ApiProfessional } from '@/services/professionalService'
 import { serviceService, Service } from '@/services/serviceService'
@@ -104,8 +105,6 @@ export default function AgendaPage() {
   const [form] = Form.useForm()
   const [isCreateClientModalOpen, setIsCreateClientModalOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState<Dayjs>(dayjs())
-  const [createClientForm] = Form.useForm()
-  const [creatingClient, setCreatingClient] = useState(false)
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -280,39 +279,6 @@ export default function AgendaPage() {
   const handleEditAppointment = (appointment: AppointmentView) => {
     setSelectedAppointment(appointment)
     setIsDetailsModalOpen(true)
-  }
-
-  const handleCreateClient = async () => {
-    try {
-      const values = await createClientForm.validateFields()
-      setCreatingClient(true)
-
-      const newClient = await clientService.createClient({
-        name: values.name,
-        phone: values.phone,
-        email: values.email || null,
-        cpf: values.cpf || null,
-        birthDate: values.birthDate ? values.birthDate.toISOString() : null,
-        address: values.address || null,
-        city: values.city || null,
-        notes: values.notes || null,
-      })
-
-      // Adicionar novo cliente à lista
-      setClients((prev) => [...prev, newClient])
-      
-      // Selecionar o cliente recém criado
-      form.setFieldsValue({ clientId: newClient.id })
-      
-      message.success('Cliente criado com sucesso!')
-      setIsCreateClientModalOpen(false)
-      createClientForm.resetFields()
-    } catch (error: any) {
-      console.error('Erro ao criar cliente:', error)
-      message.error(error.response?.data?.error || 'Erro ao criar cliente')
-    } finally {
-      setCreatingClient(false)
-    }
   }
 
   const handleUpdateAppointment = async () => {
@@ -1113,283 +1079,17 @@ export default function AgendaPage() {
       </Modal>
 
       {/* Modal de Criar Cliente */}
-      <Modal
-        title="Novo cliente"
+      <ClientFormModal
         open={isCreateClientModalOpen}
-        onOk={handleCreateClient}
-        onCancel={() => {
+        onClose={() => {
           setIsCreateClientModalOpen(false)
-          createClientForm.resetFields()
         }}
-        okText="Criar"
-        cancelText="Cancelar"
-        confirmLoading={creatingClient}
-        width={1000}
-        bodyStyle={{ maxHeight: '75vh', overflowY: 'auto', padding: 0 }}
-      >
-        <Row style={{ minHeight: '100%' }}>
-          {/* Coluna Esquerda - Avatar e Info */}
-          <Col span={8} style={{ borderRight: '1px solid #f0f0f0', padding: 24, textAlign: 'center' }}>
-            <Avatar
-              size={120}
-              icon={<UserOutlined />}
-              style={{ marginBottom: 16, backgroundColor: '#505afb' }}
-            />
-            <Button type="primary" icon={<CameraOutlined />} style={{ marginBottom: 24 }}>
-              Alterar
-            </Button>
-            
-            <Divider />
-
-            {/* Painéis na direita */}
-            <div style={{ marginTop: 24 }}>
-              <div style={{ marginBottom: 16, textAlign: 'left' }}>
-                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>Endereço</Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>Visualizar endereço</Typography.Text>
-              </div>
-
-              <div style={{ marginBottom: 16, textAlign: 'left' }}>
-                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>Redes sociais</Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>Configurar redes</Typography.Text>
-              </div>
-
-              <div style={{ textAlign: 'left' }}>
-                <Typography.Text strong style={{ display: 'block', marginBottom: 8 }}>Configurações</Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>Mais opções</Typography.Text>
-              </div>
-            </div>
-          </Col>
-
-          {/* Coluna Direita - Formulário com Abas */}
-          <Col span={16} style={{ padding: 24 }}>
-            <Form form={createClientForm} layout="vertical">
-              <Tabs
-                defaultActiveKey="cadastro"
-                items={[
-                  {
-                    key: 'cadastro',
-                    label: 'Cadastro',
-                    children: (
-                      <>
-                        <Row gutter={16}>
-                          <Col span={24}>
-                            <Form.Item
-                              name="name"
-                              label="* Nome"
-                              rules={[{ required: true, message: 'Nome é obrigatório' }]}
-                            >
-                              <Input placeholder="Nome do cliente" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item name="apelido" label="Apelido">
-                              <Input placeholder="Como chamá-lo" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="email" label="E-mail" rules={[{ type: 'email', message: 'E-mail inválido' }]}>
-                              <Input placeholder="email@exemplo.com" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item
-                              name="phone"
-                              label="Celular"
-                              rules={[{ required: true, message: 'Telefone é obrigatório' }]}
-                            >
-                              <Input placeholder="(11) 99999-9999" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="phone2" label="Telefone">
-                              <Input placeholder="(11) 3333-3333" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item name="birthDate" label="Aniversário">
-                              <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" placeholder="DD/MM/YYYY" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="gender" label="Gênero">
-                              <Input placeholder="M/F" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item name="cpf" label="CPF">
-                              <Input placeholder="000.000.000-00" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="cnpj" label="CNPJ">
-                              <Input placeholder="00.000.000/0000-00" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item name="rg" label="RG">
-                              <Input placeholder="0000000-0" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="referredBy" label="Indicado por">
-                              <Input placeholder="Selecionar cliente" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={24}>
-                            <Form.Item name="tags" label="Hashtags">
-                              <Input placeholder="#tag1 #tag2 #tag3" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-                      </>
-                    ),
-                  },
-                  {
-                    key: 'endereco',
-                    label: 'Endereço',
-                    children: (
-                      <>
-                        <Row gutter={16}>
-                          <Col span={18}>
-                            <Form.Item name="address" label="Endereço">
-                              <Input placeholder="Rua, número, bairro" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={6}>
-                            <Form.Item name="city" label="Cidade">
-                              <Input placeholder="Cidade" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={12}>
-                            <Form.Item name="state" label="Estado">
-                              <Input placeholder="SP" />
-                            </Form.Item>
-                          </Col>
-                          <Col span={12}>
-                            <Form.Item name="zipCode" label="CEP">
-                              <Input placeholder="00000-000" />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-
-                        <Row gutter={16}>
-                          <Col span={24}>
-                            <Form.Item name="notes" label="Observações">
-                              <Input.TextArea rows={4} placeholder="Anotações sobre o cliente..." />
-                            </Form.Item>
-                          </Col>
-                        </Row>
-                      </>
-                    ),
-                  },
-                  {
-                    key: 'configuracoes',
-                    label: 'Configurações',
-                    children: (
-                      <>
-                        <div style={{ marginBottom: 24 }}>
-                          <Typography.Text strong style={{ display: 'block', marginBottom: 12 }}>
-                            Desconto padrão
-                          </Typography.Text>
-                          <Row gutter={16}>
-                            <Col span={12}>
-                              <Form.Item name="defaultDiscount" label="Desconto (%)">
-                                <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="0.00" />
-                              </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                              <Form.Item name="discountType" label="Tipo">
-                                <Input placeholder="Na comanda" />
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </div>
-
-                        <Divider />
-
-                        <div style={{ marginBottom: 24 }}>
-                          <Row gutter={16} align="middle" style={{ marginBottom: 12 }}>
-                            <Col span={20}>
-                              <div>
-                                <Typography.Text strong>Ativo</Typography.Text>
-                                <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '4px 0 0 0' }}>
-                                  Desative um cliente para que ele não apareça mais em agendamentos, comandas etc.
-                                </Typography.Paragraph>
-                              </div>
-                            </Col>
-                            <Col span={4}>
-                              <Form.Item name="active" valuePropName="checked">
-                                <Switch />
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </div>
-
-                        <div style={{ marginBottom: 24 }}>
-                          <Row gutter={16} align="middle" style={{ marginBottom: 12 }}>
-                            <Col span={20}>
-                              <div>
-                                <Typography.Text strong>Notificações</Typography.Text>
-                                <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '4px 0 0 0' }}>
-                                  O cliente irá receber notificações (Whatsapp e SMS) sobre novos agendamentos, lembretes etc.
-                                </Typography.Paragraph>
-                              </div>
-                            </Col>
-                            <Col span={4}>
-                              <Form.Item name="notifications" valuePropName="checked">
-                                <Switch />
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </div>
-
-                        <div>
-                          <Row gutter={16} align="middle">
-                            <Col span={20}>
-                              <div>
-                                <Typography.Text strong>Bloquear acesso</Typography.Text>
-                                <Typography.Paragraph type="secondary" style={{ fontSize: 12, margin: '4px 0 0 0' }}>
-                                  Ao bloquear o cliente não terá acesso ao Agendamento Online ou Aplicativo Personalizado.
-                                </Typography.Paragraph>
-                              </div>
-                            </Col>
-                            <Col span={4}>
-                              <Form.Item name="blocked" valuePropName="checked">
-                                <Switch />
-                              </Form.Item>
-                            </Col>
-                          </Row>
-                        </div>
-                      </>
-                    ),
-                  },
-                ]}
-              />
-            </Form>
-          </Col>
-        </Row>
-      </Modal>
+        onSuccess={(newClient) => {
+          setClients((prev) => [...prev, newClient])
+          form.setFieldsValue({ clientId: newClient.id })
+          message.success('Cliente criado com sucesso!')
+        }}
+      />
     </div>
   )
 }

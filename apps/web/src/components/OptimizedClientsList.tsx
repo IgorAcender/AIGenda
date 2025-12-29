@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Table, Card, Button, Input, Space, Tag, Modal, Form, message, Popconfirm, Typography, Row, Col } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message, Popconfirm, Typography, Row, Col } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
+import { ClientFormModal } from './ClientFormModal'
 
 const { Title } = Typography
 
@@ -26,7 +27,6 @@ export function OptimizedClientsList() {
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
-  const [form] = Form.useForm()
 
   // Query otimizada com cache - dados serão reutilizados entre navegações
   const { data, isLoading, isFetching, refetch } = useApiPaginatedQuery(
@@ -38,18 +38,6 @@ export function OptimizedClientsList() {
       staleTime: 5 * 60 * 1000, // 5 minutos
       gcTime: 10 * 60 * 1000, // 10 minutos
     }
-  )
-
-  // Mutation para criar/atualizar cliente
-  const { mutate: saveClient, isPending: isSaving } = useApiMutation(
-    async (clientData) => {
-      if (editingClient) {
-        return await api.put(`/clients/${editingClient.id}`, clientData)
-      } else {
-        return await api.post('/clients', clientData)
-      }
-    },
-    [['clients', 'page', String(page)]] // Invalidar este query após salvar
   )
 
   // Mutation para deletar cliente
@@ -98,7 +86,6 @@ export function OptimizedClientsList() {
             icon={<EditOutlined />}
             onClick={() => {
               setEditingClient(record)
-              form.setFieldsValue(record)
               setIsModalOpen(true)
             }}
           />
@@ -115,20 +102,6 @@ export function OptimizedClientsList() {
       ),
     },
   ]
-
-  const handleSave = async (values: any) => {
-    saveClient(values, {
-      onSuccess: () => {
-        message.success(editingClient ? 'Cliente atualizado!' : 'Cliente criado!')
-        setIsModalOpen(false)
-        setEditingClient(null)
-        form.resetFields()
-      },
-      onError: (error: any) => {
-        message.error(error.message || 'Erro ao salvar cliente')
-      },
-    })
-  }
 
   return (
     <Card>
@@ -157,7 +130,6 @@ export function OptimizedClientsList() {
               icon={<PlusOutlined />}
               onClick={() => {
                 setEditingClient(null)
-                form.resetFields()
                 setIsModalOpen(true)
               }}
             >
@@ -181,29 +153,18 @@ export function OptimizedClientsList() {
         style={{ marginTop: 24 }}
       />
 
-      <Modal
-        title={editingClient ? 'Editar Cliente' : 'Novo Cliente'}
+      <ClientFormModal
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        onOk={() => form.submit()}
-        confirmLoading={isSaving}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSave}
-        >
-          <Form.Item name="name" label="Nome" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="email" label="Email">
-            <Input type="email" />
-          </Form.Item>
-          <Form.Item name="phone" label="Telefone" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingClient(null)
+        }}
+        onSuccess={() => {
+          message.success(editingClient ? 'Cliente atualizado!' : 'Cliente criado!')
+          refetch()
+        }}
+        editingClient={editingClient}
+      />
     </Card>
   )
 }
