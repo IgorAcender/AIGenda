@@ -34,6 +34,50 @@ import {
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 
+// Estilo para o Modal como slide-out panel
+const modalStyle = `
+  .professional-modal .ant-modal {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .professional-modal .ant-modal-content {
+    height: 100vh !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  
+  .professional-modal .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0 !important;
+    padding: 16px 24px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .professional-modal .ant-modal-body {
+    height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
+  }
+  
+  .professional-modal .ant-modal-footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0 !important;
+  }
+  
+  @media (max-width: 768px) {
+    .professional-modal .ant-modal {
+      width: 100% !important;
+    }
+  }
+`
+
 interface Professional {
   id: string
   name: string
@@ -598,26 +642,41 @@ export function ProfessionalFormModal({
   ]
 
   return (
-    <Modal
-      title={modalTitle}
-      open={visible}
-      onCancel={onClose}
-      width={700}
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          Cancelar
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={handleSave}
-          loading={saving}
-        >
-          Salvar
-        </Button>,
-      ]}
-    >
+    <>
+      <style dangerouslySetInnerHTML={{ __html: modalStyle }} />
+      <Modal
+        title={modalTitle}
+        open={visible}
+        onCancel={onClose}
+        width="50%"
+        className="professional-modal"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          margin: 0,
+        }}
+        bodyStyle={{
+          height: 'calc(100vh - 140px)',
+          overflowY: 'auto',
+          padding: '24px',
+        }}
+        footer={[
+          <Button key="cancel" onClick={onClose}>
+            Cancelar
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={handleSave}
+            loading={saving}
+          >
+            Salvar
+          </Button>,
+        ]}
+      >
       {loadingProfessional && isEditing ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
           <Spin size="large" />
@@ -676,6 +735,7 @@ export function ProfessionalFormModal({
           </Space>
         </>
       )}
-    </Modal>
+      </Modal>
+    </>
   )
 }
