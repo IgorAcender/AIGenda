@@ -19,7 +19,7 @@ import {
   Table,
   Empty,
 } from 'antd'
-import { UserOutlined, CameraOutlined, CalendarOutlined, StarOutlined, DollarOutlined, ShoppingCartOutlined, PercentageOutlined, ClockCircleOutlined } from '@ant-design/icons'
+import { UserOutlined, CameraOutlined, CalendarOutlined, StarOutlined, DollarOutlined, ShoppingCartOutlined, PercentageOutlined, ClockCircleOutlined, EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
@@ -594,7 +594,64 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Créditos */}
         {activeTab === 'creditos' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Créditos disponíveis</p>
+            {/* Header com Saldo */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f0f0f0' }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Histórico de crédito</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>
+                  <DollarOutlined style={{ marginRight: 4, color: '#22c55e' }} />
+                  Saldo R$ {(editingClient?.creditBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+                <Button type="text" icon={<EditOutlined />} />
+              </div>
+            </div>
+
+            {/* Tabela de Histórico */}
+            <Table
+              columns={[
+                {
+                  title: 'Data',
+                  dataIndex: 'date',
+                  key: 'date',
+                  width: '25%',
+                },
+                {
+                  title: 'Valor',
+                  dataIndex: 'amount',
+                  key: 'amount',
+                  width: '20%',
+                  render: (amount) => (
+                    <span style={{ color: amount > 0 ? '#22c55e' : '#d97706' }}>
+                      {amount > 0 ? '+' : ''} R$ {Math.abs(amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  ),
+                },
+                {
+                  title: 'Movimentação',
+                  dataIndex: 'type',
+                  key: 'type',
+                  width: '25%',
+                  render: (type) => {
+                    const typeColors: Record<string, string> = {
+                      'Acréscimo': '#22c55e',
+                      'Desconto': '#d97706',
+                      'Uso': '#ef4444',
+                      'Ajuste': '#3b82f6',
+                    }
+                    return <span style={{ color: typeColors[type as string] || '#999' }}>{type || 'Movimentação'}</span>
+                  },
+                },
+                {
+                  title: 'Motivo',
+                  dataIndex: 'reason',
+                  key: 'reason',
+                  width: '30%',
+                },
+              ]}
+              dataSource={editingClient?.creditHistory || []}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Não há dados" /> }}
+            />
           </>
         )}
 
