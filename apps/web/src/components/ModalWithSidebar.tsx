@@ -62,6 +62,21 @@ const modalStyle = `
     margin-top: 8px;
   }
   
+  .sidebar-modal-sidebar .ant-menu-item {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+    height: auto !important;
+    line-height: 1.5;
+    padding: 8px 12px !important;
+  }
+  
+  .sidebar-modal-sidebar .ant-menu-item-label {
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: normal !important;
+  }
+  
   .sidebar-modal-content {
     flex: 1;
     padding: 24px;
