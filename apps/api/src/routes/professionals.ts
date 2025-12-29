@@ -14,6 +14,7 @@ const professionalSchema = z.object({
   birthDate: z.string().optional().nullable().transform(val => val ? new Date(val) : null),
   profession: z.string().optional().nullable(),
   specialty: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
   avatar: z.string().optional().nullable(),
   color: z.string().optional().nullable(),
   
@@ -190,7 +191,7 @@ export async function professionalRoutes(app: FastifyInstance) {
 
     await prisma.professional.update({
       where: { id },
-      data: { active: false },
+      data: { isActive: false },
     })
 
     return { message: 'Profissional desativado com sucesso' }
@@ -211,12 +212,12 @@ export async function professionalRoutes(app: FastifyInstance) {
     }
 
     // Remove vínculos existentes e cria novos
-    await prisma.serviceProfessional.deleteMany({
+    await prisma.professionalService.deleteMany({
       where: { professionalId: id },
     })
 
     if (serviceIds?.length > 0) {
-      await prisma.serviceProfessional.createMany({
+      await prisma.professionalService.createMany({
         data: serviceIds.map((serviceId) => ({
           professionalId: id,
           serviceId,
