@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import {
-  Modal,
   Form,
   Input,
   Select,
@@ -13,70 +12,22 @@ import {
   Spin,
   Upload,
   Avatar,
-  Tabs,
   Switch,
   Divider,
   Space,
   InputNumber,
-  Tree,
   Checkbox,
 } from 'antd'
 import {
-  SaveOutlined,
   UploadOutlined,
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
-  FileTextOutlined,
-  DollarOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
-
-// Estilo para o Modal como slide-out panel
-const modalStyle = `
-  .professional-modal .ant-modal {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
-  }
-  
-  .professional-modal .ant-modal-content {
-    height: 100vh !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-  }
-  
-  .professional-modal .ant-modal-header {
-    border-bottom: 1px solid #f0f0f0 !important;
-    padding: 16px 24px !important;
-    margin-bottom: 0 !important;
-  }
-  
-  .professional-modal .ant-modal-body {
-    height: calc(100vh - 140px) !important;
-    overflow-y: auto !important;
-    padding: 24px !important;
-  }
-  
-  .professional-modal .ant-modal-footer {
-    padding: 16px 24px !important;
-    border-top: 1px solid #f0f0f0 !important;
-  }
-  
-  @media (max-width: 768px) {
-    .professional-modal .ant-modal {
-      width: 100% !important;
-    }
-  }
-`
+import { ModalWithSidebar } from './ModalWithSidebar'
 
 interface Professional {
   id: string
@@ -113,7 +64,7 @@ interface ProfessionalFormModalProps {
   visible: boolean
   onClose: () => void
   onSuccess: () => void
-  professionalId?: string // Se não fornecido, é modo criar
+  professionalId?: string
 }
 
 export function ProfessionalFormModal({
@@ -125,6 +76,7 @@ export function ProfessionalFormModal({
   const [form] = Form.useForm()
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
+  const [activeTab, setActiveTab] = useState<string>('cadastro')
   const isEditing = !!professionalId
 
   // Buscar profissional se editando
@@ -157,7 +109,7 @@ export function ProfessionalFormModal({
   )
 
   // Mutation para vincular serviços
-  const { mutate: linkServices, isPending: linkingServices } = useApiMutation(
+  const { mutate: linkServices } = useApiMutation(
     async (serviceIds: string[]) => {
       if (isEditing) {
         const { data } = await api.post(`/professionals/${professionalId}/services`, {
@@ -216,6 +168,7 @@ export function ProfessionalFormModal({
     if (!visible) {
       form.resetFields()
       setAvatarUrl(null)
+      setActiveTab('cadastro')
     }
   }, [visible, form])
 
@@ -250,6 +203,7 @@ export function ProfessionalFormModal({
                 form.resetFields()
                 setAvatarUrl(null)
                 setSelectedServices([])
+                setActiveTab('cadastro')
                 onSuccess()
                 onClose()
               },
@@ -266,6 +220,7 @@ export function ProfessionalFormModal({
             form.resetFields()
             setAvatarUrl(null)
             setSelectedServices([])
+            setActiveTab('cadastro')
             onSuccess()
             onClose()
           }
@@ -281,417 +236,316 @@ export function ProfessionalFormModal({
     }
   }
 
-  const modalTitle = isEditing ? 'Editar Profissional' : 'Novo Profissional'
-
-  const tabItems = [
-    {
-      key: 'cadastro',
-      label: 'Cadastro',
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          {/* Avatar Section */}
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Avatar
-              size={80}
-              src={avatarUrl}
-              icon={<UserOutlined />}
-              style={{ marginBottom: 16 }}
-            />
-            <div>
-              <Upload
-                maxCount={1}
-                accept="image/*"
-                beforeUpload={() => false}
-                onChange={handleAvatarChange}
-              >
-                <Button icon={<UploadOutlined />}>Alterar Foto</Button>
-              </Upload>
-            </div>
-          </div>
-
-          {/* Nome Section */}
-          <Form.Item
-            name="name"
-            label="Nome Completo"
-            rules={[
-              { required: true, message: 'Nome é obrigatório' },
-              { min: 3, message: 'Nome deve ter pelo menos 3 caracteres' },
-            ]}
-          >
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Ex: João Silva"
-            />
-          </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="firstName"
-                label="Primeiro Nome"
-              >
-                <Input placeholder="João" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="lastName"
-                label="Sobrenome"
-              >
-                <Input placeholder="Silva" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider>Contato</Divider>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { type: 'email', message: 'Email inválido' },
-                ]}
-              >
-                <Input
-                  prefix={<MailOutlined />}
-                  placeholder="joao@example.com"
-                  type="email"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="phone"
-                label="Celular"
-              >
-                <Input
-                  prefix={<PhoneOutlined />}
-                  placeholder="(11) 99999-9999"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Divider>Documentação</Divider>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="cpf"
-                label="CPF/CNPJ"
-              >
-                <Input
-                  placeholder="000.000.000-00"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="rg"
-                label="RG"
-              >
-                <Input
-                  placeholder="00.000.000-0"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            name="birthDate"
-            label="Aniversário"
-          >
-            <Input type="date" />
-          </Form.Item>
-
-          <Divider>Profissão</Divider>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="profession"
-                label="Profissão"
-              >
-                <Input placeholder="Ex: Barbeiro" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="specialty"
-                label="Especialidade"
-              >
-                <Input placeholder="Ex: Corte, Coloração" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item
-            name="bio"
-            label="Bio/Experiência"
-          >
-            <Input.TextArea
-              placeholder="Descreva sua experiência..."
-              rows={3}
-            />
-          </Form.Item>
-        </Form>
-      ),
-    },
-    {
-      key: 'endereco',
-      label: 'Endereço',
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item
-            name="address"
-            label="Rua"
-          >
-            <Input
-              prefix={<EnvironmentOutlined />}
-              placeholder="Ex: Rua das Flores"
-            />
-          </Form.Item>
-
-          <Row gutter={16}>
-            <Col span={6}>
-              <Form.Item
-                name="addressNumber"
-                label="Número"
-              >
-                <Input placeholder="123" />
-              </Form.Item>
-            </Col>
-            <Col span={18}>
-              <Form.Item
-                name="addressComplement"
-                label="Complemento"
-              >
-                <Input placeholder="Apto 45, Bloco B" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="neighborhood"
-                label="Bairro"
-              >
-                <Input placeholder="Vila Mariana" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="zipCode"
-                label="CEP"
-              >
-                <Input placeholder="01234-567" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="city"
-                label="Cidade"
-              >
-                <Input placeholder="São Paulo" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="state"
-                label="Estado"
-              >
-                <Select
-                  placeholder="Selecione"
-                  options={[
-                    { label: 'São Paulo', value: 'SP' },
-                    { label: 'Rio de Janeiro', value: 'RJ' },
-                    { label: 'Minas Gerais', value: 'MG' },
-                    { label: 'Bahia', value: 'BA' },
-                    { label: 'Santa Catarina', value: 'SC' },
-                    // Adicionar outros estados conforme necessário
-                  ]}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      ),
-    },
-    {
-      key: 'usuario',
-      label: 'Usuário',
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item
-            name="signature"
-            label="Assinatura Digital"
-          >
-            <Input.TextArea
-              placeholder="Insira sua assinatura digital"
-              rows={4}
-            />
-          </Form.Item>
-        </Form>
-      ),
-    },
-    {
-      key: 'servicos',
-      label: 'Personalizar Serviços',
-      children: (
-        <div style={{ marginTop: 16 }}>
-          <p style={{ color: '#666', marginBottom: 16 }}>
-            Selecione os serviços disponibilizados por este profissional
-          </p>
-          {services.length === 0 ? (
-            <p style={{ color: '#999', textAlign: 'center' }}>Nenhum serviço disponível</p>
-          ) : (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: '12px'
-            }}>
-              {services.map((service: any) => (
-                <Checkbox
-                  key={service.id}
-                  checked={selectedServices.includes(service.id)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedServices([...selectedServices, service.id])
-                    } else {
-                      setSelectedServices(selectedServices.filter(id => id !== service.id))
-                    }
-                  }}
-                >
-                  <div>
-                    <strong>{service.name}</strong>
-                    <br />
-                    <span style={{ fontSize: '12px', color: '#999' }}>
-                      R$ {service.price?.toFixed(2)} • {service.duration}min
-                    </span>
-                  </div>
-                </Checkbox>
-              ))}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'comissoes',
-      label: 'Configurar Comissões',
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item
-            name="commissionRate"
-            label="Taxa de Comissão (%)"
-          >
-            <InputNumber
-              min={0}
-              max={100}
-              step={0.01}
-              placeholder="Ex: 30.00"
-              precision={2}
-            />
-          </Form.Item>
-        </Form>
-      ),
-    },
-    {
-      key: 'anotacoes',
-      label: 'Anotações',
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item
-            name="notes"
-            label="Anotações"
-          >
-            <Input.TextArea
-              placeholder="Adicione observações sobre o profissional"
-              rows={6}
-            />
-          </Form.Item>
-        </Form>
-      ),
-    },
-  ]
-
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: modalStyle }} />
-      <Modal
-        title={modalTitle}
+  if (loadingProfessional && isEditing) {
+    return (
+      <ModalWithSidebar
+        title={isEditing ? 'Editar Profissional' : 'Novo Profissional'}
         open={visible}
-        onCancel={onClose}
-        width="60%"
-        className="professional-modal"
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          margin: 0,
-        }}
-        bodyStyle={{
-          height: 'calc(100vh - 140px)',
-          overflowY: 'auto',
-          padding: '24px',
-        }}
-        footer={[
-          <Button key="cancel" onClick={onClose}>
-            Cancelar
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            icon={<SaveOutlined />}
-            onClick={handleSave}
-            loading={saving}
-          >
-            Salvar
-          </Button>,
+        onClose={onClose}
+        tabs={[
+          { key: 'cadastro', label: 'Cadastro' },
+          { key: 'endereco', label: 'Endereço' },
+          { key: 'usuario', label: 'Usuário' },
+          { key: 'servicos', label: 'Personalizar Serviços' },
+          { key: 'comissoes', label: 'Configurar Comissões' },
+          { key: 'anotacoes', label: 'Anotações' },
         ]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       >
-      {loadingProfessional && isEditing ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
           <Spin size="large" />
         </div>
-      ) : (
-        <>
-          <Tabs items={tabItems} />
+      </ModalWithSidebar>
+    )
+  }
 
-          <Divider>Configurações</Divider>
-
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <Form
-              form={form}
-              layout="vertical"
+  return (
+    <ModalWithSidebar
+      title={isEditing ? 'Editar Profissional' : 'Novo Profissional'}
+      open={visible}
+      onClose={onClose}
+      onSave={handleSave}
+      isSaving={saving}
+      tabs={[
+        { key: 'cadastro', label: 'Cadastro' },
+        { key: 'endereco', label: 'Endereço' },
+        { key: 'usuario', label: 'Usuário' },
+        { key: 'servicos', label: 'Personalizar Serviços' },
+        { key: 'comissoes', label: 'Configurar Comissões' },
+        { key: 'anotacoes', label: 'Anotações' },
+      ]}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      sidebarContent={
+        <div style={{ textAlign: 'center' }}>
+          <Avatar
+            size={80}
+            src={avatarUrl}
+            icon={<UserOutlined />}
+            style={{ marginBottom: 16, backgroundColor: '#505afb' }}
+          />
+          <div>
+            <Upload
+              maxCount={1}
+              accept="image/*"
+              beforeUpload={() => false}
+              onChange={handleAvatarChange}
             >
+              <Button type="primary" size="small" icon={<UploadOutlined />} style={{ width: '100%' }}>
+                Alterar Foto
+              </Button>
+            </Upload>
+          </div>
+        </div>
+      }
+    >
+      <Form form={form} layout="vertical" onFinish={handleSave}>
+        {/* Aba Cadastro */}
+        {activeTab === 'cadastro' && (
+          <>
+            <Form.Item
+              name="name"
+              label="* Nome Completo"
+              rules={[
+                { required: true, message: 'Nome é obrigatório' },
+                { min: 3, message: 'Nome deve ter pelo menos 3 caracteres' },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Ex: João Silva"
+              />
+            </Form.Item>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="firstName" label="Primeiro Nome">
+                  <Input placeholder="João" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="lastName" label="Sobrenome">
+                  <Input placeholder="Silva" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Divider>Contato</Divider>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[{ type: 'email', message: 'Email inválido' }]}
+                >
+                  <Input
+                    prefix={<MailOutlined />}
+                    placeholder="joao@example.com"
+                    type="email"
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="phone" label="Celular">
+                  <Input
+                    prefix={<PhoneOutlined />}
+                    placeholder="(11) 99999-9999"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Divider>Documentação</Divider>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="cpf" label="CPF/CNPJ">
+                  <Input placeholder="000.000.000-00" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="rg" label="RG">
+                  <Input placeholder="00.000.000-0" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item name="birthDate" label="Aniversário">
+              <Input type="date" />
+            </Form.Item>
+
+            <Divider>Profissão</Divider>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="profession" label="Profissão">
+                  <Input placeholder="Ex: Barbeiro" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="specialty" label="Especialidade">
+                  <Input placeholder="Ex: Corte, Coloração" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item name="bio" label="Bio/Experiência">
+              <Input.TextArea
+                placeholder="Descreva sua experiência..."
+                rows={3}
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Aba Endereço */}
+        {activeTab === 'endereco' && (
+          <>
+            <Form.Item name="address" label="Rua">
+              <Input
+                prefix={<EnvironmentOutlined />}
+                placeholder="Ex: Rua das Flores"
+              />
+            </Form.Item>
+
+            <Row gutter={16}>
+              <Col span={6}>
+                <Form.Item name="addressNumber" label="Número">
+                  <Input placeholder="123" />
+                </Form.Item>
+              </Col>
+              <Col span={18}>
+                <Form.Item name="addressComplement" label="Complemento">
+                  <Input placeholder="Apto 45, Bloco B" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="neighborhood" label="Bairro">
+                  <Input placeholder="Vila Mariana" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="zipCode" label="CEP">
+                  <Input placeholder="01234-567" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="city" label="Cidade">
+                  <Input placeholder="São Paulo" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="state" label="Estado">
+                  <Select
+                    placeholder="Selecione"
+                    options={[
+                      { label: 'São Paulo', value: 'SP' },
+                      { label: 'Rio de Janeiro', value: 'RJ' },
+                      { label: 'Minas Gerais', value: 'MG' },
+                      { label: 'Bahia', value: 'BA' },
+                      { label: 'Santa Catarina', value: 'SC' },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </>
+        )}
+
+        {/* Aba Usuário */}
+        {activeTab === 'usuario' && (
+          <>
+            <Form.Item name="signature" label="Assinatura Digital">
+              <Input.TextArea
+                placeholder="Insira sua assinatura digital"
+                rows={4}
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Aba Personalizar Serviços */}
+        {activeTab === 'servicos' && (
+          <>
+            <p style={{ color: '#666', marginBottom: 16 }}>
+              Selecione os serviços disponibilizados por este profissional
+            </p>
+            {services.length === 0 ? (
+              <p style={{ color: '#999', textAlign: 'center' }}>Nenhum serviço disponível</p>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                gap: '12px',
+              }}>
+                {services.map((service: any) => (
+                  <Checkbox
+                    key={service.id}
+                    checked={selectedServices.includes(service.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedServices([...selectedServices, service.id])
+                      } else {
+                        setSelectedServices(selectedServices.filter(id => id !== service.id))
+                      }
+                    }}
+                  >
+                    <div>
+                      <strong>{service.name}</strong>
+                      <br />
+                      <span style={{ fontSize: '12px', color: '#999' }}>
+                        R$ {service.price?.toFixed(2)} • {service.duration}min
+                      </span>
+                    </div>
+                  </Checkbox>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Aba Configurar Comissões */}
+        {activeTab === 'comissoes' && (
+          <>
+            <Form.Item name="commissionRate" label="Taxa de Comissão (%)">
+              <InputNumber
+                min={0}
+                max={100}
+                step={0.01}
+                placeholder="Ex: 30.00"
+                precision={2}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Aba Anotações */}
+        {activeTab === 'anotacoes' && (
+          <>
+            <Form.Item name="notes" label="Anotações">
+              <Input.TextArea
+                placeholder="Adicione observações sobre o profissional"
+                rows={6}
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Configurações Gerais - sempre visível */}
+        {(activeTab === 'cadastro' || activeTab === 'endereco') && (
+          <>
+            <Divider>Configurações</Divider>
+
+            <Space direction="vertical" style={{ width: '100%' }} size="large">
               <Form.Item
                 name="isActive"
                 label="Ativo"
@@ -731,11 +585,10 @@ export function ProfessionalFormModal({
               >
                 <Switch />
               </Form.Item>
-            </Form>
-          </Space>
-        </>
-      )}
-      </Modal>
-    </>
+            </Space>
+          </>
+        )}
+      </Form>
+    </ModalWithSidebar>
   )
 }
