@@ -36,7 +36,6 @@ const modalStyle = `
   .sidebar-modal .ant-modal-centered {
     padding: 0 !important;
   }
-  }
   
   .sidebar-modal .ant-modal-header {
     border-bottom: 1px solid #f0f0f0 !important;
@@ -254,7 +253,7 @@ export function ModalWithSidebar({
         }}
         loading={isLoading}
       >
-        <div style={{ display: 'flex', height: '100%' }}>
+        <div style={{ display: 'flex', height: '100%', width: '100%' }}>
           {/* Sidebar */}
           <div className="sidebar-modal-sidebar">
             {sidebarContent}
