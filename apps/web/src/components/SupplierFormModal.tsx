@@ -1,0 +1,259 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Modal, Form, Input, Switch, Button, message } from 'antd'
+import { useApiMutation } from '@/hooks/useApi'
+import { api } from '@/lib/api'
+
+interface Supplier {
+  id?: string
+  name: string
+  email?: string
+  phone?: string
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  description?: string
+  active?: boolean
+}
+
+const modalStyle = `
+  .supplier-modal .ant-modal {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .supplier-modal .ant-modal-content {
+    height: 100vh !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .supplier-modal .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0 !important;
+    padding: 16px 24px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .supplier-modal .ant-modal-body {
+    height: calc(100vh - 140px) !important;
+    overflow-y: auto !important;
+    padding: 24px !important;
+    flex: 1 !important;
+  }
+  
+  .supplier-modal .ant-modal-footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0 !important;
+    flex-shrink: 0 !important;
+  }
+  
+  @media (max-width: 768px) {
+    .supplier-modal .ant-modal {
+      width: 100% !important;
+    }
+  }
+`
+
+interface SupplierFormModalProps {
+  open: boolean
+  onClose: () => void
+  onSuccess: (supplier: Supplier) => void
+  editingSupplier?: Supplier | null
+}
+
+export function SupplierFormModal({
+  open,
+  onClose,
+  onSuccess,
+  editingSupplier,
+}: SupplierFormModalProps) {
+  const [form] = Form.useForm()
+  const [submitting, setSubmitting] = useState(false)
+
+  const { mutate: saveSupplier, isPending: isSaving } = useApiMutation(
+    async (supplierData) => {
+      if (editingSupplier?.id) {
+        return await api.put(`/suppliers/${editingSupplier.id}`, supplierData)
+      } else {
+        return await api.post('/suppliers', supplierData)
+      }
+    },
+    [['suppliers']]
+  )
+
+  useEffect(() => {
+    if (editingSupplier) {
+      form.setFieldsValue({
+        name: editingSupplier.name,
+        email: editingSupplier.email,
+        phone: editingSupplier.phone,
+        address: editingSupplier.address,
+        city: editingSupplier.city,
+        state: editingSupplier.state,
+        zipCode: editingSupplier.zipCode,
+        description: editingSupplier.description,
+        active: editingSupplier.active ?? true,
+      })
+    } else {
+      form.resetFields()
+    }
+  }, [editingSupplier, open, form])
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields()
+      setSubmitting(true)
+
+      saveSupplier(values, {
+        onSuccess: (response: any) => {
+          message.success(editingSupplier ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!')
+          onSuccess(response.data || response)
+          onClose()
+          form.resetFields()
+          setSubmitting(false)
+        },
+        onError: (error: any) => {
+          message.error(error.message || 'Erro ao salvar fornecedor')
+          setSubmitting(false)
+        },
+      })
+    } catch (error) {
+      console.error('Erro ao validar formulário:', error)
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: modalStyle }} />
+      <Modal
+        title={editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width="60%"
+        wrapClassName="supplier-modal"
+        styles={{
+          content: { padding: 0, borderRadius: 0 }
+        }}
+        bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          style={{ padding: 0 }}
+        >
+          <Form.Item
+            name="name"
+            label="Nome do Fornecedor"
+            rules={[
+              { required: true, message: 'Nome é obrigatório' },
+              { min: 3, message: 'Mínimo 3 caracteres' },
+            ]}
+          >
+            <Input placeholder="Ex: Distribuidora XYZ" />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[{ type: 'email', message: 'Email inválido' }]}
+          >
+            <Input placeholder="contato@fornecedor.com" />
+          </Form.Item>
+
+          <Form.Item
+            name="phone"
+            label="Telefone"
+          >
+            <Input placeholder="(11) 9999-9999" />
+          </Form.Item>
+
+          <Form.Item
+            name="address"
+            label="Endereço"
+          >
+            <Input placeholder="Rua, número, complemento" />
+          </Form.Item>
+
+          <Form.Item
+            name="city"
+            label="Cidade"
+          >
+            <Input placeholder="São Paulo" />
+          </Form.Item>
+
+          <Form.Item
+            name="state"
+            label="Estado"
+          >
+            <Input placeholder="SP" maxLength={2} />
+          </Form.Item>
+
+          <Form.Item
+            name="zipCode"
+            label="CEP"
+          >
+            <Input placeholder="00000-000" />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Descrição"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Descrição do fornecedor"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="active"
+            label="Ativo"
+            valuePropName="checked"
+            initialValue={true}
+          >
+            <Switch />
+          </Form.Item>
+        </Form>
+
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          width: '60%',
+          padding: '16px 24px',
+          borderTop: '1px solid #f0f0f0',
+          backgroundColor: '#fff',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 8,
+          zIndex: 999,
+        }}>
+          <Button onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            type="primary"
+            loading={isSaving || submitting}
+            onClick={handleSave}
+          >
+            {editingSupplier ? 'Atualizar' : 'Criar'} Fornecedor
+          </Button>
+        </div>
+      </Modal>
+    </>
+  )
+}
