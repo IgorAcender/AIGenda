@@ -716,7 +716,7 @@ export default function AgendaPage() {
         }}
         okText="Salvar"
         cancelText="Cancelar"
-        width={800}
+        width="60%"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           {/* Linha 1: Cliente, Data, Status, Cor */}
