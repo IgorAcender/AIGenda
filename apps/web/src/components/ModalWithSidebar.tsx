@@ -15,6 +15,7 @@ const modalStyle = `
     height: 100vh !important;
     border-radius: 0 !important;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
+    max-width: none !important;
   }
   
   .sidebar-modal .ant-modal-content {
@@ -24,10 +25,17 @@ const modalStyle = `
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
+    margin: 0 !important;
   }
   
   .sidebar-modal .ant-modal-wrap {
     overflow: hidden !important;
+    padding: 0 !important;
+  }
+  
+  .sidebar-modal .ant-modal-centered {
+    padding: 0 !important;
+  }
   }
   
   .sidebar-modal .ant-modal-header {
@@ -86,14 +94,19 @@ const modalStyle = `
   .sidebar-modal-content {
     flex: 1;
     padding: 24px;
-    padding-right: 8px;
+    padding-right: 0;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
+    margin-right: 0 !important;
+  }
+  
+  .sidebar-modal-content > * {
+    padding-right: 16px;
   }
   
   .sidebar-modal-content::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   
   .sidebar-modal-content::-webkit-scrollbar-track {
