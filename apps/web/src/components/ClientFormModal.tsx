@@ -312,8 +312,8 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <CalendarOutlined style={{ fontSize: 32 }} />
                     <div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0</div>
-                      <div style={{ fontSize: 12, opacity: 0.9 }}>0 dia sem vir</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>{editingClient?.daysSinceLastVisit || 0}</div>
+                      <div style={{ fontSize: 12, opacity: 0.9 }}>Dias sem vir</div>
                     </div>
                   </div>
                 </Card>
@@ -323,7 +323,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <StarOutlined style={{ fontSize: 32 }} />
                     <div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>Sem avaliação</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>
+                        {editingClient?.rating ? editingClient.rating.toFixed(1) : 'Sem avaliação'}
+                      </div>
                       <div style={{ fontSize: 12, opacity: 0.9 }}>Última avaliação</div>
                     </div>
                   </div>
@@ -334,7 +336,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <DollarOutlined style={{ fontSize: 32 }} />
                     <div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>R$ 0.00</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>
+                        R$ {(editingClient?.totalSpent || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
                       <div style={{ fontSize: 12, opacity: 0.9 }}>Faturamento</div>
                     </div>
                   </div>
@@ -349,9 +353,11 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Débitos</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#d97706' }}>R$ 0,00</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#d97706' }}>
+                        R$ {(editingClient?.totalDebt || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
                     </div>
-                    <ShoppingCartOutlined style={{ fontSize: 24, color: '#999' }} />
+                    <ShoppingCartOutlined style={{ fontSize: 24, color: '#d97706' }} />
                   </div>
                 </Card>
               </Col>
@@ -360,7 +366,7 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Pacotes em aberto</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>{editingClient?.openPackages || 0}</div>
                     </div>
                     <ShoppingCartOutlined style={{ fontSize: 24, color: '#999' }} />
                   </div>
@@ -374,7 +380,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Crédito</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#22c55e' }}>R$ 0,00</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#22c55e' }}>
+                        R$ {(editingClient?.creditBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
                     </div>
                     <DollarOutlined style={{ fontSize: 24, color: '#22c55e' }} />
                   </div>
@@ -385,7 +393,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Cashback</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#8b5cf6' }}>R$ 0,00</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold', color: '#8b5cf6' }}>
+                        R$ {(editingClient?.cashbackBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
                     </div>
                     <DollarOutlined style={{ fontSize: 24, color: '#8b5cf6' }} />
                   </div>
@@ -399,7 +409,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Taxa de cancelamento</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>0.0%</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>
+                        {(editingClient?.cancellationRate || 0).toFixed(1)}%
+                      </div>
                     </div>
                     <PercentageOutlined style={{ fontSize: 24, color: '#999' }} />
                   </div>
@@ -410,7 +422,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ color: '#999', fontSize: 12 }}>Tempo como cliente</div>
-                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>3 Dias</div>
+                      <div style={{ fontSize: 20, fontWeight: 'bold' }}>
+                        {editingClient?.daysSinceCreation || 0} {editingClient?.daysSinceCreation === 1 ? 'Dia' : 'Dias'}
+                      </div>
                     </div>
                     <ClockCircleOutlined style={{ fontSize: 24, color: '#22c55e' }} />
                   </div>
@@ -439,7 +453,7 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                     key: 'date',
                   },
                 ]}
-                dataSource={[]}
+                dataSource={editingClient?.recentServices || []}
                 pagination={false}
                 locale={{ emptyText: <Empty description="Não há dados" /> }}
               />
