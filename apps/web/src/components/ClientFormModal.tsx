@@ -194,7 +194,7 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         open={open}
         onCancel={onClose}
         footer={null}
-        width="50%"
+        width="60%"
         bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
         wrapClassName="client-modal"
         styles={{ 

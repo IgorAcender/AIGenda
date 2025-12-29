@@ -648,7 +648,7 @@ export function ProfessionalFormModal({
         title={modalTitle}
         open={visible}
         onCancel={onClose}
-        width="50%"
+        width="60%"
         className="professional-modal"
         style={{
           position: 'fixed',
