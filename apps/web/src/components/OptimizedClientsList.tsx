@@ -104,6 +104,12 @@ export function OptimizedClientsList() {
   const clients = data?.data ?? []
   const pagination = data?.pagination ?? { page: 1, limit: 20, total: 0, pages: 0 }
 
+  const filteredClients = clients.filter((client: Client) =>
+    client.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    (client.email && client.email.toLowerCase().includes(searchText.toLowerCase())) ||
+    (client.phone && client.phone.includes(searchText))
+  )
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -137,7 +143,7 @@ export function OptimizedClientsList() {
 
         <Table
           columns={columns}
-          dataSource={clients}
+          dataSource={filteredClients}
           rowKey="id"
           loading={isLoading}
           pagination={{

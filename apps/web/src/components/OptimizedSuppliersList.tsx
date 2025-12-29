@@ -117,6 +117,12 @@ export function OptimizedSuppliersList() {
   const suppliers = data?.data || []
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
 
+  const filteredSuppliers = suppliers.filter((supplier: Supplier) =>
+    supplier.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    (supplier.email && supplier.email.toLowerCase().includes(searchText.toLowerCase())) ||
+    (supplier.phone && supplier.phone.includes(searchText))
+  )
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -150,7 +156,7 @@ export function OptimizedSuppliersList() {
 
         <Table
           columns={columns}
-          dataSource={suppliers}
+          dataSource={filteredSuppliers}
           rowKey="id"
           loading={isLoading}
           pagination={{

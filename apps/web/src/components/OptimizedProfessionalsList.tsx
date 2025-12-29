@@ -104,6 +104,12 @@ export function OptimizedProfessionalsList() {
   const professionals = data?.data || []
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
 
+  const filteredProfessionals = professionals.filter((professional: Professional) =>
+    professional.name.toLowerCase().includes(searchText.toLowerCase()) ||
+    (professional.email && professional.email.toLowerCase().includes(searchText.toLowerCase())) ||
+    (professional.phone && professional.phone.includes(searchText))
+  )
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -137,7 +143,7 @@ export function OptimizedProfessionalsList() {
 
         <Table
           columns={columns}
-          dataSource={professionals}
+          dataSource={filteredProfessionals}
           rowKey="id"
           loading={isLoading}
           pagination={{

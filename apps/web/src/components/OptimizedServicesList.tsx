@@ -105,6 +105,10 @@ export function OptimizedServicesList() {
   const services = data?.data || []
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
 
+  const filteredServices = services.filter((service: Service) =>
+    service.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -138,7 +142,7 @@ export function OptimizedServicesList() {
 
         <Table
           columns={columns}
-          dataSource={services}
+          dataSource={filteredServices}
           rowKey="id"
           loading={isLoading}
           pagination={{

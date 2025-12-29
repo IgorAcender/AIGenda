@@ -105,6 +105,10 @@ export function OptimizedCategoriesList() {
   const categories = data?.data || []
   const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
 
+  const filteredCategories = categories.filter((category: Category) =>
+    category.name.toLowerCase().includes(searchText.toLowerCase())
+  )
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -138,7 +142,7 @@ export function OptimizedCategoriesList() {
 
         <Table
           columns={columns}
-          dataSource={categories}
+          dataSource={filteredCategories}
           rowKey="id"
           loading={isLoading}
           pagination={{
