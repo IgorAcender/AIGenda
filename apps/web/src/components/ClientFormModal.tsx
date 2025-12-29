@@ -958,7 +958,77 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Anotações */}
         {activeTab === 'anotacoes' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Anotações sobre o cliente</p>
+            {/* Header */}
+            <h3 style={{ marginBottom: 20, fontSize: 18, fontWeight: 600 }}>Escreva uma anotação</h3>
+
+            {/* Campo de entrada de anotação */}
+            <div style={{ marginBottom: 24 }}>
+              <Input.TextArea 
+                placeholder="Anotação"
+                rows={5}
+                style={{ marginBottom: 12 }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button type="primary" style={{ backgroundColor: '#6366f1' }}>
+                  Salvar
+                </Button>
+              </div>
+            </div>
+
+            {/* Lista de anotações */}
+            <div>
+              <h4 style={{ marginBottom: 16, fontWeight: 600 }}>
+                {editingClient?.notes?.length || 0} anotação{(editingClient?.notes?.length || 0) !== 1 ? 's' : ''}
+              </h4>
+
+              {editingClient?.notes && editingClient.notes.length > 0 ? (
+                <div>
+                  {editingClient.notes.map((note: any, index: number) => (
+                    <div 
+                      key={index} 
+                      style={{
+                        marginBottom: 16,
+                        paddingBottom: 16,
+                        borderBottom: index < (editingClient.notes?.length - 1) ? '1px solid #f0f0f0' : 'none'
+                      }}
+                    >
+                      {/* Autor e Data */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                        <Avatar size={32} icon={<UserOutlined />} />
+                        <div>
+                          <span style={{ fontWeight: 600, color: '#333' }}>
+                            {note.author || 'Sem autor'}
+                          </span>
+                          <span style={{ color: '#999', marginLeft: 8, fontSize: 12 }}>
+                            {note.date}
+                          </span>
+                          <span style={{ color: '#999', marginLeft: 4, fontSize: 12 }}>
+                            {note.edited ? '(Editado)' : ''}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Conteúdo da anotação */}
+                      <p style={{ margin: '8px 0 12px 0', color: '#333', lineHeight: 1.6 }}>
+                        {note.content}
+                      </p>
+
+                      {/* Botões de ação */}
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <Button type="primary" size="small">
+                          Editar
+                        </Button>
+                        <Button danger size="small">
+                          Excluir
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Empty description="Nenhuma anotação registrada" />
+              )}
+            </div>
           </>
         )}
 
