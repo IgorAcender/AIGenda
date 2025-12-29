@@ -1,14 +1,12 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Table, Card, Button, Input, Space, Tag, message, Popconfirm, Typography, Row, Col } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 import { ClientFormModal } from './ClientFormModal'
-
-const { Title } = Typography
 
 interface Client {
   id: string
@@ -88,70 +86,70 @@ export function OptimizedClientsList() {
               setEditingClient(record)
               setIsModalOpen(true)
             }}
-          />
-          <Popconfirm
-            title="Deletar cliente"
-            description="Tem certeza que deseja deletar este cliente?"
-            onConfirm={() => deleteClient(record.id)}
-            okText="Sim"
-            cancelText="Não"
           >
-            <Button danger size="small" icon={<DeleteOutlined />} loading={isDeleting} />
-          </Popconfirm>
+            Editar
+          </Button>
+          <Button
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+          >
+            Excluir
+          </Button>
         </Space>
       ),
     },
   ]
 
-  return (
-    <Card>
-      <Row gutter={[16, 16]} align="middle">
-        <Col flex="auto">
-          <Title level={2}>Clientes</Title>
-        </Col>
-        <Col>
-          <Space>
-            <Input
-              placeholder="Buscar cliente..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-            />
-            <Button
-              type="primary"
-              icon={<ReloadOutlined />}
-              loading={isFetching}
-              onClick={() => refetch()}
-            >
-              Atualizar
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setEditingClient(null)
-                setIsModalOpen(true)
-              }}
-            >
-              Novo Cliente
-            </Button>
-          </Space>
-        </Col>
-      </Row>
+  const clients = data?.data ?? []
+  const pagination = data?.pagination ?? { page: 1, limit: 20, total: 0, pages: 0 }
 
-      <Table
-        columns={columns}
-        dataSource={data?.data ?? []}
-        loading={isLoading}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.pagination?.total ?? 0,
-          onChange: setPage,
-        }}
-        rowKey="id"
-        style={{ marginTop: 24 }}
-      />
+  return (
+    <div>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>Clientes</h2>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setEditingClient(null)
+            setIsModalOpen(true)
+          }}
+        >
+          Novo Cliente
+        </Button>
+      </div>
+
+      <Card>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
+          <Input
+            placeholder="Buscar cliente..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+            Atualizar
+          </Button>
+        </div>
+
+        <Table
+          columns={columns}
+          dataSource={clients}
+          rowKey="id"
+          loading={isLoading}
+          pagination={{
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            showSizeChanger: false,
+            showTotal: (total) => `Total: ${total} clientes`,
+            onChange: (newPage) => setPage(newPage),
+          }}
+        />
+      </Card>
 
       <ClientFormModal
         open={isModalOpen}
@@ -165,6 +163,6 @@ export function OptimizedClientsList() {
         }}
         editingClient={editingClient}
       />
-    </Card>
+    </div>
   )
 }
