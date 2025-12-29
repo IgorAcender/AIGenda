@@ -839,7 +839,112 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         {/* Aba Pacotes */}
         {activeTab === 'pacotes' && (
           <>
-            <p style={{ color: '#999', marginBottom: 16 }}>Pacotes adquiridos</p>
+            {/* Header com Filtros */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>Pacotes</h3>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <Select 
+                  placeholder="Com saldo"
+                  style={{ width: 150 }}
+                  options={[
+                    { label: 'Com saldo', value: 'com-saldo' },
+                    { label: 'Sem saldo', value: 'sem-saldo' },
+                  ]}
+                  onChange={() => {}}
+                />
+                <Select 
+                  placeholder="Faturados"
+                  style={{ width: 150 }}
+                  options={[
+                    { label: 'Faturados', value: 'faturados' },
+                    { label: 'Não faturados', value: 'nao-faturados' },
+                  ]}
+                  onChange={() => {}}
+                />
+              </div>
+            </div>
+
+            {/* Tabela de Pacotes */}
+            <Table
+              dataSource={editingClient?.packages || []}
+              columns={[
+                {
+                  title: 'Pacote',
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Data',
+                  dataIndex: 'date',
+                  key: 'date',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Descrição',
+                  dataIndex: 'description',
+                  key: 'description',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Qtde.',
+                  dataIndex: 'quantity',
+                  key: 'quantity',
+                  render: (text) => text || '0'
+                },
+                {
+                  title: 'Saldo',
+                  dataIndex: 'balance',
+                  key: 'balance',
+                  render: (text) => text || '0'
+                },
+                {
+                  title: 'Status',
+                  dataIndex: 'status',
+                  key: 'status',
+                  render: (status) => {
+                    let color = '#f0f0f0'
+                    let textColor = '#666'
+                    if (status === 'Ativo') {
+                      color = '#f6ffed'
+                      textColor = '#22c55e'
+                    } else if (status === 'Expirado') {
+                      color = '#fff1f0'
+                      textColor = '#ff4d4f'
+                    } else if (status === 'Pausado') {
+                      color = '#fffbe6'
+                      textColor = '#faad14'
+                    }
+                    return (
+                      <span style={{
+                        backgroundColor: color,
+                        color: textColor,
+                        padding: '4px 12px',
+                        borderRadius: 4,
+                        fontSize: 12,
+                        fontWeight: 500
+                      }}>
+                        {status}
+                      </span>
+                    )
+                  }
+                },
+                {
+                  title: 'Disponibilidade',
+                  dataIndex: 'availability',
+                  key: 'availability',
+                  render: (text) => text || '-'
+                },
+                {
+                  title: 'Comandas',
+                  dataIndex: 'commands',
+                  key: 'commands',
+                  render: (text) => text || '-'
+                }
+              ]}
+              pagination={false}
+              locale={{ emptyText: <Empty description="Nenhum item encontrado" /> }}
+            />
           </>
         )}
 
