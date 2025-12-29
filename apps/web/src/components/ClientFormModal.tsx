@@ -74,8 +74,8 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         notes: editingClient.notes,
         defaultDiscount: editingClient.defaultDiscount,
         discountType: editingClient.discountType,
-        active: editingClient.active !== false,
-        notifications: editingClient.notifications !== false,
+        active: editingClient.active === true,
+        notifications: editingClient.notifications === true,
         blocked: editingClient.blocked === true,
       })
       if (editingClient.avatar) {
