@@ -201,9 +201,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
               <Input placeholder="E-mail" />
             </Form.Item>
 
-            {/* Aniversário e CNPJ */}
+            {/* Aniversário, CPF e RG */}
             <Row gutter={16}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name="birthDate" label="Aniversário">
                   <DatePicker
                     style={{ width: '100%' }}
@@ -212,21 +212,12 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item name="cnpj" label="CNPJ">
-                  <Input placeholder="CNPJ" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            {/* CPF e RG */}
-            <Row gutter={16}>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name="cpf" label="CPF">
                   <Input placeholder="CPF" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item name="rg" label="RG">
                   <Input placeholder="RG" />
                 </Form.Item>
