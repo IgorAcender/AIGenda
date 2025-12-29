@@ -1,22 +1,33 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery } from '@/hooks/useApi'
+import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
+import { SupplierFormModal } from './SupplierFormModal'
+import { api } from '@/lib/api'
 
 interface Supplier {
-  id: string
+  id?: string
   name: string
-  email: string | null
-  phone: string | null
-  active: boolean
+  email?: string | null
+  phone?: string | null
+  address?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  description?: string
+  active?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export function OptimizedSuppliersList() {
   const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
 
   const { data, isLoading, refetch } = useApiPaginatedQuery(
     'suppliers',
@@ -27,6 +38,13 @@ export function OptimizedSuppliersList() {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
+  )
+
+  const { mutate: deleteSupplier } = useApiMutation(
+    async (supplierId: string) => {
+      return await api.delete(`/suppliers/${supplierId}`)
+    },
+    [['suppliers']]
   )
 
   const columns: ColumnsType<Supplier> = [
@@ -62,10 +80,33 @@ export function OptimizedSuppliersList() {
       key: 'actions',
       render: (_: any, record: Supplier) => (
         <Space>
-          <Button type="primary" size="small" icon={<EditOutlined />}>
+          <Button 
+            type="primary" 
+            size="small" 
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingSupplier(record)
+              setIsModalOpen(true)
+            }}
+          >
             Editar
           </Button>
-          <Button danger size="small" icon={<DeleteOutlined />}>
+          <Button 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              deleteSupplier(record.id!, {
+                onSuccess: () => {
+                  message.success('Fornecedor deletado com sucesso!')
+                  refetch()
+                },
+                onError: (error: any) => {
+                  message.error(error.message || 'Erro ao deletar fornecedor')
+                },
+              })
+            }}
+          >
             Excluir
           </Button>
         </Space>
@@ -80,7 +121,14 @@ export function OptimizedSuppliersList() {
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>Fornecedores</h2>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setEditingSupplier(null)
+            setIsModalOpen(true)
+          }}
+        >
           Novo Fornecedor
         </Button>
       </div>
@@ -115,6 +163,18 @@ export function OptimizedSuppliersList() {
           }}
         />
       </Card>
+
+      <SupplierFormModal
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingSupplier(null)
+        }}
+        onSuccess={() => {
+          refetch()
+        }}
+        editingSupplier={editingSupplier as any}
+      />
     </div>
   )
 }

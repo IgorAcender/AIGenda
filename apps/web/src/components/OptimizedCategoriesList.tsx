@@ -1,21 +1,27 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery } from '@/hooks/useApi'
+import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
+import { CategoryFormModal } from './CategoryFormModal'
+import { api } from '@/lib/api'
 
 interface Category {
-  id: string
+  id?: string
   name: string
-  description: string | null
-  active: boolean
+  description?: string | null
+  active?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export function OptimizedCategoriesList() {
   const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
   const { data, isLoading, refetch } = useApiPaginatedQuery(
     'categories',
@@ -26,6 +32,13 @@ export function OptimizedCategoriesList() {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
+  )
+
+  const { mutate: deleteCategory } = useApiMutation(
+    async (categoryId: string) => {
+      return await api.delete(`/categories/${categoryId}`)
+    },
+    [['categories']]
   )
 
   const columns: ColumnsType<Category> = [
@@ -55,10 +68,33 @@ export function OptimizedCategoriesList() {
       key: 'actions',
       render: (_: any, record: Category) => (
         <Space>
-          <Button type="primary" size="small" icon={<EditOutlined />}>
+          <Button 
+            type="primary" 
+            size="small" 
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingCategory(record)
+              setIsModalOpen(true)
+            }}
+          >
             Editar
           </Button>
-          <Button danger size="small" icon={<DeleteOutlined />}>
+          <Button 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              deleteCategory(record.id, {
+                onSuccess: () => {
+                  message.success('Categoria deletada com sucesso!')
+                  refetch()
+                },
+                onError: (error: any) => {
+                  message.error(error.message || 'Erro ao deletar categoria')
+                },
+              })
+            }}
+          >
             Excluir
           </Button>
         </Space>
@@ -73,7 +109,14 @@ export function OptimizedCategoriesList() {
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>Categorias</h2>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setEditingCategory(null)
+            setIsModalOpen(true)
+          }}
+        >
           Nova Categoria
         </Button>
       </div>
@@ -108,6 +151,18 @@ export function OptimizedCategoriesList() {
           }}
         />
       </Card>
+
+      <CategoryFormModal
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingCategory(null)
+        }}
+        onSuccess={() => {
+          refetch()
+        }}
+        editingCategory={editingCategory as any}
+      />
     </div>
   )
 }

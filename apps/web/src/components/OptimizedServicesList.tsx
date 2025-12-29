@@ -1,25 +1,21 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery } from '@/hooks/useApi'
+import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
 import { useRouter } from 'next/navigation'
-
-interface Service {
-  id: string
-  name: string
-  description: string | null
-  duration: number
-  price: number
-  active: boolean
-}
+import { ServiceFormModal } from './ServiceFormModal'
+import { api } from '@/lib/api'
+import { Service } from '@/services/serviceService'
 
 export function OptimizedServicesList() {
   const router = useRouter()
   const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingService, setEditingService] = useState<Service | null>(null)
 
   const { data, isLoading, refetch } = useApiPaginatedQuery(
     'services',
@@ -30,6 +26,13 @@ export function OptimizedServicesList() {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
+  )
+
+  const { mutate: deleteService } = useApiMutation(
+    async (serviceId: string) => {
+      return await api.delete(`/services/${serviceId}`)
+    },
+    [['services']]
   )
 
   const columns: ColumnsType<Service> = [
@@ -69,10 +72,29 @@ export function OptimizedServicesList() {
             type="primary"
             size="small"
             icon={<EditOutlined />}
+            onClick={() => {
+              setEditingService(record)
+              setIsModalOpen(true)
+            }}
           >
             Editar
           </Button>
-          <Button danger size="small" icon={<DeleteOutlined />}>
+          <Button 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              deleteService(record.id, {
+                onSuccess: () => {
+                  message.success('Serviço deletado com sucesso!')
+                  refetch()
+                },
+                onError: (error: any) => {
+                  message.error(error.message || 'Erro ao deletar serviço')
+                },
+              })
+            }}
+          >
             Excluir
           </Button>
         </Space>
@@ -87,7 +109,14 @@ export function OptimizedServicesList() {
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0, fontSize: 24, fontWeight: 600 }}>Serviços</h2>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />}
+          onClick={() => {
+            setEditingService(null)
+            setIsModalOpen(true)
+          }}
+        >
           Novo Serviço
         </Button>
       </div>
@@ -122,6 +151,18 @@ export function OptimizedServicesList() {
           }}
         />
       </Card>
+
+      <ServiceFormModal
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingService(null)
+        }}
+        onSuccess={() => {
+          refetch()
+        }}
+        editingService={editingService}
+      />
     </div>
   )
 }
