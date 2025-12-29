@@ -34,7 +34,7 @@ const modalStyle = `
   
   .sidebar-modal .ant-modal-body {
     height: calc(100vh - 140px) !important;
-    overflow-y: auto !important;
+    overflow-y: hidden !important;
     padding: 0 !important;
     flex: 1 !important;
     display: flex !important;
