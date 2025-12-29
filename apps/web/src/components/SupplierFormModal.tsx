@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Modal, Form, Input, Switch, Button, message } from 'antd'
+import { Form, Input, Switch, message } from 'antd'
 import { useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
+import { ModalWithSidebar } from './ModalWithSidebar'
 
 interface Supplier {
   id?: string
@@ -17,54 +18,6 @@ interface Supplier {
   description?: string
   active?: boolean
 }
-
-const modalStyle = `
-  .supplier-modal .ant-modal {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
-  }
-  
-  .supplier-modal .ant-modal-content {
-    height: 100vh !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  
-  .supplier-modal .ant-modal-header {
-    border-bottom: 1px solid #f0f0f0 !important;
-    padding: 16px 24px !important;
-    margin-bottom: 0 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .supplier-modal .ant-modal-body {
-    height: calc(100vh - 140px) !important;
-    overflow-y: auto !important;
-    padding: 24px !important;
-    flex: 1 !important;
-  }
-  
-  .supplier-modal .ant-modal-footer {
-    padding: 16px 24px !important;
-    border-top: 1px solid #f0f0f0 !important;
-    flex-shrink: 0 !important;
-  }
-  
-  @media (max-width: 768px) {
-    .supplier-modal .ant-modal {
-      width: 100% !important;
-    }
-  }
-`
 
 interface SupplierFormModalProps {
   open: boolean
@@ -136,124 +89,92 @@ export function SupplierFormModal({
   }
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: modalStyle }} />
-      <Modal
-        title={editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}
-        open={open}
-        onCancel={onClose}
-        footer={null}
-        width="60%"
-        wrapClassName="supplier-modal"
-        styles={{
-          content: { padding: 0, borderRadius: 0 }
-        }}
-        bodyStyle={{ padding: 0, height: 'calc(100vh - 140px)' }}
+    <ModalWithSidebar
+      title={editingSupplier ? 'Editar Fornecedor' : 'Novo Fornecedor'}
+      open={open}
+      onClose={onClose}
+      onSave={handleSave}
+      isSaving={isSaving || submitting}
+      tabs={[]}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSave}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          style={{ padding: 0 }}
+        <Form.Item
+          name="name"
+          label="* Nome do Fornecedor"
+          rules={[
+            { required: true, message: 'Nome é obrigatório' },
+            { min: 3, message: 'Mínimo 3 caracteres' },
+          ]}
         >
-          <Form.Item
-            name="name"
-            label="Nome do Fornecedor"
-            rules={[
-              { required: true, message: 'Nome é obrigatório' },
-              { min: 3, message: 'Mínimo 3 caracteres' },
-            ]}
-          >
-            <Input placeholder="Ex: Distribuidora XYZ" />
-          </Form.Item>
+          <Input placeholder="Ex: Distribuidora XYZ" />
+        </Form.Item>
 
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[{ type: 'email', message: 'Email inválido' }]}
-          >
-            <Input placeholder="contato@fornecedor.com" />
-          </Form.Item>
+        <Form.Item
+          name="email"
+          label="Email"
+          rules={[{ type: 'email', message: 'Email inválido' }]}
+        >
+          <Input placeholder="contato@fornecedor.com" />
+        </Form.Item>
 
-          <Form.Item
-            name="phone"
-            label="Telefone"
-          >
-            <Input placeholder="(11) 9999-9999" />
-          </Form.Item>
+        <Form.Item
+          name="phone"
+          label="Telefone"
+        >
+          <Input placeholder="(11) 9999-9999" />
+        </Form.Item>
 
-          <Form.Item
-            name="address"
-            label="Endereço"
-          >
-            <Input placeholder="Rua, número, complemento" />
-          </Form.Item>
+        <Form.Item
+          name="address"
+          label="Endereço"
+        >
+          <Input placeholder="Rua, número, complemento" />
+        </Form.Item>
 
-          <Form.Item
-            name="city"
-            label="Cidade"
-          >
-            <Input placeholder="São Paulo" />
-          </Form.Item>
+        <Form.Item
+          name="city"
+          label="Cidade"
+        >
+          <Input placeholder="São Paulo" />
+        </Form.Item>
 
-          <Form.Item
-            name="state"
-            label="Estado"
-          >
-            <Input placeholder="SP" maxLength={2} />
-          </Form.Item>
+        <Form.Item
+          name="state"
+          label="Estado"
+        >
+          <Input placeholder="SP" maxLength={2} />
+        </Form.Item>
 
-          <Form.Item
-            name="zipCode"
-            label="CEP"
-          >
-            <Input placeholder="00000-000" />
-          </Form.Item>
+        <Form.Item
+          name="zipCode"
+          label="CEP"
+        >
+          <Input placeholder="00000-000" />
+        </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Descrição"
-          >
-            <Input.TextArea
-              rows={3}
-              placeholder="Descrição do fornecedor"
-            />
-          </Form.Item>
+        <Form.Item
+          name="description"
+          label="Descrição"
+        >
+          <Input.TextArea
+            rows={3}
+            placeholder="Descrição do fornecedor"
+          />
+        </Form.Item>
 
-          <Form.Item
-            name="active"
-            label="Ativo"
-            valuePropName="checked"
-            initialValue={true}
-          >
-            <Switch />
-          </Form.Item>
-        </Form>
-
-        <div style={{
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          width: '60%',
-          padding: '16px 24px',
-          borderTop: '1px solid #f0f0f0',
-          backgroundColor: '#fff',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: 8,
-          zIndex: 999,
-        }}>
-          <Button onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button
-            type="primary"
-            loading={isSaving || submitting}
-            onClick={handleSave}
-          >
-            {editingSupplier ? 'Atualizar' : 'Criar'} Fornecedor
-          </Button>
-        </div>
-      </Modal>
-    </>
+        <Form.Item
+          name="active"
+          label="Ativo"
+          valuePropName="checked"
+          initialValue={true}
+        >
+          <Switch />
+        </Form.Item>
+      </Form>
+    </ModalWithSidebar>
   )
 }
