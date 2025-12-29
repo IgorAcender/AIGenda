@@ -93,7 +93,7 @@ const modalStyle = `
   .sidebar-modal-content {
     flex: 1;
     padding: 24px;
-    padding-right: 0;
+    padding-right: 8px;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
@@ -101,7 +101,7 @@ const modalStyle = `
   }
   
   .sidebar-modal-content > * {
-    padding-right: 16px;
+    padding-right: 32px;
   }
   
   .sidebar-modal-content::-webkit-scrollbar {
