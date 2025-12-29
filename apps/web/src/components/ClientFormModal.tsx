@@ -1590,10 +1590,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                       Desative um cliente para que ele não apareça mais em agendamentos, comandas etc.
                     </p>
                   </div>
-                  <Switch 
-                    defaultChecked={true}
-                    style={{ marginLeft: 16 }}
-                  />
+                  <Form.Item name="active" style={{ margin: 0 }} valuePropName="checked">
+                    <Switch style={{ marginLeft: 16 }} />
+                  </Form.Item>
                 </div>
               </div>
 
@@ -1606,10 +1605,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                       O cliente irá receber notificações (Whatsapp e SMS) sobre novos agendamentos, lembretes etc.
                     </p>
                   </div>
-                  <Switch 
-                    defaultChecked={true}
-                    style={{ marginLeft: 16 }}
-                  />
+                  <Form.Item name="notifications" style={{ margin: 0 }} valuePropName="checked">
+                    <Switch style={{ marginLeft: 16 }} />
+                  </Form.Item>
                 </div>
               </div>
 
@@ -1622,10 +1620,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
                       Ao bloquear o cliente não terá acesso ao Agendamento Online ou Aplicativo Personalizado.
                     </p>
                   </div>
-                  <Switch 
-                    defaultChecked={false}
-                    style={{ marginLeft: 16 }}
-                  />
+                  <Form.Item name="blocked" style={{ margin: 0 }} valuePropName="checked">
+                    <Switch style={{ marginLeft: 16 }} />
+                  </Form.Item>
                 </div>
               </div>
             </div>
