@@ -1,29 +1,28 @@
-<svg viewBox="0 0 1080 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <!-- Logo Icon -->
-  <g id="logo-icon">
-    <!-- Calendar base with tech elements -->
-    <path d="M 80 80 Q 50 80 50 110 L 50 280 Q 50 310 80 310 L 320 310 Q 350 310 350 280 L 350 110 Q 350 80 320 80 Z" fill="#1ABC9C" opacity="0.8"/>
-    
-    <!-- Calendar elements -->
-    <circle cx="120" cy="60" r="25" fill="#2ECC71"/>
-    <circle cx="200" cy="40" r="20" fill="#27AE60"/>
-    <circle cx="280" cy="60" r="22" fill="#16A085"/>
-    
-    <!-- Checkmark -->
-    <path d="M 140 180 L 180 220 L 240 120" stroke="#FFFFFF" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    
-    <!-- Tech lines -->
-    <line x1="280" y1="140" x2="330" y2="120" stroke="#3498DB" stroke-width="8" stroke-linecap="round"/>
-    <line x1="290" y1="200" x2="345" y2="165" stroke="#2980B9" stroke-width="8" stroke-linecap="round"/>
-    <line x1="270" y1="260" x2="340" y2="240" stroke="#1ABC9C" stroke-width="8" stroke-linecap="round"/>
-    
-    <!-- Circles for tech -->
-    <circle cx="330" cy="115" r="15" fill="#3498DB"/>
-    <circle cx="350" cy="170" r="12" fill="#2980B9"/>
-    <circle cx="345" cy="240" r="10" fill="#1ABC9C"/>
-  </g>
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="calendarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1ABC9C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16A085;stop-opacity:1" />
+    </linearGradient>
+  </defs>
   
-  <!-- Text -->
-  <text x="400" y="240" font-family="Arial, sans-serif" font-size="140" font-weight="700" fill="#0056B3">Agendo</text>
-  <text x="920" y="240" font-family="Arial, sans-serif" font-size="140" font-weight="700" fill="#2ECC71">AI</text>
+  <!-- Calendar background -->
+  <rect x="30" y="40" width="196" height="176" rx="12" fill="url(#calendarGradient)"/>
+  
+  <!-- Calendar header bar -->
+  <rect x="30" y="40" width="196" height="40" rx="12" fill="#0D8B78"/>
+  
+  <!-- Calendar day indicators -->
+  <circle cx="55" cy="60" r="6" fill="#2ECC71" opacity="0.8"/>
+  <circle cx="85" cy="55" r="5" fill="#27AE60" opacity="0.8"/>
+  <circle cx="115" cy="58" r="5.5" fill="#16A085" opacity="0.8"/>
+  <circle cx="145" cy="56" r="5" fill="#0D8B78" opacity="0.8"/>
+  <circle cx="175" cy="59" r="5.5" fill="#2ECC71" opacity="0.8"/>
+  <circle cx="205" cy="57" r="5" fill="#27AE60" opacity="0.8"/>
+  
+  <!-- Checkmark in center -->
+  <g transform="translate(128, 120)">
+    <!-- Checkmark path -->
+    <path d="M -30 0 L -5 25 L 40 -20" stroke="#FFFFFF" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>
