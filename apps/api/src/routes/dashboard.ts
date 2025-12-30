@@ -26,7 +26,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
     ] = await Promise.all([
       // Total de clientes ativos
       prisma.client.count({
-        where: { tenantId, isActive: true },
+        where: { tenantId, active: true },
       }),
       
       // Total de profissionais ativos
