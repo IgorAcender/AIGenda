@@ -116,9 +116,22 @@ export async function clientRoutes(app: FastifyInstance) {
         }
       }
 
+      // Extrair campos extras que não estão no schema mas existem no banco
+      const extraFields: any = {}
+      if (typeof request.body.active === 'boolean') {
+        extraFields.active = request.body.active
+      }
+      if (typeof request.body.notifications === 'boolean') {
+        extraFields.notifications = request.body.notifications
+      }
+      if (typeof request.body.blocked === 'boolean') {
+        extraFields.blocked = request.body.blocked
+      }
+
       const client = await prisma.client.create({
         data: {
           ...data,
+          ...extraFields,
           birthDate: data.birthDate ? new Date(data.birthDate) : null,
           tenantId,
         },
@@ -151,10 +164,23 @@ export async function clientRoutes(app: FastifyInstance) {
         return reply.status(404).send({ error: 'Cliente não encontrado' })
       }
 
+      // Extrair campos extras que não estão no schema mas existem no banco
+      const extraFields: any = {}
+      if (typeof request.body.active === 'boolean') {
+        extraFields.active = request.body.active
+      }
+      if (typeof request.body.notifications === 'boolean') {
+        extraFields.notifications = request.body.notifications
+      }
+      if (typeof request.body.blocked === 'boolean') {
+        extraFields.blocked = request.body.blocked
+      }
+
       const client = await prisma.client.update({
         where: { id },
         data: {
           ...data,
+          ...extraFields,
           birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
         },
       })
