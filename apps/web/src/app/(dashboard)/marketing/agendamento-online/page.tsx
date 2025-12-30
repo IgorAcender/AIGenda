@@ -1,13 +1,37 @@
 'use client'
 
 import React from 'react'
-import { Card, Typography } from 'antd'
-import { BgColorsOutlined, GlobalOutlined } from '@ant-design/icons'
+import { Card, Typography, Tabs } from 'antd'
+import { BgColorsOutlined, GlobalOutlined, FileTextOutlined } from '@ant-design/icons'
 import CoresMarcaTab from '@/components/marketing/CoresMarcaTab'
+import ConteudoDoSiteTab from '@/components/marketing/ConteudoDoSiteTab'
 
 const { Title, Paragraph } = Typography
 
 export default function AgendamentoOnlinePage() {
+  const tabs = [
+    {
+      key: 'cores',
+      label: (
+        <>
+          <BgColorsOutlined />
+          Cores e Marca
+        </>
+      ),
+      children: <CoresMarcaTab />,
+    },
+    {
+      key: 'conteudo',
+      label: (
+        <>
+          <FileTextOutlined />
+          Conteúdo do Site
+        </>
+      ),
+      children: <ConteudoDoSiteTab />,
+    },
+  ]
+
   return (
     <div>
       <Title level={2}>
@@ -19,7 +43,7 @@ export default function AgendamentoOnlinePage() {
       </Paragraph>
 
       <Card style={{ marginTop: 24 }}>
-        <CoresMarcaTab />
+        <Tabs items={tabs} />
       </Card>
     </div>
   )
