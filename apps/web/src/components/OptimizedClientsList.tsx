@@ -89,13 +89,32 @@ export function OptimizedClientsList() {
           >
             Editar
           </Button>
-          <Button
-            danger
-            size="small"
-            icon={<DeleteOutlined />}
+          <Popconfirm
+            title="Excluir cliente"
+            description="Tem certeza que deseja excluir este cliente?"
+            onConfirm={() => {
+              deleteClient(record.id, {
+                onSuccess: () => {
+                  message.success('Cliente excluído com sucesso!')
+                  refetch()
+                },
+                onError: (error: any) => {
+                  message.error(error?.response?.data?.message || 'Erro ao excluir cliente')
+                },
+              })
+            }}
+            okText="Sim"
+            cancelText="Não"
           >
-            Excluir
-          </Button>
+            <Button
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              loading={isDeleting}
+            >
+              Excluir
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
