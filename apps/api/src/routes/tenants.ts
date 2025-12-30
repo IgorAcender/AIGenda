@@ -34,6 +34,20 @@ const brandingSchema = z.object({
   buttonTextColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   heroImage: z.string().optional().nullable(),
   sectionsConfig: z.string().optional().nullable(),
+  // Landing page fields
+  paymentMethods: z.string().optional(),
+  amenities: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  businessHours: z.object({
+    monday: z.string().optional(),
+    tuesday: z.string().optional(),
+    wednesday: z.string().optional(),
+    thursday: z.string().optional(),
+    friday: z.string().optional(),
+    saturday: z.string().optional(),
+    sunday: z.string().optional(),
+  }).optional(),
 })
 
 export async function tenantRoutes(app: FastifyInstance) {
@@ -153,9 +167,37 @@ export async function tenantRoutes(app: FastifyInstance) {
   app.get('/branding', async (request: any) => {
     const { tenantId } = request.user
 
-    const config = await prisma.configuration.findUnique({
-      where: { tenantId },
-    })
+    const [config, tenant] = await Promise.all([
+      prisma.configuration.findUnique({
+        where: { tenantId },
+      }),
+      prisma.tenant.findUnique({
+        where: { id: tenantId },
+        include: {
+          businessHours: {
+            orderBy: { dayOfWeek: 'asc' },
+          },
+        },
+      }),
+    ])
+
+    // Transformar businessHours em objeto
+    const businessHoursMap: { [key: string]: string } = {}
+    if (tenant?.businessHours) {
+      const daysMap = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+      tenant.businessHours.forEach((bh: any) => {
+        const dayName = daysMap[bh.dayOfWeek]
+        if (bh.isClosed) {
+          businessHoursMap[dayName] = 'Fechado'
+        } else {
+          let time = `${bh.openTime} - ${bh.closeTime}`
+          if (bh.interval) {
+            time += ` (Intervalo: ${bh.interval})`
+          }
+          businessHoursMap[dayName] = time
+        }
+      })
+    }
 
     return config ? {
       themeTemplate: config.themeTemplate,
@@ -165,6 +207,11 @@ export async function tenantRoutes(app: FastifyInstance) {
       buttonTextColor: config.buttonTextColor,
       heroImage: config.heroImage,
       sectionsConfig: config.sectionsConfig,
+      paymentMethods: tenant?.paymentMethods,
+      amenities: tenant?.amenities,
+      latitude: tenant?.latitude,
+      longitude: tenant?.longitude,
+      businessHours: businessHoursMap,
     } : {
       themeTemplate: 'light',
       backgroundColor: '#FFFFFF',
@@ -173,6 +220,11 @@ export async function tenantRoutes(app: FastifyInstance) {
       buttonTextColor: '#FFFFFF',
       heroImage: null,
       sectionsConfig: null,
+      paymentMethods: null,
+      amenities: null,
+      latitude: null,
+      longitude: null,
+      businessHours: {},
     }
   })
 
@@ -187,14 +239,95 @@ export async function tenantRoutes(app: FastifyInstance) {
 
       const data = brandingSchema.parse(request.body)
 
+      // Separar dados de Tenant dos dados de Configuration
+      const {
+        paymentMethods,
+        amenities,
+        latitude,
+        longitude,
+        businessHours,
+        ...configData
+      } = data
+
+      // Atualizar Configuration
       const config = await prisma.configuration.upsert({
         where: { tenantId },
-        update: data,
+        update: configData,
         create: {
-          ...data,
+          ...configData,
           tenantId,
         },
       })
+
+      // Atualizar Tenant com novos campos
+      let tenantData: any = {}
+      if (paymentMethods !== undefined) tenantData.paymentMethods = paymentMethods
+      if (amenities !== undefined) tenantData.amenities = amenities
+      if (latitude !== undefined) tenantData.latitude = latitude
+      if (longitude !== undefined) tenantData.longitude = longitude
+
+      if (Object.keys(tenantData).length > 0) {
+        await prisma.tenant.update({
+          where: { id: tenantId },
+          data: tenantData,
+        })
+      }
+
+      // Atualizar BusinessHours se fornecido
+      if (businessHours) {
+        const daysMap = {
+          monday: 0,
+          tuesday: 1,
+          wednesday: 2,
+          thursday: 3,
+          friday: 4,
+          saturday: 5,
+          sunday: 6,
+        }
+
+        for (const [day, hours] of Object.entries(businessHours)) {
+          const dayOfWeek = daysMap[day as keyof typeof daysMap]
+          if (hours) {
+            const isClosed = hours.toLowerCase() === 'fechado'
+            let openTime = null
+            let closeTime = null
+            let interval = null
+
+            if (!isClosed) {
+              // Parse "08:00 - 17:00" ou "08:00 - 17:00 (Intervalo: 12:00-14:00)"
+              const match = hours.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})(?:\s*\(Intervalo:\s*([^\)]+)\))?/)
+              if (match) {
+                openTime = match[1]
+                closeTime = match[2]
+                interval = match[3] || null
+              }
+            }
+
+            await prisma.businessHours.upsert({
+              where: {
+                tenantId_dayOfWeek: {
+                  tenantId,
+                  dayOfWeek,
+                },
+              },
+              update: {
+                isClosed,
+                openTime,
+                closeTime,
+                interval,
+              },
+              create: {
+                tenantId,
+                dayOfWeek,
+                isClosed,
+                openTime,
+                closeTime,
+                interval,
+              },
+            })
+          }
+        }
+      }
 
       return config
     } catch (error) {

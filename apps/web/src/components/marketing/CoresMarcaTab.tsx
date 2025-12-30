@@ -21,6 +21,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
+import PhonePreview from './PhonePreview'
 
 const { Title, Text, Paragraph } = Typography
 
@@ -48,8 +49,37 @@ export default function CoresMarcaTab() {
   useEffect(() => {
     if (brandingData) {
       form.setFieldsValue({
-        themeTemplate: brandingData.themeTemplate || 'light',
-        ...brandingData,
+        theme: brandingData.theme || 'light',
+        tenantName: brandingData.name || '',
+        about: brandingData.about || '',
+        address: brandingData.address || '',
+        city: brandingData.city || '',
+        state: brandingData.state || '',
+        zipCode: brandingData.zipCode || '',
+        phone: brandingData.phone || '',
+        description: brandingData.description || '',
+        instagram: brandingData.instagram || '',
+        facebook: brandingData.facebook || '',
+        twitter: brandingData.twitter || '',
+        paymentMethods: brandingData.paymentMethods || '',
+        amenities: brandingData.amenities || '',
+        latitude: brandingData.latitude || '',
+        longitude: brandingData.longitude || '',
+        // BusinessHours
+        mondayOpen: brandingData.businessHours?.monday?.split(' - ')[0] || '09:00',
+        mondayClose: brandingData.businessHours?.monday?.split(' - ')[1] || '18:00',
+        tuesdayOpen: brandingData.businessHours?.tuesday?.split(' - ')[0] || '09:00',
+        tuesdayClose: brandingData.businessHours?.tuesday?.split(' - ')[1] || '18:00',
+        wednesdayOpen: brandingData.businessHours?.wednesday?.split(' - ')[0] || '09:00',
+        wednesdayClose: brandingData.businessHours?.wednesday?.split(' - ')[1] || '18:00',
+        thursdayOpen: brandingData.businessHours?.thursday?.split(' - ')[0] || '09:00',
+        thursdayClose: brandingData.businessHours?.thursday?.split(' - ')[1] || '18:00',
+        fridayOpen: brandingData.businessHours?.friday?.split(' - ')[0] || '09:00',
+        fridayClose: brandingData.businessHours?.friday?.split(' - ')[1] || '18:00',
+        saturdayOpen: brandingData.businessHours?.saturday?.split(' - ')[0] || '09:00',
+        saturdayClose: brandingData.businessHours?.saturday?.split(' - ')[1] || '18:00',
+        sundayOpen: brandingData.businessHours?.sunday?.split(' - ')[0] || '09:00',
+        sundayClose: brandingData.businessHours?.sunday?.split(' - ')[1] || '18:00',
       })
     }
   }, [brandingData, form])
@@ -57,362 +87,337 @@ export default function CoresMarcaTab() {
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
-      
-      saveBranding(values, {
-        onSuccess: () => message.success('Configurações salvas com sucesso!'),
-        onError: () => message.error('Erro ao salvar configurações'),
+
+      const payload = {
+        theme: values.theme || 'light',
+        name: values.tenantName,
+        about: values.about,
+        address: values.address,
+        city: values.city,
+        state: values.state,
+        zipCode: values.zipCode,
+        phone: values.phone,
+        description: values.description,
+        instagram: values.instagram,
+        facebook: values.facebook,
+        twitter: values.twitter,
+        paymentMethods: values.paymentMethods,
+        amenities: values.amenities,
+        latitude: values.latitude,
+        longitude: values.longitude,
+        businessHours: {
+          monday: `${values.mondayOpen} - ${values.mondayClose}`,
+          tuesday: `${values.tuesdayOpen} - ${values.tuesdayClose}`,
+          wednesday: `${values.wednesdayOpen} - ${values.wednesdayClose}`,
+          thursday: `${values.thursdayOpen} - ${values.thursdayClose}`,
+          friday: `${values.fridayOpen} - ${values.fridayClose}`,
+          saturday: `${values.saturdayOpen} - ${values.saturdayClose}`,
+          sunday: `${values.sundayOpen} - ${values.sundayClose}`,
+        },
+      }
+
+      saveBranding(payload, {
+        onSuccess: () => {
+          message.success('Configurações salvas com sucesso!')
+        },
+        onError: (error) => {
+          message.error('Erro ao salvar configurações')
+          console.error(error)
+        },
       })
     } catch (error) {
-      console.error('Erro ao validar:', error)
+      console.error(error)
     }
   }
 
-  const themeValue = form.getFieldValue('themeTemplate')
+  // Dados para preview
+  const previewData = {
+    tenantName: form.getFieldValue('tenantName'),
+    description: form.getFieldValue('description'),
+    address: form.getFieldValue('address'),
+    city: form.getFieldValue('city'),
+    state: form.getFieldValue('state'),
+    zipCode: form.getFieldValue('zipCode'),
+    businessHours: {
+      monday: `${form.getFieldValue('mondayOpen')} - ${form.getFieldValue('mondayClose')}`,
+      tuesday: `${form.getFieldValue('tuesdayOpen')} - ${form.getFieldValue('tuesdayClose')}`,
+      wednesday: `${form.getFieldValue('wednesdayOpen')} - ${form.getFieldValue('wednesdayClose')}`,
+      thursday: `${form.getFieldValue('thursdayOpen')} - ${form.getFieldValue('thursdayClose')}`,
+      friday: `${form.getFieldValue('fridayOpen')} - ${form.getFieldValue('fridayClose')}`,
+      saturday: `${form.getFieldValue('saturdayOpen')} - ${form.getFieldValue('saturdayClose')}`,
+      sunday: `${form.getFieldValue('sundayOpen')} - ${form.getFieldValue('sundayClose')}`,
+    },
+    paymentMethods: form.getFieldValue('paymentMethods'),
+    amenities: form.getFieldValue('amenities'),
+    socialMedia: {
+      instagram: form.getFieldValue('instagram'),
+      facebook: form.getFieldValue('facebook'),
+      twitter: form.getFieldValue('twitter'),
+    },
+  }
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      disabled={isLoading}
-    >
-      {/* MODELO DE TEMA */}
-      <div style={{ marginBottom: 32 }}>
-        <Title level={4}>🎨 Modelo de Tema</Title>
-        <Paragraph type="secondary">
-          Escolha um tema pré-configurado ou personalize as cores do seu site.
-        </Paragraph>
-
-        <Form.Item
-          name="themeTemplate"
-          noStyle
+    <Row gutter={[24, 24]}>
+      {/* Formulário - Coluna Esquerda */}
+      <Col xs={24} lg={14}>
+        <Card
+          title={<Title level={3}>Cores e Marca</Title>}
+          loading={isLoading}
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
         >
-          <Radio.Group>
-            <Row gutter={16} style={{ marginTop: 16 }}>
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
-                  hoverable
-                  style={{ cursor: 'pointer', textAlign: 'center' }}
-                  onClick={() => form.setFieldValue('themeTemplate', 'custom')}
-                >
-                  <Radio value="custom" style={{ position: 'absolute', top: 8, left: 8 }} />
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>🎯</div>
-                  <Text strong>Personalizado</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>Escolha suas cores</Text>
-                </Card>
-              </Col>
-
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
-                  hoverable
-                  style={{ cursor: 'pointer', textAlign: 'center' }}
-                  onClick={() => form.setFieldValue('themeTemplate', 'dark')}
-                >
-                  <Radio value="dark" style={{ position: 'absolute', top: 8, left: 8 }} />
-                  <div style={{ 
-                    backgroundColor: '#1f2937', 
-                    height: 60, 
-                    borderRadius: 8, 
-                    marginBottom: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8
-                  }}>
-                    <div style={{ width: 12, height: 12, backgroundColor: '#000', borderRadius: 2 }} />
-                    <div style={{ width: 30, height: 12, backgroundColor: '#fff', borderRadius: 2 }} />
-                    <div style={{ width: 12, height: 12, backgroundColor: '#7c3aed', borderRadius: 2 }} />
-                  </div>
-                  <Text strong>Preto e Branco</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>Tema Escuro</Text>
-                </Card>
-              </Col>
-
-              <Col xs={24} sm={12} lg={8}>
-                <Card 
-                  hoverable
-                  style={{ cursor: 'pointer', textAlign: 'center' }}
-                  onClick={() => form.setFieldValue('themeTemplate', 'light')}
-                >
-                  <Radio value="light" style={{ position: 'absolute', top: 8, left: 8 }} />
-                  <div style={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #f0f0f0',
-                    height: 60, 
-                    borderRadius: 8, 
-                    marginBottom: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8
-                  }}>
-                    <div style={{ width: 12, height: 12, backgroundColor: '#fff', border: '1px solid #000', borderRadius: 2 }} />
-                    <div style={{ width: 30, height: 12, backgroundColor: '#000', borderRadius: 2 }} />
-                    <div style={{ width: 12, height: 12, backgroundColor: '#7c3aed', borderRadius: 2 }} />
-                  </div>
-                  <Text strong>Branco e Preto</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: 12 }}>Tema Claro</Text>
-                </Card>
-              </Col>
-            </Row>
-          </Radio.Group>
-        </Form.Item>
-      </div>
-
-      <Divider />
-
-      {/* IMAGEM DE CAPA */}
-      <div style={{ marginBottom: 32 }}>
-        <Title level={4}>🖼️ Imagem de Capa</Title>
-        <Paragraph type="secondary">
-          Faça upload da imagem principal do site.
-        </Paragraph>
-
-        <Form.Item
-          name="heroImage"
-          label="Foto de capa / hero do site"
-          extra="Imagem exibida no topo do site. Formatos: JPG/PNG."
-        >
-          <Upload
-            maxCount={1}
-            accept="image/*"
-            listType="picture"
-            beforeUpload={() => false}
+          <Form
+            form={form}
+            layout="vertical"
+            autoComplete="off"
           >
-            <Button icon={<UploadOutlined />}>Escolher Arquivo</Button>
-          </Upload>
-        </Form.Item>
-      </div>
+            {/* Tema */}
+            <Form.Item
+              label="Tema"
+              name="theme"
+              initialValue="light"
+            >
+              <Radio.Group>
+                <Radio.Button value="light">Claro</Radio.Button>
+                <Radio.Button value="dark">Escuro</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
 
-      <Divider />
+            <Divider />
 
-      {/* CONTEÚDO DO SITE */}
-      <div style={{ marginBottom: 32 }}>
-        <Title level={4}>📄 Conteúdo do Site</Title>
-        <Paragraph type="secondary">
-          Organize as seções que aparecerão no seu site. Use as setas para reordenar.
-        </Paragraph>
-
-        {/* SOBRE NÓS */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>SOBRE NÓS</Text>
-              <Form.Item
-                name="showAbout"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
+            {/* Informações Básicas */}
+            <Title level={5}>Informações Básicas</Title>
 
             <Form.Item
-              name="aboutText"
-              label="Descrição"
-              extra="Texto que aparece na seção Sobre nós do site."
+              label="Nome do Estabelecimento"
+              name="tenantName"
+              rules={[{ required: true, message: 'Campo obrigatório' }]}
+            >
+              <Input placeholder="Ex: Igor E Júnior Barbershop" />
+            </Form.Item>
+
+            <Form.Item
+              label="Sobre"
+              name="about"
             >
               <Input.TextArea
-                placeholder="Somos uma barbearia..."
                 rows={3}
+                placeholder="Descrição breve sobre o estabelecimento"
               />
             </Form.Item>
-          </Space>
-        </Card>
-
-        {/* PROFISSIONAIS */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>PROFISSIONAIS</Text>
-              <Form.Item
-                name="showProfessionals"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
-            <Text type="secondary" style={{ fontSize: 12 }}>Exibe os membros da sua equipe no site.</Text>
-          </Space>
-        </Card>
-
-        {/* HORÁRIO DE FUNCIONAMENTO */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>HORÁRIO DE FUNCIONAMENTO</Text>
-              <Form.Item
-                name="showSchedule"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
-            <Text type="secondary" style={{ fontSize: 12 }}>Exibe os horários de funcionamento no site.</Text>
-          </Space>
-        </Card>
-
-        {/* CONTATO */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>CONTATO</Text>
-              <Form.Item
-                name="showContact"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
 
             <Form.Item
-              name="contactPhone"
-              label="Telefone"
-              extra="Informações de contato exibidas no site."
+              label="Descrição Detalhada"
+              name="description"
             >
-              <Input placeholder="(11) 99999-9999" />
+              <Input.TextArea
+                rows={3}
+                placeholder="Descrição mais completa da sua empresa"
+              />
             </Form.Item>
+
+            <Divider />
+
+            {/* Endereço */}
+            <Title level={5}>Localização</Title>
 
             <Form.Item
-              name="contactWhatsapp"
-              label="WhatsApp"
-              extra="Número do WhatsApp para botão de contato."
+              label="Endereço"
+              name="address"
+              rules={[{ required: true, message: 'Campo obrigatório' }]}
             >
-              <Input placeholder="(11) 99999-9999" />
+              <Input placeholder="Rua, número" />
             </Form.Item>
-          </Space>
-        </Card>
-
-        {/* ENDEREÇO */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>ENDEREÇO</Text>
-              <Form.Item
-                name="showAddress"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
 
             <Row gutter={16}>
-              <Col xs={24}>
-                <Form.Item
-                  name="address"
-                  label="Endereço"
-                  extra="Endereço completo da sua empresa."
-                >
-                  <Input placeholder="Rua Pau Brasil 381" />
-                </Form.Item>
-              </Col>
-
               <Col xs={24} sm={12}>
                 <Form.Item
-                  name="city"
                   label="Cidade"
-                  extra="Cidade da empresa."
+                  name="city"
+                  rules={[{ required: true, message: 'Campo obrigatório' }]}
                 >
-                  <Input placeholder="Divinópolis" />
+                  <Input placeholder="Ex: São Paulo" />
                 </Form.Item>
               </Col>
-
               <Col xs={24} sm={12}>
                 <Form.Item
-                  name="state"
                   label="Estado"
-                  extra="Sigla do estado (ex: SP, RJ, MG)."
+                  name="state"
+                  rules={[{ required: true, message: 'Campo obrigatório' }]}
                 >
-                  <Input placeholder="MG" />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="zipCode"
-                  label="CEP"
-                  extra="CEP da empresa."
-                >
-                  <Input placeholder="35501576" />
+                  <Input placeholder="Ex: SP" />
                 </Form.Item>
               </Col>
             </Row>
-          </Space>
-        </Card>
-
-        {/* REDES SOCIAIS */}
-        <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>REDES SOCIAIS</Text>
-              <Form.Item
-                name="showSocial"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
 
             <Form.Item
-              name="socialInstagram"
-              label="Instagram (site)"
-              extra="Link exibido na seção de redes sociais."
+              label="CEP"
+              name="zipCode"
             >
-              <Input placeholder="https://www.instagram.com/seu_perfil/" />
+              <Input placeholder="Ex: 01234-567" />
             </Form.Item>
 
             <Form.Item
-              name="socialFacebook"
-              label="Facebook (site)"
-              extra="Link exibido na seção de redes sociais."
+              label="Latitude"
+              name="latitude"
             >
-              <Input placeholder="https://facebook.com/seu_perfil" />
+              <Input placeholder="Ex: -23.5505" type="number" step="0.0001" />
             </Form.Item>
-          </Space>
-        </Card>
-
-        {/* FORMAS DE PAGAMENTO */}
-        <Card>
-          <Space direction="vertical" style={{ width: '100%' }} size="large">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text strong>FORMAS DE PAGAMENTO</Text>
-              <Form.Item
-                name="showPayment"
-                noStyle
-              >
-                <Switch />
-              </Form.Item>
-            </div>
 
             <Form.Item
+              label="Longitude"
+              name="longitude"
+            >
+              <Input placeholder="Ex: -46.6333" type="number" step="0.0001" />
+            </Form.Item>
+
+            <Divider />
+
+            {/* Horários de Funcionamento */}
+            <Title level={5}>Horários de Funcionamento</Title>
+
+            {[
+              { day: 'Segunda-feira', value: 'monday' },
+              { day: 'Terça-feira', value: 'tuesday' },
+              { day: 'Quarta-feira', value: 'wednesday' },
+              { day: 'Quinta-feira', value: 'thursday' },
+              { day: 'Sexta-feira', value: 'friday' },
+              { day: 'Sábado', value: 'saturday' },
+              { day: 'Domingo', value: 'sunday' },
+            ].map(({ day, value }) => (
+              <Row key={value} gutter={16} style={{ marginBottom: '12px' }}>
+                <Col xs={24} sm={8}>
+                  <Text strong>{day}</Text>
+                </Col>
+                <Col xs={12} sm={8}>
+                  <Form.Item
+                    name={`${value}Open`}
+                    noStyle
+                  >
+                    <Input type="time" placeholder="Abertura" />
+                  </Form.Item>
+                </Col>
+                <Col xs={12} sm={8}>
+                  <Form.Item
+                    name={`${value}Close`}
+                    noStyle
+                  >
+                    <Input type="time" placeholder="Fechamento" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            ))}
+
+            <Divider />
+
+            {/* Redes Sociais */}
+            <Title level={5}>Redes Sociais</Title>
+
+            <Form.Item
+              label="Instagram"
+              name="instagram"
+            >
+              <Input placeholder="@seu_usuario" />
+            </Form.Item>
+
+            <Form.Item
+              label="Facebook"
+              name="facebook"
+            >
+              <Input placeholder="seu_perfil_facebook" />
+            </Form.Item>
+
+            <Form.Item
+              label="Twitter"
+              name="twitter"
+            >
+              <Input placeholder="@seu_usuario" />
+            </Form.Item>
+
+            <Divider />
+
+            {/* Formas de Pagamento */}
+            <Title level={5}>Formas de Pagamento</Title>
+
+            <Form.Item
+              label="Formas de Pagamento"
               name="paymentMethods"
-              label="Formas de Pagamento (site)"
-              extra="Formas de pagamento aceitas. Separe por vírgula ou uma por linha."
             >
               <Input.TextArea
-                placeholder="PIX, Cartão de Crédito, Cartão de Débito, Dinheiro"
                 rows={3}
+                placeholder="Digite cada forma em uma linha. Ex:&#10;Dinheiro&#10;Cartão de Crédito&#10;PIX&#10;Cartão de Débito"
               />
             </Form.Item>
-          </Space>
+
+            <Divider />
+
+            {/* Comodidades */}
+            <Title level={5}>Comodidades</Title>
+
+            <Form.Item
+              label="Comodidades"
+              name="amenities"
+            >
+              <Input.TextArea
+                rows={3}
+                placeholder="Digite cada comodidade em uma linha. Ex:&#10;WiFi Grátis&#10;Estacionamento&#10;Bebidas Quentes&#10;Conforto"
+              />
+            </Form.Item>
+
+            <Divider />
+
+            {/* Contato */}
+            <Title level={5}>Contato</Title>
+
+            <Form.Item
+              label="Telefone"
+              name="phone"
+            >
+              <Input placeholder="(11) 99999-9999" />
+            </Form.Item>
+
+            {/* Botão Salvar */}
+            <Form.Item>
+              <Button
+                type="primary"
+                size="large"
+                icon={<SaveOutlined />}
+                loading={saving}
+                onClick={handleSave}
+                block
+              >
+                Salvar Configurações
+              </Button>
+            </Form.Item>
+          </Form>
         </Card>
-      </div>
+      </Col>
 
-      <Divider />
-
-      {/* BOTÃO SALVAR */}
-      <Space>
-        <Button
-          type="primary"
-          size="large"
-          icon={<SaveOutlined />}
-          loading={saving}
-          onClick={handleSave}
+      {/* Preview do Telefone - Coluna Direita */}
+      <Col xs={24} lg={10}>
+        <div
+          style={{
+            position: 'sticky',
+            top: '20px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+          }}
         >
-          Salvar Configurações
-        </Button>
-      </Space>
-    </Form>
+          <PhonePreview
+            tenantName={previewData.tenantName}
+            description={previewData.description}
+            address={previewData.address}
+            city={previewData.city}
+            state={previewData.state}
+            zipCode={previewData.zipCode}
+            businessHours={previewData.businessHours}
+            paymentMethods={previewData.paymentMethods}
+            amenities={previewData.amenities}
+            socialMedia={previewData.socialMedia}
+            loading={isLoading}
+          />
+        </div>
+      </Col>
+    </Row>
   )
 }
