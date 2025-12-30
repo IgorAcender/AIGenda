@@ -36,12 +36,25 @@ export function OptimizedClientsList() {
   )
 
   // Mutation para deletar cliente
-  const { mutate: deleteClient, isPending: isDeleting } = useApiMutation(
+  const deleteClientMutation = useApiMutation(
     async (clientId: string) => {
       return await api.delete(`/clients/${clientId}`)
     },
     [['clients']]
   )
+
+  const handleDeleteClient = (clientId: string) => {
+    deleteClientMutation.mutate(clientId, {
+      onSuccess: () => {
+        message.success('Cliente excluído com sucesso!')
+      },
+      onError: (error: any) => {
+        message.error(
+          error?.response?.data?.message || 'Erro ao excluir cliente'
+        )
+      },
+    })
+  }
 
   const columns: ColumnsType<Client> = [
     {
@@ -90,15 +103,7 @@ export function OptimizedClientsList() {
             title="Excluir cliente"
             description="Tem certeza que deseja excluir este cliente?"
             onConfirm={() => {
-              deleteClient(record.id, {
-                onSuccess: () => {
-                  message.success('Cliente excluído com sucesso!')
-                  refetch()
-                },
-                onError: (error: any) => {
-                  message.error(error?.response?.data?.message || 'Erro ao excluir cliente')
-                },
-              })
+              handleDeleteClient(record.id)
             }}
             okText="Sim"
             cancelText="Não"
@@ -107,7 +112,7 @@ export function OptimizedClientsList() {
               danger
               size="small"
               icon={<DeleteOutlined />}
-              loading={isDeleting}
+              loading={deleteClientMutation.isPending}
             >
               Excluir
             </Button>

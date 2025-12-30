@@ -77,6 +77,10 @@ export function useApiMutation(
     },
     onError: (error: any) => {
       console.error('Erro na operação:', error)
+      // Mostrar erro se não for tratado no componente
+      if (error?.response?.data?.message) {
+        // Erro será tratado no componente
+      }
     },
   })
 }
