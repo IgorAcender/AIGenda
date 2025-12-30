@@ -86,6 +86,8 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
       form.resetFields()
       setAvatarPreview(null)
     }
+    // Sempre resetar para a aba de cadastro quando o modal abre
+    setActiveTab('cadastro')
   }, [editingClient, form, open])
 
   const handleSave = (values: any) => {
