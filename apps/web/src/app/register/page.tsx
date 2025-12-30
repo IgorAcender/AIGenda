@@ -105,11 +105,11 @@ export default function RegisterPage() {
             src="/logo-agende-ai.svg" 
             alt="Agende AI" 
             style={{ 
-              width: 60, 
-              height: 60, 
-              marginBottom: 16,
+              width: 140, 
+              height: 'auto', 
+              marginBottom: 24,
               display: 'block',
-              margin: '0 auto 16px'
+              margin: '0 auto 24px'
             }} 
           />
           <Text type="secondary">Crie sua conta</Text>
