@@ -11,50 +11,22 @@ import {
   Row,
   Col,
   Upload,
-  Avatar,
-  Spin,
   Space,
   Divider,
-  Select,
+  Radio,
+  Switch,
+  Textarea,
 } from 'antd'
 import {
   SaveOutlined,
   UploadOutlined,
-  DeleteOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
-import ColorPicker from '@/components/common/ColorPicker'
 
 const { Title, Text, Paragraph } = Typography
 
-interface BrandingConfig {
-  themeTemplate: 'light' | 'dark' | 'custom'
-  backgroundColor: string
-  textColor: string
-  buttonColorPrimary: string
-  buttonTextColor: string
-  heroImage?: string
-  sectionsConfig?: string
-}
-
-const THEME_PRESETS = {
-  light: {
-    backgroundColor: '#FFFFFF',
-    textColor: '#000000',
-    buttonColorPrimary: '#505afb',
-    buttonTextColor: '#FFFFFF',
-  },
-  dark: {
-    backgroundColor: '#1f2937',
-    textColor: '#FFFFFF',
-    buttonColorPrimary: '#7c3aed',
-    buttonTextColor: '#FFFFFF',
-  },
-}
-
 export default function CoresMarcaTab() {
   const [form] = Form.useForm()
-  const [showColorPicker, setShowColorPicker] = useState(false)
 
   // Buscar configurações atuais
   const { data: brandingData, isLoading } = useApiQuery(
@@ -65,8 +37,9 @@ export default function CoresMarcaTab() {
 
   // Mutation para salvar
   const { mutate: saveBranding, isPending: saving } = useApiMutation(
-    async (payload: Partial<BrandingConfig>) => {
-      const { data } = await import('@/lib/api').then(m => m.api.put('/tenants/branding', payload))
+    async (payload: any) => {
+      const { api } = await import('@/lib/api')
+      const { data } = await api.put('/tenants/branding', payload)
       return data
     },
     [['branding']]
@@ -77,11 +50,7 @@ export default function CoresMarcaTab() {
     if (brandingData) {
       form.setFieldsValue({
         themeTemplate: brandingData.themeTemplate || 'light',
-        backgroundColor: brandingData.backgroundColor || '#FFFFFF',
-        textColor: brandingData.textColor || '#000000',
-        buttonColorPrimary: brandingData.buttonColorPrimary || '#505afb',
-        buttonTextColor: brandingData.buttonTextColor || '#FFFFFF',
-        heroImage: brandingData.heroImage || null,
+        ...brandingData,
       })
     }
   }, [brandingData, form])
@@ -91,207 +60,360 @@ export default function CoresMarcaTab() {
       const values = await form.validateFields()
       
       saveBranding(values, {
-        onSuccess: () => message.success('Configurações de branding salvas com sucesso!'),
-        onError: () => message.error('Erro ao salvar configurações de branding'),
+        onSuccess: () => message.success('Configurações salvas com sucesso!'),
+        onError: () => message.error('Erro ao salvar configurações'),
       })
     } catch (error) {
       console.error('Erro ao validar:', error)
     }
   }
 
-  const handleThemeChange = (value: string) => {
-    const preset = THEME_PRESETS[value as keyof typeof THEME_PRESETS]
-    if (preset) {
-      form.setFieldsValue(preset)
-    }
-  }
-
-  const currentValues = form.getFieldsValue()
-
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <Spin size="large" />
-      </div>
-    )
-  }
+  const themeValue = form.getFieldValue('themeTemplate')
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <Title level={3}>🎨 Cores e Marca</Title>
-      <Paragraph type="secondary">
-        Personalize as cores do seu site para refletir a identidade da sua marca. As mudanças serão aplicadas automaticamente na página pública.
-      </Paragraph>
+    <Form
+      form={form}
+      layout="vertical"
+      disabled={isLoading}
+    >
+      {/* MODELO DE TEMA */}
+      <div style={{ marginBottom: 32 }}>
+        <Title level={4}>🎨 Modelo de Tema</Title>
+        <Paragraph type="secondary">
+          Escolha um tema pré-configurado ou personalize as cores do seu site.
+        </Paragraph>
 
-      <Form form={form} layout="vertical">
-        <Row gutter={24}>
-          {/* Coluna Esquerda - Formulário */}
-          <Col xs={24} lg={16}>
-            <Card title="Configurações de Tema" style={{ marginBottom: 16 }}>
+        <Form.Item
+          name="themeTemplate"
+          noStyle
+        >
+          <Radio.Group>
+            <Row gutter={16} style={{ marginTop: 16 }}>
+              <Col xs={24} sm={12} lg={8}>
+                <Card 
+                  hoverable
+                  style={{ cursor: 'pointer', textAlign: 'center' }}
+                  onClick={() => form.setFieldValue('themeTemplate', 'custom')}
+                >
+                  <Radio value="custom" style={{ position: 'absolute', top: 8, left: 8 }} />
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>🎯</div>
+                  <Text strong>Personalizado</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>Escolha suas cores</Text>
+                </Card>
+              </Col>
+
+              <Col xs={24} sm={12} lg={8}>
+                <Card 
+                  hoverable
+                  style={{ cursor: 'pointer', textAlign: 'center' }}
+                  onClick={() => form.setFieldValue('themeTemplate', 'dark')}
+                >
+                  <Radio value="dark" style={{ position: 'absolute', top: 8, left: 8 }} />
+                  <div style={{ 
+                    backgroundColor: '#1f2937', 
+                    height: 60, 
+                    borderRadius: 8, 
+                    marginBottom: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: '#000', borderRadius: 2 }} />
+                    <div style={{ width: 30, height: 12, backgroundColor: '#fff', borderRadius: 2 }} />
+                    <div style={{ width: 12, height: 12, backgroundColor: '#7c3aed', borderRadius: 2 }} />
+                  </div>
+                  <Text strong>Preto e Branco</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>Tema Escuro</Text>
+                </Card>
+              </Col>
+
+              <Col xs={24} sm={12} lg={8}>
+                <Card 
+                  hoverable
+                  style={{ cursor: 'pointer', textAlign: 'center' }}
+                  onClick={() => form.setFieldValue('themeTemplate', 'light')}
+                >
+                  <Radio value="light" style={{ position: 'absolute', top: 8, left: 8 }} />
+                  <div style={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #f0f0f0',
+                    height: 60, 
+                    borderRadius: 8, 
+                    marginBottom: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}>
+                    <div style={{ width: 12, height: 12, backgroundColor: '#fff', border: '1px solid #000', borderRadius: 2 }} />
+                    <div style={{ width: 30, height: 12, backgroundColor: '#000', borderRadius: 2 }} />
+                    <div style={{ width: 12, height: 12, backgroundColor: '#7c3aed', borderRadius: 2 }} />
+                  </div>
+                  <Text strong>Branco e Preto</Text>
+                  <br />
+                  <Text type="secondary" style={{ fontSize: 12 }}>Tema Claro</Text>
+                </Card>
+              </Col>
+            </Row>
+          </Radio.Group>
+        </Form.Item>
+      </div>
+
+      <Divider />
+
+      {/* IMAGEM DE CAPA */}
+      <div style={{ marginBottom: 32 }}>
+        <Title level={4}>🖼️ Imagem de Capa</Title>
+        <Paragraph type="secondary">
+          Faça upload da imagem principal do site.
+        </Paragraph>
+
+        <Form.Item
+          name="heroImage"
+          label="Foto de capa / hero do site"
+          extra="Imagem exibida no topo do site. Formatos: JPG/PNG."
+        >
+          <Upload
+            maxCount={1}
+            accept="image/*"
+            listType="picture"
+            beforeUpload={() => false}
+          >
+            <Button icon={<UploadOutlined />}>Escolher Arquivo</Button>
+          </Upload>
+        </Form.Item>
+      </div>
+
+      <Divider />
+
+      {/* CONTEÚDO DO SITE */}
+      <div style={{ marginBottom: 32 }}>
+        <Title level={4}>📄 Conteúdo do Site</Title>
+        <Paragraph type="secondary">
+          Organize as seções que aparecerão no seu site. Use as setas para reordenar.
+        </Paragraph>
+
+        {/* SOBRE NÓS */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>SOBRE NÓS</Text>
               <Form.Item
-                name="themeTemplate"
-                label="Modelo de Tema"
-                rules={[{ required: true }]}
+                name="showAbout"
+                noStyle
               >
-                <Select onChange={handleThemeChange}>
-                  <Select.Option value="light">
-                    ☀️ Claro (Light)
-                  </Select.Option>
-                  <Select.Option value="dark">
-                    🌙 Escuro (Dark)
-                  </Select.Option>
-                  <Select.Option value="custom">
-                    🎨 Personalizado
-                  </Select.Option>
-                </Select>
+                <Switch />
               </Form.Item>
-            </Card>
+            </div>
 
-            {currentValues.themeTemplate === 'custom' && (
-              <Card title="Cores Personalizadas" style={{ marginBottom: 16 }}>
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="backgroundColor"
-                      label="Cor de Fundo"
-                      rules={[{ required: true }]}
-                    >
-                      <ColorPicker />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="textColor"
-                      label="Cor do Texto"
-                      rules={[{ required: true }]}
-                    >
-                      <ColorPicker />
-                    </Form.Item>
-                  </Col>
-                </Row>
+            <Form.Item
+              name="aboutText"
+              label="Descrição"
+              extra="Texto que aparece na seção Sobre nós do site."
+            >
+              <Input.TextArea
+                placeholder="Somos uma barbearia..."
+                rows={3}
+              />
+            </Form.Item>
+          </Space>
+        </Card>
 
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="buttonColorPrimary"
-                      label="Cor do Botão"
-                      rules={[{ required: true }]}
-                    >
-                      <ColorPicker />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="buttonTextColor"
-                      label="Cor do Texto do Botão"
-                      rules={[{ required: true }]}
-                    >
-                      <ColorPicker />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Card>
-            )}
-
-            <Card title="Imagem de Capa" style={{ marginBottom: 16 }}>
-              <Paragraph type="secondary">
-                Faça upload de uma imagem para a seção hero (capa) do seu site.
-              </Paragraph>
+        {/* PROFISSIONAIS */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>PROFISSIONAIS</Text>
               <Form.Item
-                name="heroImage"
-                label="Imagem Principal"
+                name="showProfessionals"
+                noStyle
               >
-                <Upload
-                  maxCount={1}
-                  accept="image/*"
-                  listType="picture"
-                  beforeUpload={() => false}
-                >
-                  <Button icon={<UploadOutlined />}>
-                    Selecionar Imagem
-                  </Button>
-                </Upload>
+                <Switch />
               </Form.Item>
-            </Card>
+            </div>
+            <Text type="secondary" style={{ fontSize: 12 }}>Exibe os membros da sua equipe no site.</Text>
+          </Space>
+        </Card>
 
-            <Divider />
-
-            {/* Botões de Ação */}
-            <Space>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleSave}
-                loading={saving}
-                size="large"
+        {/* HORÁRIO DE FUNCIONAMENTO */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>HORÁRIO DE FUNCIONAMENTO</Text>
+              <Form.Item
+                name="showSchedule"
+                noStyle
               >
-                Salvar Configurações
-              </Button>
-              <Button type="default" size="large">
-                Visualizar Página Pública
-              </Button>
-            </Space>
-          </Col>
+                <Switch />
+              </Form.Item>
+            </div>
+            <Text type="secondary" style={{ fontSize: 12 }}>Exibe os horários de funcionamento no site.</Text>
+          </Space>
+        </Card>
 
-          {/* Coluna Direita - Preview */}
-          <Col xs={24} lg={8}>
-            <Card title="Preview" style={{ position: 'sticky', top: 20 }}>
-              <div
-                style={{
-                  padding: 24,
-                  borderRadius: 8,
-                  backgroundColor: currentValues.backgroundColor || '#FFFFFF',
-                  color: currentValues.textColor || '#000000',
-                  minHeight: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: 16,
-                }}
+        {/* CONTATO */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>CONTATO</Text>
+              <Form.Item
+                name="showContact"
+                noStyle
               >
-                <Title
-                  level={3}
-                  style={{
-                    color: currentValues.textColor || '#000000',
-                    margin: 0,
-                  }}
+                <Switch />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="contactPhone"
+              label="Telefone"
+              extra="Informações de contato exibidas no site."
+            >
+              <Input placeholder="(11) 99999-9999" />
+            </Form.Item>
+
+            <Form.Item
+              name="contactWhatsapp"
+              label="WhatsApp"
+              extra="Número do WhatsApp para botão de contato."
+            >
+              <Input placeholder="(11) 99999-9999" />
+            </Form.Item>
+          </Space>
+        </Card>
+
+        {/* ENDEREÇO */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>ENDEREÇO</Text>
+              <Form.Item
+                name="showAddress"
+                noStyle
+              >
+                <Switch />
+              </Form.Item>
+            </div>
+
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item
+                  name="address"
+                  label="Endereço"
+                  extra="Endereço completo da sua empresa."
                 >
-                  Seu Site
-                </Title>
+                  <Input placeholder="Rua Pau Brasil 381" />
+                </Form.Item>
+              </Col>
 
-                <Text
-                  style={{
-                    color: currentValues.textColor || '#000000',
-                    opacity: 0.7,
-                  }}
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="city"
+                  label="Cidade"
+                  extra="Cidade da empresa."
                 >
-                  Confira sua página pública
-                </Text>
+                  <Input placeholder="Divinópolis" />
+                </Form.Item>
+              </Col>
 
-                <Button
-                  style={{
-                    backgroundColor: currentValues.buttonColorPrimary || '#505afb',
-                    borderColor: currentValues.buttonColorPrimary || '#505afb',
-                    color: currentValues.buttonTextColor || '#FFFFFF',
-                  }}
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="state"
+                  label="Estado"
+                  extra="Sigla do estado (ex: SP, RJ, MG)."
                 >
-                  Agendar Agora
-                </Button>
+                  <Input placeholder="MG" />
+                </Form.Item>
+              </Col>
 
-                <Divider style={{ margin: '16px 0' }} />
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="zipCode"
+                  label="CEP"
+                  extra="CEP da empresa."
+                >
+                  <Input placeholder="35501576" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Space>
+        </Card>
 
-                <div style={{ fontSize: 12, opacity: 0.6 }}>
-                  <p>Cores ativas:</p>
-                  <p>Fundo: {currentValues.backgroundColor || '#FFFFFF'}</p>
-                  <p>Texto: {currentValues.textColor || '#000000'}</p>
-                  <p>Botão: {currentValues.buttonColorPrimary || '#505afb'}</p>
-                </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      </Form>
-    </div>
+        {/* REDES SOCIAIS */}
+        <Card style={{ marginBottom: 16 }}>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>REDES SOCIAIS</Text>
+              <Form.Item
+                name="showSocial"
+                noStyle
+              >
+                <Switch />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="socialInstagram"
+              label="Instagram (site)"
+              extra="Link exibido na seção de redes sociais."
+            >
+              <Input placeholder="https://www.instagram.com/seu_perfil/" />
+            </Form.Item>
+
+            <Form.Item
+              name="socialFacebook"
+              label="Facebook (site)"
+              extra="Link exibido na seção de redes sociais."
+            >
+              <Input placeholder="https://facebook.com/seu_perfil" />
+            </Form.Item>
+          </Space>
+        </Card>
+
+        {/* FORMAS DE PAGAMENTO */}
+        <Card>
+          <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text strong>FORMAS DE PAGAMENTO</Text>
+              <Form.Item
+                name="showPayment"
+                noStyle
+              >
+                <Switch />
+              </Form.Item>
+            </div>
+
+            <Form.Item
+              name="paymentMethods"
+              label="Formas de Pagamento (site)"
+              extra="Formas de pagamento aceitas. Separe por vírgula ou uma por linha."
+            >
+              <Input.TextArea
+                placeholder="PIX, Cartão de Crédito, Cartão de Débito, Dinheiro"
+                rows={3}
+              />
+            </Form.Item>
+          </Space>
+        </Card>
+      </div>
+
+      <Divider />
+
+      {/* BOTÃO SALVAR */}
+      <Space>
+        <Button
+          type="primary"
+          size="large"
+          icon={<SaveOutlined />}
+          loading={saving}
+          onClick={handleSave}
+        >
+          Salvar Configurações
+        </Button>
+      </Space>
+    </Form>
   )
 }
