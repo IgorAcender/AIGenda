@@ -16,10 +16,13 @@ import {
   Divider,
   Radio,
   Switch,
+  Alert,
 } from 'antd'
 import {
   SaveOutlined,
   UploadOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import PhonePreview from './PhonePreview'
@@ -54,10 +57,12 @@ export default function CoresMarcaTab() {
         tenantName: brandingData.name || '',
         about: brandingData.about || '',
         address: brandingData.address || '',
+        district: brandingData.district || '',
         city: brandingData.city || '',
         state: brandingData.state || '',
         zipCode: brandingData.zipCode || '',
         phone: brandingData.phone || '',
+        whatsapp: brandingData.whatsapp || '',
         email: brandingData.email || '',
         description: brandingData.description || '',
         instagram: brandingData.instagram || '',
@@ -95,10 +100,12 @@ export default function CoresMarcaTab() {
         name: values.tenantName,
         about: values.about,
         address: values.address,
+        district: values.district,
         city: values.city,
         state: values.state,
         zipCode: values.zipCode,
         phone: values.phone,
+        whatsapp: values.whatsapp,
         email: values.email,
         description: values.description,
         instagram: values.instagram,
@@ -174,220 +181,255 @@ export default function CoresMarcaTab() {
             layout="vertical"
             autoComplete="off"
           >
-            {/* Tema */}
-            <Form.Item
-              label="Tema"
-              name="theme"
-              initialValue="light"
-            >
-              <Radio.Group>
-                <Radio.Button value="light">Claro</Radio.Button>
-                <Radio.Button value="dark">Escuro</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
+            {/* 1. SOBRE NÓS */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>SOBRE NÓS</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
+              
+              <Form.Item
+                label="Descrição"
+                name="about"
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Somos uma barbearia"
+                />
+              </Form.Item>
 
-            <Divider />
+              <Text type="secondary">Texto que aparece na seção Sobre nós do site.</Text>
+            </Card>
 
-            {/* Informações Básicas */}
-            <Title level={5}>Informações Básicas</Title>
+            {/* 2. PROFISSIONAIS */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>PROFISSIONAIS</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            <Form.Item
-              label="Nome do Estabelecimento"
-              name="tenantName"
-              rules={[{ required: true, message: 'Campo obrigatório' }]}
-            >
-              <Input placeholder="Ex: Igor E Júnior Barbershop" />
-            </Form.Item>
-
-            <Form.Item
-              label="Sobre"
-              name="about"
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Descrição breve sobre o estabelecimento"
+              <Alert 
+                message="Exibe os membros da sua equipe no site." 
+                type="info"
+                showIcon
+                style={{ marginBottom: '16px' }}
               />
-            </Form.Item>
 
-            <Form.Item
-              label="Descrição Detalhada"
-              name="description"
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Descrição mais completa da sua empresa"
+              <Button 
+                type="primary" 
+                icon={<EditOutlined />}
+                block
+              >
+                Gerenciar Profissionais
+              </Button>
+            </Card>
+
+            {/* 3. HORÁRIO DE FUNCIONAMENTO */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>HORÁRIO DE FUNCIONAMENTO</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
+
+              <Alert 
+                message="Exibe os horários de funcionamento no site."
+                type="info"
+                showIcon
+                style={{ marginBottom: '16px' }}
               />
-            </Form.Item>
 
-            <Divider />
+              <Button 
+                type="primary" 
+                icon={<EditOutlined />}
+                block
+              >
+                Configurar Horários
+              </Button>
+            </Card>
 
-            {/* Endereço */}
-            <Title level={5}>Localização</Title>
+            {/* 4. CONTATO */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>CONTATO</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            <Form.Item
-              label="Endereço"
-              name="address"
-              rules={[{ required: true, message: 'Campo obrigatório' }]}
-            >
-              <Input placeholder="Rua, número" />
-            </Form.Item>
+              <Form.Item
+                label="Telefone"
+                name="phone"
+              >
+                <Input placeholder="37988051626" />
+              </Form.Item>
 
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Cidade"
-                  name="city"
-                  rules={[{ required: true, message: 'Campo obrigatório' }]}
-                >
-                  <Input placeholder="Ex: São Paulo" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Estado"
-                  name="state"
-                  rules={[{ required: true, message: 'Campo obrigatório' }]}
-                >
-                  <Input placeholder="Ex: SP" />
-                </Form.Item>
-              </Col>
-            </Row>
+              <Text type="secondary">Informações de contato exibidas no site.</Text>
 
-            <Form.Item
-              label="CEP"
-              name="zipCode"
-            >
-              <Input placeholder="Ex: 01234-567" />
-            </Form.Item>
+              <Divider />
 
-            <Form.Item
-              label="Latitude"
-              name="latitude"
-            >
-              <Input placeholder="Ex: -23.5505" type="number" step="0.0001" />
-            </Form.Item>
+              <Title level={5} style={{ marginTop: '16px' }}>📱 WhatsApp</Title>
 
-            <Form.Item
-              label="Longitude"
-              name="longitude"
-            >
-              <Input placeholder="Ex: -46.6333" type="number" step="0.0001" />
-            </Form.Item>
+              <Form.Item
+                label="Número do WhatsApp"
+                name="whatsapp"
+              >
+                <Input placeholder="37988051626" />
+              </Form.Item>
 
-            <Divider />
+              <Text type="secondary">Número do WhatsApp para botão de contato.</Text>
+            </Card>
 
-            {/* Horários de Funcionamento */}
-            <Title level={5}>Horários de Funcionamento</Title>
+            {/* 5. ENDEREÇO */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>ENDEREÇO</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            {[
-              { day: 'Segunda-feira', value: 'monday' },
-              { day: 'Terça-feira', value: 'tuesday' },
-              { day: 'Quarta-feira', value: 'wednesday' },
-              { day: 'Quinta-feira', value: 'thursday' },
-              { day: 'Sexta-feira', value: 'friday' },
-              { day: 'Sábado', value: 'saturday' },
-              { day: 'Domingo', value: 'sunday' },
-            ].map(({ day, value }) => (
-              <Row key={value} gutter={16} style={{ marginBottom: '12px' }}>
-                <Col xs={24} sm={8}>
-                  <Text strong>{day}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
+              <Row gutter={16}>
+                <Col xs={24}>
                   <Form.Item
-                    name={`${value}Open`}
-                    noStyle
+                    label="📍 Endereço"
+                    name="address"
                   >
-                    <Input type="time" placeholder="Abertura" />
+                    <Input placeholder="Rua Pau Brasil 381" />
+                  </Form.Item>
+                  <Text type="secondary">Endereço completo da sua empresa.</Text>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={12}>
+                  <Form.Item
+                    label="# CEP"
+                    name="zipCode"
+                  >
+                    <Input placeholder="35501576" />
+                  </Form.Item>
+                  <Text type="secondary">CEP da empresa.</Text>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={8}>
+                  <Form.Item
+                    label="Bairro"
+                    name="district"
+                  >
+                    <Input placeholder="Jardinópolis" />
+                  </Form.Item>
+                  <Text type="secondary">Bairro onde fica sua empresa.</Text>
+                </Col>
+                <Col xs={8}>
+                  <Form.Item
+                    label="Cidade"
+                    name="city"
+                  >
+                    <Input placeholder="Divinópolis" />
+                  </Form.Item>
+                  <Text type="secondary">Cidade da empresa.</Text>
+                </Col>
+                <Col xs={8}>
+                  <Form.Item
+                    label="Estado"
+                    name="state"
+                  >
+                    <Input placeholder="MG" />
+                  </Form.Item>
+                  <Text type="secondary">Sigla do estado (ex: SP, RJ, MG).</Text>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={12}>
+                  <Form.Item
+                    label="Latitude"
+                    name="latitude"
+                  >
+                    <Input placeholder="-23.5505" type="number" step="0.0001" />
                   </Form.Item>
                 </Col>
-                <Col xs={12} sm={8}>
+                <Col xs={12}>
                   <Form.Item
-                    name={`${value}Close`}
-                    noStyle
+                    label="Longitude"
+                    name="longitude"
                   >
-                    <Input type="time" placeholder="Fechamento" />
+                    <Input placeholder="-46.6333" type="number" step="0.0001" />
                   </Form.Item>
                 </Col>
               </Row>
-            ))}
+            </Card>
 
-            <Divider />
+            {/* 6. REDES SOCIAIS */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>REDES SOCIAIS</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            {/* Redes Sociais */}
-            <Title level={5}>Redes Sociais</Title>
+              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>📸 Instagram (site)</Title>
 
-            <Form.Item
-              label="Instagram"
-              name="instagram"
-            >
-              <Input placeholder="@seu_usuario" />
-            </Form.Item>
+              <Form.Item
+                name="instagram"
+              >
+                <Input placeholder="https://www.instagram.com/liderboxdivinopolis/" />
+              </Form.Item>
 
-            <Form.Item
-              label="Facebook"
-              name="facebook"
-            >
-              <Input placeholder="seu_perfil_facebook" />
-            </Form.Item>
+              <Text type="secondary">Link exibido na seção de redes sociais.</Text>
 
-            <Form.Item
-              label="Twitter"
-              name="twitter"
-            >
-              <Input placeholder="@seu_usuario" />
-            </Form.Item>
+              <Divider style={{ margin: '16px 0' }} />
 
-            <Divider />
+              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>👥 Facebook (site)</Title>
 
-            {/* Formas de Pagamento */}
-            <Title level={5}>Formas de Pagamento</Title>
+              <Form.Item
+                name="facebook"
+              >
+                <Input placeholder="https://facebook.com/seu_perfil" />
+              </Form.Item>
 
-            <Form.Item
-              label="Formas de Pagamento"
-              name="paymentMethods"
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Digite cada forma em uma linha. Ex:&#10;Dinheiro&#10;Cartão de Crédito&#10;PIX&#10;Cartão de Débito"
-              />
-            </Form.Item>
+              <Text type="secondary">Link exibido na seção de redes sociais.</Text>
+            </Card>
 
-            <Divider />
+            {/* 7. FORMAS DE PAGAMENTO */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>FORMAS DE PAGAMENTO</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            {/* Comodidades */}
-            <Title level={5}>Comodidades</Title>
+              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>💳 Formas de Pagamento (site)</Title>
 
-            <Form.Item
-              label="Comodidades"
-              name="amenities"
-            >
-              <Input.TextArea
-                rows={3}
-                placeholder="Digite cada comodidade em uma linha. Ex:&#10;WiFi Grátis&#10;Estacionamento&#10;Bebidas Quentes&#10;Conforto"
-              />
-            </Form.Item>
+              <Form.Item
+                name="paymentMethods"
+              >
+                <Input.TextArea
+                  rows={5}
+                  placeholder={`PIX,\nCartão de Crédito,\nCartão de Débito,\nDinheiro,`}
+                />
+              </Form.Item>
 
-            <Divider />
+              <Text type="secondary">Formas de pagamento aceitas. Separe por vírgula ou uma por linha.</Text>
+            </Card>
 
-            {/* Contato */}
-            <Title level={5}>Contato</Title>
+            {/* 8. COMODIDADES */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <Title level={4} style={{ margin: 0 }}>COMODIDADES</Title>
+                <Switch defaultChecked style={{ float: 'right' }} />
+              </div>
 
-            <Form.Item
-              label="Telefone"
-              name="phone"
-            >
-              <Input placeholder="(11) 99999-9999" />
-            </Form.Item>
+              <Form.Item
+                name="amenities"
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Descreva as comodidades oferecidas..."
+                />
+              </Form.Item>
 
-            <Form.Item
-              label="Email"
-              name="email"
-            >
-              <Input placeholder="contato@example.com" type="email" />
-            </Form.Item>
+              <Text type="secondary">Comodidades disponíveis no estabelecimento.</Text>
+            </Card>
 
             {/* Botão Salvar */}
-            <Form.Item>
+            <Form.Item style={{ marginTop: '24px' }}>
               <Button
                 type="primary"
                 size="large"
