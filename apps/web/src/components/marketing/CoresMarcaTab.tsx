@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import {
   Card,
   Form,
@@ -26,6 +27,8 @@ import PhonePreview from './PhonePreview'
 const { Title, Text, Paragraph } = Typography
 
 export default function CoresMarcaTab() {
+  const params = useParams()
+  const tenantSlug = params?.tenantSlug as string
   const [form] = Form.useForm()
 
   // Buscar configurações atuais
@@ -414,19 +417,7 @@ export default function CoresMarcaTab() {
           }}
         >
           <PhonePreview
-            tenantName={previewData.tenantName}
-            about={previewData.about}
-            description={previewData.description}
-            address={previewData.address}
-            city={previewData.city}
-            state={previewData.state}
-            zipCode={previewData.zipCode}
-            phone={form.getFieldValue('phone')}
-            email={form.getFieldValue('email')}
-            businessHours={previewData.businessHours}
-            paymentMethods={previewData.paymentMethods}
-            amenities={previewData.amenities}
-            socialMedia={previewData.socialMedia}
+            tenantSlug={tenantSlug}
             loading={isLoading}
           />
         </div>
