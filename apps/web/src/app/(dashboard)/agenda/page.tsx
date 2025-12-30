@@ -48,6 +48,7 @@ import {
 import dayjs, { Dayjs } from 'dayjs'
 import 'dayjs/locale/pt-br'
 import { appointmentService, Appointment as ApiAppointment } from '@/services/appointmentService'
+import { useTheme } from '@/hooks/useTheme'
 import { ClientFormModal } from '@/components/ClientFormModal'
 import { clientService, Client } from '@/services/clientService'
 import { professionalService, Professional as ApiProfessional } from '@/services/professionalService'
@@ -139,6 +140,14 @@ const appointmentModalStyle = `
 `
 
 export default function AgendaPage() {
+  const { themeType } = useTheme()
+  
+  // Cores dinâmicas baseadas no tema
+  const borderColor = themeType === 'dark' ? '#434343' : '#f0f0f0'
+  const bgColorBusiness = themeType === 'dark' ? '#1f1f1f' : '#fff'
+  const bgColorNonBusiness = themeType === 'dark' ? '#141414' : '#fafafa'
+  const textColor = themeType === 'dark' ? '#e6e6e6' : '#000000'
+  
   const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs())
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day')
   const [selectedProfessional, setSelectedProfessional] = useState<string | null>(null)
@@ -472,8 +481,8 @@ export default function AgendaPage() {
       {/* Calendar Grid */}
       <Card bodyStyle={{ padding: 0 }}>
         {/* Header com dias */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0' }}>
-          <div style={{ width: 80, padding: 12, borderRight: '1px solid #f0f0f0' }}>
+        <div style={{ display: 'flex', borderBottom: `1px solid ${borderColor}` }}>
+          <div style={{ width: 80, padding: 12, borderRight: `1px solid ${borderColor}` }}>
             <Text type="secondary">Horário</Text>
           </div>
           {viewMode === 'day' ? (
@@ -492,7 +501,7 @@ export default function AgendaPage() {
                     flex: 1, 
                     padding: 12, 
                     textAlign: 'center',
-                    borderRight: index < 6 ? '1px solid #f0f0f0' : 'none'
+                    borderRight: index < 6 ? `1px solid ${borderColor}` : 'none'
                   }}
                 >
                   <Text strong>{date.format('ddd')}</Text>
@@ -515,13 +524,13 @@ export default function AgendaPage() {
                   style={{
                     height: 60,
                     padding: '8px 12px',
-                    borderRight: '1px solid #f0f0f0',
-                    borderBottom: '1px solid #f0f0f0',
-                    color: isBusinessHours ? '#333' : '#999',
+                    borderRight: `1px solid ${borderColor}`,
+                    borderBottom: `1px solid ${borderColor}`,
+                    color: isBusinessHours ? textColor : '#999',
                     fontSize: 13,
                     display: 'flex',
                     alignItems: 'flex-start',
-                    backgroundColor: isBusinessHours ? '#fff' : '#fafafa',
+                    backgroundColor: isBusinessHours ? bgColorBusiness : bgColorNonBusiness,
                     fontWeight: isBusinessHours ? 500 : 400,
                   }}
                 >
@@ -548,9 +557,9 @@ export default function AgendaPage() {
                     key={`line-${idx}`}
                     style={{
                       height: 60,
-                      borderBottom: '1px solid #f0f0f0',
+                      borderBottom: `1px solid ${borderColor}`,
                       position: 'relative',
-                      backgroundColor: isBusinessHours ? '#fff' : '#f5f5f5',
+                      backgroundColor: isBusinessHours ? bgColorBusiness : bgColorNonBusiness,
                     }}
                   />
                 )
@@ -650,7 +659,7 @@ export default function AgendaPage() {
                   <div
                     key={`day-${dateStr}`}
                     style={{
-                      borderRight: dayIndex < 6 ? '1px solid #f0f0f0' : 'none',
+                      borderRight: dayIndex < 6 ? `1px solid ${borderColor}` : 'none',
                       position: 'relative',
                     }}
                   >
@@ -662,9 +671,9 @@ export default function AgendaPage() {
                           key={`line-${dateStr}-${idx}`}
                           style={{
                             height: 60,
-                            borderBottom: '1px solid #f0f0f0',
+                            borderBottom: `1px solid ${borderColor}`,
                             position: 'relative',
-                            backgroundColor: isBusinessHours ? '#fff' : '#f5f5f5',
+                            backgroundColor: isBusinessHours ? bgColorBusiness : bgColorNonBusiness,
                             cursor: 'pointer',
                           }}
                           onClick={() => handleSlotClick(dateStr, timeSlots[idx])}
