@@ -307,37 +307,42 @@ export default function ProductsPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
-          <Input
-            placeholder="Buscar por nome, SKU ou código de barras..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ maxWidth: 400 }}
-            allowClear
-          />
-          <Select
-            placeholder="Categoria"
-            style={{ width: 150 }}
-            value={filterCategory}
-            onChange={setFilterCategory}
-            allowClear
-          >
-            {categories.map((cat) => (
-              <Select.Option key={cat.id} value={cat.id}>
-                {cat.name}
-              </Select.Option>
-            ))}
-          </Select>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => {
-              setSearchText('')
-              setFilterCategory(null)
-            }}
-          >
-            Limpar
-          </Button>
+        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Input
+              placeholder="Buscar por nome, SKU ou código de barras..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ maxWidth: 400 }}
+              allowClear
+            />
+            <Select
+              placeholder="Categoria"
+              style={{ width: 150 }}
+              value={filterCategory}
+              onChange={setFilterCategory}
+              allowClear
+            >
+              {categories.map((cat) => (
+                <Select.Option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </Select.Option>
+              ))}
+            </Select>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                setSearchText('')
+                setFilterCategory(null)
+              }}
+            >
+              Limpar
+            </Button>
+          </div>
+          <div style={{ fontSize: 14, color: '#666' }}>
+            <strong>Total:</strong> {filteredProducts.length} produto{filteredProducts.length !== 1 ? 's' : ''}
+          </div>
         </div>
 
         <Table
@@ -345,10 +350,7 @@ export default function ProductsPage() {
           dataSource={filteredProducts}
           rowKey="id"
           loading={loading}
-          pagination={{
-            pageSize: 10,
-            showTotal: (total) => `Total: ${total} produtos`,
-          }}
+          pagination={false}
         />
       </Card>
 
