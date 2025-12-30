@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Spin } from 'antd'
+import { useAuthStore } from '@/stores/auth'
 import './PhonePreview.css'
 
 interface PhonePreviewProps {
@@ -28,9 +29,11 @@ interface PhonePreviewProps {
 }
 
 export default function PhonePreview({
-  tenantSlug,
   loading = false,
 }: PhonePreviewProps) {
+  const { tenant } = useAuthStore()
+  const tenantSlug = tenant?.slug
+
   // Construir URL da landing page
   const landingPageUrl = tenantSlug 
     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${tenantSlug}`

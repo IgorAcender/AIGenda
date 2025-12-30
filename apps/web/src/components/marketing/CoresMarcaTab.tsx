@@ -27,8 +27,6 @@ import PhonePreview from './PhonePreview'
 const { Title, Text, Paragraph } = Typography
 
 export default function CoresMarcaTab() {
-  const params = useParams()
-  const tenantSlug = params?.tenantSlug as string
   const [form] = Form.useForm()
 
   // Buscar configurações atuais
@@ -417,7 +415,6 @@ export default function CoresMarcaTab() {
           }}
         >
           <PhonePreview
-            tenantSlug={tenantSlug}
             loading={isLoading}
           />
         </div>
