@@ -1,16 +1,18 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, Typography, Input, Button, message, Space, QRCode, Divider } from 'antd'
 import { CopyOutlined, LinkOutlined, QrcodeOutlined, ShareAltOutlined } from '@ant-design/icons'
+import { useAuthStore } from '@/stores/auth'
 
 const { Title, Text, Paragraph } = Typography
 
 export default function LinkAgendamentoPage() {
   const [copied, setCopied] = useState(false)
-
-  // Pegar o tenant atual (você pode pegar do contexto/store)
-  const tenantSlug = 'barbearia-exemplo' // TODO: Pegar do contexto real
+  const { tenant } = useAuthStore()
+  
+  // Pegar o slug do tenant atual
+  const tenantSlug = tenant?.slug || 'seu-estabelecimento'
   const baseUrl = 'https://agendeai.net'
   const landingPageUrl = `${baseUrl}/${tenantSlug}`
 
