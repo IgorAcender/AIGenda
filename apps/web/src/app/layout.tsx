@@ -9,9 +9,9 @@ export const metadata: Metadata = {
   title: 'Agende AI - Sistema de Agendamento',
   description: 'Sistema completo de agendamento e gestão para seu negócio',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 }
 

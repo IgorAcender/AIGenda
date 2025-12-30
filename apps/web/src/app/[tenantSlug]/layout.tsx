@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title: 'Agendamento Online',
   description: 'Agende seu horário de forma rápida e fácil',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 }
 

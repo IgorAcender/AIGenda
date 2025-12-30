@@ -296,7 +296,7 @@ export default function DashboardLayout({
         >
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img
-              src="/logo-agende-ai.svg"
+              src="/favicon.png"
               alt="Agende AI"
               style={{
                 width: 40,

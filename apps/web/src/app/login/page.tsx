@@ -62,10 +62,10 @@ export default function LoginPage() {
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img 
-            src="/logo-agende-ai.svg" 
+            src="/logo-agende-ai.png" 
             alt="Agende AI" 
             style={{ 
-              width: 140, 
+              width: 200, 
               height: 'auto', 
               marginBottom: 24,
               display: 'block',
