@@ -68,15 +68,23 @@ export function useApiMutation(
   return useMutation({
     mutationFn,
     onSuccess: async () => {
+      console.log('🔄 Mutation sucesso! Invalidando keys:', invalidateKeys)
       // Invalidar queries relacionadas para refetch automático
       if (invalidateKeys) {
         for (const key of invalidateKeys) {
+          console.log('📍 Invalidando query key:', key)
+          // Invalidar a query exata
           await queryClient.invalidateQueries({ queryKey: key })
+          // Também invalida queries que começam com este prefixo
+          await queryClient.invalidateQueries({ 
+            queryKey: key,
+            exact: false 
+          })
         }
       }
     },
     onError: (error: any) => {
-      console.error('Erro na operação:', error)
+      console.error('❌ Erro na operação:', error)
       // Mostrar erro se não for tratado no componente
       if (error?.response?.data?.message) {
         // Erro será tratado no componente

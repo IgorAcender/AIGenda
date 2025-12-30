@@ -249,27 +249,13 @@ export async function clientRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Cliente não encontrado' })
     }
 
-    await prisma.client.update({
+    await prisma.client.delete({
       where: { id },
-      data: { active: false },
     })
 
     // Invalidar cache
     await cacheDeletePattern(`clients:${tenantId}:*`)
 
-    return { message: 'Cliente desativado com sucesso' }
-  })
-
-  // Reativar cliente
-  app.patch('/:id/activate', async (request: any, reply) => {
-    const { tenantId } = request.user
-    const { id } = request.params
-
-    const client = await prisma.client.update({
-      where: { id },
-      data: { active: true },
-    })
-
-    return client
+    return { message: 'Cliente excluído com sucesso' }
   })
 }

@@ -47,11 +47,14 @@ export function OptimizedClientsList() {
   )
 
   const handleDeleteClient = (clientId: string) => {
+    console.log('🗑️ Iniciando exclusão do cliente:', clientId)
     deleteClientMutation.mutate(clientId, {
       onSuccess: () => {
+        console.log('✅ Cliente excluído com sucesso!')
         message.success('Cliente excluído com sucesso!')
       },
       onError: (error: any) => {
+        console.error('❌ Erro ao excluir cliente:', error)
         message.error(
           error?.response?.data?.message || 'Erro ao excluir cliente'
         )

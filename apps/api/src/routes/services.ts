@@ -146,11 +146,10 @@ export async function serviceRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Serviço não encontrado' })
     }
 
-    await prisma.service.update({
+    await prisma.service.delete({
       where: { id },
-      data: { active: false },
     })
 
-    return { message: 'Serviço desativado com sucesso' }
+    return { message: 'Serviço excluído com sucesso' }
   })
 }

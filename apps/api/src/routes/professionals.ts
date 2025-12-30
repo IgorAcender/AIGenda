@@ -189,12 +189,11 @@ export async function professionalRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Profissional não encontrado' })
     }
 
-    await prisma.professional.update({
+    await prisma.professional.delete({
       where: { id },
-      data: { isActive: false },
     })
 
-    return { message: 'Profissional desativado com sucesso' }
+    return { message: 'Profissional excluído com sucesso' }
   })
 
   // Vincular serviços ao profissional
