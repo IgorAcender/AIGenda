@@ -4,26 +4,83 @@ import { prisma } from '../lib/prisma'
 import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const clientSchema = z.object({
-  name: z.string().min(1).optional(),
-  apelido: z.string().optional().nullable(),
+  name: z.string().min(1),
   email: z.string().email().optional().nullable().or(z.literal('')),
   phone: z.string().min(1).optional().nullable().or(z.literal('')),
-  phone2: z.string().optional().nullable().or(z.literal('')),
   address: z.string().optional().nullable().or(z.literal('')),
   city: z.string().optional().nullable().or(z.literal('')),
-  cpf: z.string().optional().nullable().or(z.literal('')),
-  cnpj: z.string().optional().nullable().or(z.literal('')),
-  rg: z.string().optional().nullable().or(z.literal('')),
-  birthDate: z.string().optional().nullable().or(z.literal('')),
-  gender: z.string().optional().nullable().or(z.literal('')),
-  referredBy: z.string().optional().nullable().or(z.literal('')),
-  tags: z.string().optional().nullable().or(z.literal('')),
   state: z.string().optional().nullable().or(z.literal('')),
   zipCode: z.string().optional().nullable().or(z.literal('')),
+  cpf: z.string().optional().nullable().or(z.literal('')),
+  birthDate: z.string().optional().nullable().or(z.literal('')),
+  gender: z.string().optional().nullable().or(z.literal('')),
   notes: z.string().optional().nullable().or(z.literal('')),
-  defaultDiscount: z.number().optional().nullable(),
-  discountType: z.string().optional().nullable().or(z.literal('')),
-}).passthrough()
+  active: z.boolean().optional(),
+  notifications: z.boolean().optional(),
+  blocked: z.boolean().optional(),
+})
+
+type ClientInput = z.infer<typeof clientSchema>
+
+function normalizeClientInput(data: any): Partial<ClientInput> {
+  const {
+    cep,
+    street,
+    number,
+    complement,
+    neighborhood,
+    ...rest
+  } = data || {}
+
+  const addressParts = [street, number, complement, neighborhood].filter(Boolean)
+  const address = rest.address ?? (addressParts.length ? addressParts.join(', ') : undefined)
+
+  return {
+    ...rest,
+    address,
+    zipCode: rest.zipCode ?? cep ?? undefined,
+  }
+}
+
+function buildClientData(
+  data: any,
+  options: { partial?: boolean } = {}
+): Partial<ClientInput> {
+  const normalized = normalizeClientInput(data)
+  const parsed = (options.partial ? clientSchema.partial() : clientSchema).parse(normalized)
+
+  const allowedFields: Array<keyof ClientInput> = [
+    'name',
+    'email',
+    'phone',
+    'address',
+    'city',
+    'state',
+    'zipCode',
+    'cpf',
+    'birthDate',
+    'gender',
+    'notes',
+    'active',
+    'notifications',
+    'blocked',
+  ]
+
+  const cleanData: any = {}
+
+  allowedFields.forEach((field) => {
+    const value = parsed[field]
+    if (value !== undefined) {
+      cleanData[field] = value === '' ? null : value
+    }
+  })
+
+  if (cleanData.birthDate) {
+    cleanData.birthDate = new Date(cleanData.birthDate)
+  }
+
+  return cleanData
+}
 
 export async function clientRoutes(app: FastifyInstance) {
   // Middleware de autenticação em todas as rotas
@@ -115,24 +172,19 @@ export async function clientRoutes(app: FastifyInstance) {
   app.post('/', async (request: any, reply) => {
     try {
       const { tenantId } = request.user
-      const parsedData = clientSchema.parse(request.body)
+      const clientData = buildClientData(request.body)
 
       // Verificar CPF duplicado
-      if (parsedData.cpf) {
+      if (clientData.cpf) {
         const existingClient = await prisma.client.findUnique({
-          where: { cpf: parsedData.cpf },
+          where: { cpf: clientData.cpf },
         })
         if (existingClient) {
           return reply.status(400).send({ error: 'CPF já cadastrado' })
         }
       }
 
-      // Preparar dados para criação
-      const createData: any = {
-        ...parsedData,
-        birthDate: parsedData.birthDate ? new Date(parsedData.birthDate) : null,
-        tenantId,
-      }
+      const createData = { ...clientData, tenantId }
 
       const client = await prisma.client.create({
         data: createData,
@@ -156,7 +208,7 @@ export async function clientRoutes(app: FastifyInstance) {
     try {
       const { tenantId } = request.user
       const { id } = request.params
-      const parsedData = clientSchema.partial().parse(request.body)
+      const updateData = buildClientData(request.body, { partial: true })
 
       const existingClient = await prisma.client.findFirst({
         where: { id, tenantId },
@@ -165,19 +217,6 @@ export async function clientRoutes(app: FastifyInstance) {
       if (!existingClient) {
         return reply.status(404).send({ error: 'Cliente não encontrado' })
       }
-
-      // Preparar dados para atualização
-      const updateData: any = {
-        ...parsedData,
-        birthDate: parsedData.birthDate ? new Date(parsedData.birthDate) : undefined,
-      }
-
-      // Remover campos undefined para não sobrescrever com null
-      Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined) {
-          delete updateData[key]
-        }
-      })
 
       const client = await prisma.client.update({
         where: { id },

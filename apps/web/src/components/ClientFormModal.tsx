@@ -68,9 +68,10 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         referredBy: editingClient.referredBy,
         tags: editingClient.tags,
         address: editingClient.address,
+        cep: editingClient.zipCode,
+        street: editingClient.address,
         city: editingClient.city,
         state: editingClient.state,
-        zipCode: editingClient.zipCode,
         notes: editingClient.notes,
         defaultDiscount: editingClient.defaultDiscount,
         discountType: editingClient.discountType,
@@ -88,10 +89,29 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
   }, [editingClient, form, open])
 
   const handleSave = (values: any) => {
+    const toNullIfEmpty = (value: any) => (value === '' ? null : value)
+    const addressParts = [
+      values.street,
+      values.number,
+      values.complement,
+      values.neighborhood,
+    ].filter(Boolean)
+
     const clientData = {
-      ...values,
+      name: values.name,
+      email: toNullIfEmpty(values.email),
+      phone: toNullIfEmpty(values.phone),
+      cpf: toNullIfEmpty(values.cpf),
       birthDate: values.birthDate ? values.birthDate.toISOString() : null,
-      avatar: avatarPreview,
+      gender: toNullIfEmpty(values.gender),
+      address: toNullIfEmpty(values.address ?? (addressParts.length ? addressParts.join(', ') : undefined)),
+      city: toNullIfEmpty(values.city),
+      state: toNullIfEmpty(values.state),
+      zipCode: toNullIfEmpty(values.cep ?? values.zipCode),
+      notes: toNullIfEmpty(values.notes),
+      active: values.active,
+      notifications: values.notifications,
+      blocked: values.blocked,
     }
 
     saveClient(clientData, {
