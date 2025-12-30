@@ -304,17 +304,6 @@ export default function DashboardLayout({
                 borderRadius: 8,
               }}
             />
-            {!collapsed && (
-              <span
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: '#000',
-                }}
-              >
-                Agende AI
-              </span>
-            )}
           </Link>
         </div>
 

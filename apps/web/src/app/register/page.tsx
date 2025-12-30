@@ -101,9 +101,17 @@ export default function RegisterPage() {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={2} style={{ color: '#505afb', margin: 0 }}>
-            Agende AI
-          </Title>
+          <img 
+            src="/logo-agende-ai.svg" 
+            alt="Agende AI" 
+            style={{ 
+              width: 60, 
+              height: 60, 
+              marginBottom: 16,
+              display: 'block',
+              margin: '0 auto 16px'
+            }} 
+          />
           <Text type="secondary">Crie sua conta</Text>
         </div>
 
