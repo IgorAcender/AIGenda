@@ -91,7 +91,7 @@ export default function RegisterPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0056B3 0%, #0066CC 100%)',
+        background: 'linear-gradient(135deg, #003d82 0%, #004a99 100%)',
         padding: 16,
       }}
     >
@@ -262,12 +262,12 @@ export default function RegisterPage() {
                   message: 'Use apenas letras minúsculas, números e hífens',
                 },
               ]}
-              extra="Esta será a URL para seus clientes agendarem: app.agende-ai.com/seu-estabelecimento"
+              extra="Esta será a URL para seus clientes agendarem: agendeai.net/seu-estabelecimento"
             >
               <Input
                 placeholder="salao-da-maria"
                 size="large"
-                addonBefore="app.agende-ai.com/"
+                addonBefore="agendeai.net/"
               />
             </Form.Item>
 

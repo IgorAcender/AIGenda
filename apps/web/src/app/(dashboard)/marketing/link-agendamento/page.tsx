@@ -11,7 +11,7 @@ export default function LinkAgendamentoPage() {
 
   // Pegar o tenant atual (você pode pegar do contexto/store)
   const tenantSlug = 'barbearia-exemplo' // TODO: Pegar do contexto real
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seu-dominio.com'
+  const baseUrl = 'https://agendeai.net'
   const landingPageUrl = `${baseUrl}/${tenantSlug}`
 
   const handleCopy = async () => {
