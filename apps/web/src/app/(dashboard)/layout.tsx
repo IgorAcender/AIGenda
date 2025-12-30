@@ -284,6 +284,14 @@ export default function DashboardLayout({
     )
   }
 
+  // Cores dinâmicas baseadas no tema
+  const siderBgColor = themeType === 'dark' ? '#141414' : '#fff'
+  const siderBorderColor = themeType === 'dark' ? '#434343' : '#f0f0f0'
+  const headerBgColor = themeType === 'dark' ? '#1f1f1f' : '#fff'
+  const headerBorderColor = themeType === 'dark' ? '#434343' : '#f0f0f0'
+  const textColor = themeType === 'dark' ? '#e6e6e6' : '#000000'
+  const secondaryTextColor = themeType === 'dark' ? '#b3b3b3' : '#888'
+
   return (
     <ConfigProvider theme={getThemeConfig()}>
       <Layout style={{ minHeight: '100vh' }}>
@@ -299,8 +307,8 @@ export default function DashboardLayout({
           left: 0,
           top: 0,
           bottom: 0,
-          background: '#fff',
-          borderRight: '1px solid #f0f0f0',
+          background: siderBgColor,
+          borderRight: `1px solid ${siderBorderColor}`,
         }}
       >
         {/* Logo */}
@@ -310,7 +318,7 @@ export default function DashboardLayout({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: `1px solid ${siderBorderColor}`,
             padding: collapsed ? '8px' : '8px 16px',
           }}
         >
@@ -333,17 +341,17 @@ export default function DashboardLayout({
           <div
             style={{
               padding: '12px 16px',
-              background: '#fafafa',
-              borderBottom: '1px solid #f0f0f0',
+              background: themeType === 'dark' ? '#1f1f1f' : '#fafafa',
+              borderBottom: `1px solid ${siderBorderColor}`,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ShopOutlined style={{ color: token.colorPrimary }} />
               <div style={{ flex: 1, overflow: 'hidden' }}>
-                <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: textColor }}>
                   {tenant.name}
                 </div>
-                <div style={{ fontSize: 11, color: '#888' }}>
+                <div style={{ fontSize: 11, color: secondaryTextColor }}>
                   {tenant.slug}
                 </div>
               </div>
@@ -388,11 +396,11 @@ export default function DashboardLayout({
         <Header
           style={{
             padding: '0 24px',
-            background: '#fff',
+            background: headerBgColor,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: `1px solid ${headerBorderColor}`,
             position: 'sticky',
             top: 0,
             zIndex: 100,
@@ -402,14 +410,14 @@ export default function DashboardLayout({
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: 16, width: 40, height: 40 }}
+            style={{ fontSize: 16, width: 40, height: 40, color: textColor }}
           />
 
           {/* Data e Hora Centralizada */}
           <div style={{ textAlign: 'center', flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 15.6, color: '#505afb', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9.6 }}>
-              <span style={{ color: '#999' }}>{currentDateTime.date}</span>
-              <span style={{ color: '#505afb', fontWeight: 600 }}>{currentDateTime.time}</span>
+            <div style={{ fontSize: 15.6, color: token.colorPrimary, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9.6 }}>
+              <span style={{ color: secondaryTextColor }}>{currentDateTime.date}</span>
+              <span style={{ color: token.colorPrimary, fontWeight: 600 }}>{currentDateTime.time}</span>
             </div>
           </div>
 
@@ -419,7 +427,7 @@ export default function DashboardLayout({
               type="text"
               icon={themeType === 'light' ? <MoonOutlined /> : <SunOutlined />}
               onClick={toggleTheme}
-              style={{ fontSize: 18 }}
+              style={{ fontSize: 18, color: textColor }}
               title={themeType === 'light' ? 'Modo escuro' : 'Modo claro'}
             />
 
@@ -427,7 +435,7 @@ export default function DashboardLayout({
             <Button
               type="text"
               icon={<BellOutlined />}
-              style={{ fontSize: 18 }}
+              style={{ fontSize: 18, color: textColor }}
             />
             
             {/* Dropdown do usuário */}
@@ -452,7 +460,7 @@ export default function DashboardLayout({
                   }}
                   icon={<UserOutlined />}
                 />
-                <span style={{ fontWeight: 500 }}>{user.name?.split(' ')[0]}</span>
+                <span style={{ fontWeight: 500, color: textColor }}>{user.name?.split(' ')[0]}</span>
               </div>
             </Dropdown>
           </div>
