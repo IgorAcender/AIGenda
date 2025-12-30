@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { CategoryFormModal } from './CategoryFormModal'
 import { api } from '@/lib/api'
 
@@ -18,28 +18,40 @@ interface Category {
 }
 
 export function OptimizedCategoriesList() {
-  const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
-  const { data, isLoading, refetch } = useApiPaginatedQuery(
-    'categories',
+  const { data: rawData = [], isLoading, refetch } = useApiQuery(
+    ['categories'],
     '/categories',
-    page,
-    20,
     {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
   )
 
-  const { mutate: deleteCategory } = useApiMutation(
+  const categoriesData = Array.isArray(rawData) ? rawData : (rawData?.data || [])
+
+  const deleteCategoryMutation = useApiMutation(
     async (categoryId: string) => {
       return await api.delete(`/categories/${categoryId}`)
     },
     [['categories']]
   )
+
+  const handleDeleteCategory = (categoryId: string) => {
+    deleteCategoryMutation.mutate(categoryId, {
+      onSuccess: () => {
+        message.success('Categoria excluída com sucesso!')
+      },
+      onError: (error: any) => {
+        message.error(
+          error?.response?.data?.message || 'Erro ao excluir categoria'
+        )
+      },
+    })
+  }
 
   const columns: ColumnsType<Category> = [
     {
@@ -79,33 +91,30 @@ export function OptimizedCategoriesList() {
           >
             Editar
           </Button>
-          <Button 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              deleteCategory(record.id, {
-                onSuccess: () => {
-                  message.success('Categoria deletada com sucesso!')
-                  refetch()
-                },
-                onError: (error: any) => {
-                  message.error(error.message || 'Erro ao deletar categoria')
-                },
-              })
+          <Popconfirm
+            title="Excluir categoria"
+            description="Tem certeza que deseja excluir esta categoria?"
+            onConfirm={() => {
+              handleDeleteCategory(record.id!)
             }}
+            okText="Sim"
+            cancelText="Não"
           >
-            Excluir
-          </Button>
+            <Button 
+              danger 
+              size="small" 
+              icon={<DeleteOutlined />}
+              loading={deleteCategoryMutation.isPending}
+            >
+              Excluir
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ]
 
-  const categories = data?.data || []
-  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
-
-  const filteredCategories = categories.filter((category: Category) =>
+  const filteredCategories = categoriesData.filter((category: Category) =>
     category.name.toLowerCase().includes(searchText.toLowerCase())
   )
 
@@ -145,13 +154,12 @@ export function OptimizedCategoriesList() {
           dataSource={filteredCategories}
           rowKey="id"
           loading={isLoading}
+          virtual
+          scroll={{ y: 500 }}
           pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            showSizeChanger: false,
-            showTotal: (total) => `Total: ${total} categorias`,
-            onChange: (newPage) => setPage(newPage),
+            pageSize: 50,
+            hideOnSinglePage: false,
+            showTotal: (total) => `Total: ${total} categor${total !== 1 ? 'ias' : 'ia'}`,
           }}
         />
       </Card>

@@ -26,7 +26,7 @@ export function OptimizedClientsList() {
   const [editingClient, setEditingClient] = useState<Client | null>(null)
 
   // Query otimizada com cache - carrega TODOS os clientes
-  const { data: clientsData = [], isLoading, isFetching, refetch } = useApiQuery(
+  const { data: rawData = [], isLoading, isFetching, refetch } = useApiQuery(
     ['clients'],
     '/clients',
     {
@@ -34,6 +34,9 @@ export function OptimizedClientsList() {
       gcTime: 10 * 60 * 1000, // 10 minutos
     }
   )
+
+  // Extrair array de clientes da resposta da API
+  const clientsData = Array.isArray(rawData) ? rawData : (rawData?.data || [])
 
   // Mutation para deletar cliente
   const deleteClientMutation = useApiMutation(

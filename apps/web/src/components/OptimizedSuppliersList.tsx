@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { SupplierFormModal } from './SupplierFormModal'
 import { api } from '@/lib/api'
 
@@ -24,28 +24,43 @@ interface Supplier {
 }
 
 export function OptimizedSuppliersList() {
-  const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
 
-  const { data, isLoading, refetch } = useApiPaginatedQuery(
-    'suppliers',
+  // Query otimizada com cache - carrega TODOS os fornecedores
+  const { data: rawData = [], isLoading, isFetching, refetch, error } = useApiQuery(
+    ['suppliers'],
     '/suppliers',
-    page,
-    20,
     {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
   )
 
-  const { mutate: deleteSupplier } = useApiMutation(
+  // Extrair array de fornecedores da resposta da API
+  const suppliersData = Array.isArray(rawData) ? rawData : (rawData?.data || [])
+
+  // Mutation para deletar fornecedor
+  const deleteSupplierMutation = useApiMutation(
     async (supplierId: string) => {
       return await api.delete(`/suppliers/${supplierId}`)
     },
     [['suppliers']]
   )
+
+  const handleDeleteSupplier = (supplierId: string) => {
+    deleteSupplierMutation.mutate(supplierId, {
+      onSuccess: () => {
+        message.success('Fornecedor excluído com sucesso!')
+      },
+      onError: (error: any) => {
+        message.error(
+          error?.response?.data?.message || 'Erro ao excluir fornecedor'
+        )
+      },
+    })
+  }
 
   const columns: ColumnsType<Supplier> = [
     {
@@ -91,31 +106,30 @@ export function OptimizedSuppliersList() {
           >
             Editar
           </Button>
-          <Button 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              deleteSupplier(record.id!, {
-                onSuccess: () => {
-                  message.success('Fornecedor deletado com sucesso!')
-                  refetch()
-                },
-                onError: (error: any) => {
-                  message.error(error.message || 'Erro ao deletar fornecedor')
-                },
-              })
+          <Popconfirm
+            title="Excluir fornecedor"
+            description="Tem certeza que deseja excluir este fornecedor?"
+            onConfirm={() => {
+              handleDeleteSupplier(record.id!)
             }}
+            okText="Sim"
+            cancelText="Não"
           >
-            Excluir
-          </Button>
+            <Button 
+              danger 
+              size="small" 
+              icon={<DeleteOutlined />}
+              loading={deleteSupplierMutation.isPending}
+            >
+              Excluir
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ]
 
-  const suppliers = data?.data || []
-  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
+  const suppliers = suppliersData
 
   const filteredSuppliers = suppliers.filter((supplier: Supplier) =>
     supplier.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -154,18 +168,30 @@ export function OptimizedSuppliersList() {
           </Button>
         </div>
 
+        {error && (
+          <div style={{
+            padding: '16px',
+            marginBottom: '16px',
+            backgroundColor: '#fff2f0',
+            border: '1px solid #ffccc7',
+            borderRadius: '4px',
+            color: '#ff4d4f'
+          }}>
+            Erro ao carregar fornecedores. Verifique se o endpoint está disponível.
+          </div>
+        )}
+
         <Table
           columns={columns}
           dataSource={filteredSuppliers}
           rowKey="id"
           loading={isLoading}
+          virtual
+          scroll={{ y: 500 }}
           pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            showSizeChanger: false,
-            showTotal: (total) => `Total: ${total} fornecedores`,
-            onChange: (newPage) => setPage(newPage),
+            pageSize: 50,
+            hideOnSinglePage: false,
+            showTotal: (total) => `Total: ${total} fornecedor${total !== 1 ? 's' : ''}`,
           }}
         />
       </Card>

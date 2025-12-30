@@ -4,36 +4,49 @@ import React, { useState } from 'react'
 import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
-import { useRouter } from 'next/navigation'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
+import { Popconfirm } from 'antd'
 import { ServiceFormModal } from './ServiceFormModal'
 import { api } from '@/lib/api'
 import { Service } from '@/services/serviceService'
 
 export function OptimizedServicesList() {
-  const router = useRouter()
-  const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
 
-  const { data, isLoading, refetch } = useApiPaginatedQuery(
-    'services',
+  const { data: rawData = [], isLoading, refetch } = useApiQuery(
+    ['services'],
     '/services',
-    page,
-    20,
     {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
     }
   )
 
-  const { mutate: deleteService } = useApiMutation(
+  // Extrair array de serviços da resposta da API
+  const servicesData = Array.isArray(rawData) ? rawData : (rawData?.data || [])
+
+  // Mutation para deletar serviço
+  const deleteServiceMutation = useApiMutation(
     async (serviceId: string) => {
       return await api.delete(`/services/${serviceId}`)
     },
     [['services']]
   )
+
+  const handleDeleteService = (serviceId: string) => {
+    deleteServiceMutation.mutate(serviceId, {
+      onSuccess: () => {
+        message.success('Serviço excluído com sucesso!')
+      },
+      onError: (error: any) => {
+        message.error(
+          error?.response?.data?.message || 'Erro ao excluir serviço'
+        )
+      },
+    })
+  }
 
   const columns: ColumnsType<Service> = [
     {
@@ -79,33 +92,30 @@ export function OptimizedServicesList() {
           >
             Editar
           </Button>
-          <Button 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />}
-            onClick={() => {
-              deleteService(record.id, {
-                onSuccess: () => {
-                  message.success('Serviço deletado com sucesso!')
-                  refetch()
-                },
-                onError: (error: any) => {
-                  message.error(error.message || 'Erro ao deletar serviço')
-                },
-              })
+          <Popconfirm
+            title="Excluir serviço"
+            description="Tem certeza que deseja excluir este serviço?"
+            onConfirm={() => {
+              handleDeleteService(record.id!)
             }}
+            okText="Sim"
+            cancelText="Não"
           >
-            Excluir
-          </Button>
+            <Button 
+              danger 
+              size="small" 
+              icon={<DeleteOutlined />}
+              loading={deleteServiceMutation.isPending}
+            >
+              Excluir
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ]
 
-  const services = data?.data || []
-  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
-
-  const filteredServices = services.filter((service: Service) =>
+  const filteredServices = servicesData.filter((service: Service) =>
     service.name.toLowerCase().includes(searchText.toLowerCase())
   )
 
@@ -145,13 +155,12 @@ export function OptimizedServicesList() {
           dataSource={filteredServices}
           rowKey="id"
           loading={isLoading}
+          virtual
+          scroll={{ y: 500 }}
           pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            showSizeChanger: false,
-            showTotal: (total) => `Total: ${total} serviços`,
-            onChange: (newPage) => setPage(newPage),
+            pageSize: 50,
+            hideOnSinglePage: false,
+            showTotal: (total) => `Total: ${total} serviço${total !== 1 ? 's' : ''}`,
           }}
         />
       </Card>

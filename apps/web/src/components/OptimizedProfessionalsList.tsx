@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, message, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery } from '@/hooks/useApi'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { ProfessionalFormModal } from './ProfessionalFormModal'
+import { api } from '@/lib/api'
 
 interface Professional {
   id: string
@@ -21,22 +22,43 @@ interface Professional {
  * Usa TanStack Query para cache inteligente e refetch automático
  */
 export function OptimizedProfessionalsList() {
-  const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
   const [modalVisible, setModalVisible] = useState(false)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>()
 
-  // Query otimizada com cache - dados serão reutilizados entre navegações
-  const { data, isLoading, refetch } = useApiPaginatedQuery(
-    'professionals',
+  // Query otimizada com cache - carrega TODOS os profissionais
+  const { data: rawData = [], isLoading, refetch } = useApiQuery(
+    ['professionals'],
     '/professionals',
-    page,
-    20,
     {
       staleTime: 5 * 60 * 1000, // 5 minutos
       gcTime: 10 * 60 * 1000, // 10 minutos
     }
   )
+
+  // Extrair array de profissionais da resposta da API
+  const professionalsData = Array.isArray(rawData) ? rawData : (rawData?.data || [])
+
+  // Mutation para deletar profissional
+  const deleteProfessionalMutation = useApiMutation(
+    async (professionalId: string) => {
+      return await api.delete(`/professionals/${professionalId}`)
+    },
+    [['professionals']]
+  )
+
+  const handleDeleteProfessional = (professionalId: string) => {
+    deleteProfessionalMutation.mutate(professionalId, {
+      onSuccess: () => {
+        message.success('Profissional excluído com sucesso!')
+      },
+      onError: (error: any) => {
+        message.error(
+          error?.response?.data?.message || 'Erro ao excluir profissional'
+        )
+      },
+    })
+  }
 
   const columns: ColumnsType<Professional> = [
     {
@@ -89,20 +111,30 @@ export function OptimizedProfessionalsList() {
           >
             Editar
           </Button>
-          <Button
-            danger
-            size="small"
-            icon={<DeleteOutlined />}
+          <Popconfirm
+            title="Excluir profissional"
+            description="Tem certeza que deseja excluir este profissional?"
+            onConfirm={() => {
+              handleDeleteProfessional(record.id)
+            }}
+            okText="Sim"
+            cancelText="Não"
           >
-            Excluir
-          </Button>
+            <Button
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              loading={deleteProfessionalMutation.isPending}
+            >
+              Excluir
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ]
 
-  const professionals = data?.data || []
-  const pagination = data?.pagination || { page: 1, limit: 20, total: 0, pages: 0 }
+  const professionals = professionalsData
 
   const filteredProfessionals = professionals.filter((professional: Professional) =>
     professional.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -146,13 +178,12 @@ export function OptimizedProfessionalsList() {
           dataSource={filteredProfessionals}
           rowKey="id"
           loading={isLoading}
+          virtual
+          scroll={{ y: 500 }}
           pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            showSizeChanger: false,
-            showTotal: (total) => `Total: ${total} profissionais`,
-            onChange: (newPage) => setPage(newPage),
+            pageSize: 50,
+            hideOnSinglePage: false,
+            showTotal: (total) => `Total: ${total} profissional${total !== 1 ? 'is' : ''}`,
           }}
         />
       </Card>
