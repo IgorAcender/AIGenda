@@ -154,20 +154,24 @@ export function OptimizedClientsList() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16, display: 'flex', gap: 16 }}>
-          <Input
-            placeholder="Buscar cliente..."
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ maxWidth: 400 }}
-            allowClear
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
-            Atualizar
-          </Button>
+        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Input
+              placeholder="Buscar cliente..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ maxWidth: 400 }}
+              allowClear
+            />
+            <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+              Atualizar
+            </Button>
+          </div>
+          <div style={{ fontSize: 14, color: '#666' }}>
+            <strong>Total:</strong> {filteredClients.length} cliente{filteredClients.length !== 1 ? 's' : ''}
+          </div>
         </div>
-
         <Table
           columns={columns}
           dataSource={filteredClients}
@@ -175,11 +179,7 @@ export function OptimizedClientsList() {
           loading={isLoading}
           virtual
           scroll={{ y: 500 }}
-          pagination={{
-            pageSize: 50,
-            hideOnSinglePage: false,
-            showTotal: (total) => `Total: ${total} cliente${total !== 1 ? 's' : ''}`,
-          }}
+          pagination={false}
         />
       </Card>
 
