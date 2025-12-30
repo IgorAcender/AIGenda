@@ -2,9 +2,9 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 
 // Função para obter a URL da API de forma segura
 function getApiBaseUrl(): string {
-  // Se NEXT_PUBLIC_API_URL está definido, usa ele como base (sem acrescentar /api)
+  // Se NEXT_PUBLIC_API_URL está definido, usa ele
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')
+    return `${process.env.NEXT_PUBLIC_API_URL}/api`
   }
 
   // Client-side: detectar protocolo automaticamente

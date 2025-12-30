@@ -26,11 +26,7 @@ async function proxyRequest(
     
     // Construir URL corretamente
     const apiUrl = getApiUrl()
-    // Se a URL já termina com /api, não adiciona novamente
-    const hasApiSuffix = apiUrl.endsWith('/api') || apiUrl.endsWith('/api/')
-    const fullUrl = hasApiSuffix 
-      ? `${apiUrl.replace(/\/$/, '')}/${pathStr}${request.nextUrl.search}`
-      : `${apiUrl}/api/${pathStr}${request.nextUrl.search}`
+    const fullUrl = `${apiUrl}/api/${pathStr}${request.nextUrl.search}`
 
     console.log(`[API Proxy] ${request.method} ${fullUrl}`)
 
