@@ -5,14 +5,25 @@ import { cacheGet, cacheSet, cacheDeletePattern } from '../lib/redis'
 
 const clientSchema = z.object({
   name: z.string().min(2),
+  apelido: z.string().optional().nullable(),
   email: z.string().email().optional().nullable(),
-  phone: z.string().min(8),
+  phone: z.string().min(1).optional().nullable(),
+  phone2: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
   cpf: z.string().optional().nullable(),
+  cnpj: z.string().optional().nullable(),
+  rg: z.string().optional().nullable(),
   birthDate: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
+  referredBy: z.string().optional().nullable(),
+  tags: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  zipCode: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
-})
+  defaultDiscount: z.number().optional().nullable(),
+  discountType: z.string().optional().nullable(),
+}).passthrough()
 
 export async function clientRoutes(app: FastifyInstance) {
   // Middleware de autenticação em todas as rotas
