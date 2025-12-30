@@ -26,6 +26,16 @@ const configSchema = z.object({
   whatsappNotifications: z.boolean().optional(),
 })
 
+const brandingSchema = z.object({
+  themeTemplate: z.enum(['light', 'dark', 'custom']).optional(),
+  backgroundColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+  textColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+  buttonColorPrimary: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+  buttonTextColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+  heroImage: z.string().optional().nullable(),
+  sectionsConfig: z.string().optional().nullable(),
+})
+
 export async function tenantRoutes(app: FastifyInstance) {
   app.addHook('preHandler', app.authenticate)
 
@@ -135,5 +145,63 @@ export async function tenantRoutes(app: FastifyInstance) {
     })
 
     return { data: users }
+  })
+
+  // ========== BRANDING ENDPOINTS ==========
+
+  // Buscar configurações de branding
+  app.get('/branding', async (request: any) => {
+    const { tenantId } = request.user
+
+    const config = await prisma.configuration.findUnique({
+      where: { tenantId },
+    })
+
+    return config ? {
+      themeTemplate: config.themeTemplate,
+      backgroundColor: config.backgroundColor,
+      textColor: config.textColor,
+      buttonColorPrimary: config.buttonColorPrimary,
+      buttonTextColor: config.buttonTextColor,
+      heroImage: config.heroImage,
+      sectionsConfig: config.sectionsConfig,
+    } : {
+      themeTemplate: 'light',
+      backgroundColor: '#FFFFFF',
+      textColor: '#000000',
+      buttonColorPrimary: '#505afb',
+      buttonTextColor: '#FFFFFF',
+      heroImage: null,
+      sectionsConfig: null,
+    }
+  })
+
+  // Atualizar configurações de branding
+  app.put('/branding', async (request: any, reply: any) => {
+    try {
+      const { tenantId, role } = request.user
+
+      if (role !== 'ADMIN') {
+        return reply.status(403).send({ error: 'Apenas administradores podem atualizar branding' })
+      }
+
+      const data = brandingSchema.parse(request.body)
+
+      const config = await prisma.configuration.upsert({
+        where: { tenantId },
+        update: data,
+        create: {
+          ...data,
+          tenantId,
+        },
+      })
+
+      return config
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ error: 'Dados inválidos', details: error.errors })
+      }
+      throw error
+    }
   })
 }

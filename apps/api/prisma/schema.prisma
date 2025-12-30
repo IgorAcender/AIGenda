@@ -556,6 +556,17 @@ model Configuration {
   smsNotifications      Boolean @default(false)
   whatsappNotifications Boolean @default(false)
 
+  // ========== BRANDING E CORES ==========
+  themeTemplate         String  @default("light") // light, dark, custom
+  backgroundColor       String  @default("#FFFFFF") // Cor de fundo
+  textColor            String  @default("#000000") // Cor do texto
+  buttonColorPrimary   String  @default("#505afb") // Cor do botão principal
+  buttonTextColor      String  @default("#FFFFFF") // Cor do texto do botão
+  heroImage            String? // URL da imagem hero/capa
+  
+  // Conteúdo do site público (JSON com seções reordenáveis)
+  sectionsConfig       String? // JSON com configuração de seções visíveis e ordem
+
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
