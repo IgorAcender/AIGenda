@@ -115,37 +115,27 @@ export async function clientRoutes(app: FastifyInstance) {
   app.post('/', async (request: any, reply) => {
     try {
       const { tenantId } = request.user
-      const data = clientSchema.parse(request.body)
+      const parsedData = clientSchema.parse(request.body)
 
       // Verificar CPF duplicado
-      if (data.cpf) {
+      if (parsedData.cpf) {
         const existingClient = await prisma.client.findUnique({
-          where: { cpf: data.cpf },
+          where: { cpf: parsedData.cpf },
         })
         if (existingClient) {
           return reply.status(400).send({ error: 'CPF já cadastrado' })
         }
       }
 
-      // Extrair campos extras que não estão no schema mas existem no banco
-      const extraFields: any = {}
-      if (typeof request.body.active === 'boolean') {
-        extraFields.active = request.body.active
-      }
-      if (typeof request.body.notifications === 'boolean') {
-        extraFields.notifications = request.body.notifications
-      }
-      if (typeof request.body.blocked === 'boolean') {
-        extraFields.blocked = request.body.blocked
+      // Preparar dados para criação
+      const createData: any = {
+        ...parsedData,
+        birthDate: parsedData.birthDate ? new Date(parsedData.birthDate) : null,
+        tenantId,
       }
 
       const client = await prisma.client.create({
-        data: {
-          ...data,
-          ...extraFields,
-          birthDate: data.birthDate ? new Date(data.birthDate) : null,
-          tenantId,
-        },
+        data: createData,
       })
 
       // Invalidar cache
@@ -156,6 +146,7 @@ export async function clientRoutes(app: FastifyInstance) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ error: 'Dados inválidos', details: error.errors })
       }
+      console.error('Erro ao criar cliente:', error)
       throw error
     }
   })
@@ -165,7 +156,7 @@ export async function clientRoutes(app: FastifyInstance) {
     try {
       const { tenantId } = request.user
       const { id } = request.params
-      const data = clientSchema.partial().parse(request.body)
+      const parsedData = clientSchema.partial().parse(request.body)
 
       const existingClient = await prisma.client.findFirst({
         where: { id, tenantId },
@@ -175,25 +166,22 @@ export async function clientRoutes(app: FastifyInstance) {
         return reply.status(404).send({ error: 'Cliente não encontrado' })
       }
 
-      // Extrair campos extras que não estão no schema mas existem no banco
-      const extraFields: any = {}
-      if (typeof request.body.active === 'boolean') {
-        extraFields.active = request.body.active
+      // Preparar dados para atualização
+      const updateData: any = {
+        ...parsedData,
+        birthDate: parsedData.birthDate ? new Date(parsedData.birthDate) : undefined,
       }
-      if (typeof request.body.notifications === 'boolean') {
-        extraFields.notifications = request.body.notifications
-      }
-      if (typeof request.body.blocked === 'boolean') {
-        extraFields.blocked = request.body.blocked
-      }
+
+      // Remover campos undefined para não sobrescrever com null
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key]
+        }
+      })
 
       const client = await prisma.client.update({
         where: { id },
-        data: {
-          ...data,
-          ...extraFields,
-          birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
-        },
+        data: updateData,
       })
 
       // Invalidar cache
@@ -204,6 +192,7 @@ export async function clientRoutes(app: FastifyInstance) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ error: 'Dados inválidos', details: error.errors })
       }
+      console.error('Erro ao atualizar cliente:', error)
       throw error
     }
   })
