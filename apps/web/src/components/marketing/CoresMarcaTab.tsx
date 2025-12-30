@@ -57,6 +57,7 @@ export default function CoresMarcaTab() {
         state: brandingData.state || '',
         zipCode: brandingData.zipCode || '',
         phone: brandingData.phone || '',
+        email: brandingData.email || '',
         description: brandingData.description || '',
         instagram: brandingData.instagram || '',
         facebook: brandingData.facebook || '',
@@ -97,6 +98,7 @@ export default function CoresMarcaTab() {
         state: values.state,
         zipCode: values.zipCode,
         phone: values.phone,
+        email: values.email,
         description: values.description,
         instagram: values.instagram,
         facebook: values.facebook,
@@ -133,6 +135,7 @@ export default function CoresMarcaTab() {
   // Dados para preview
   const previewData = {
     tenantName: form.getFieldValue('tenantName'),
+    about: form.getFieldValue('about'),
     description: form.getFieldValue('description'),
     address: form.getFieldValue('address'),
     city: form.getFieldValue('city'),
@@ -375,6 +378,13 @@ export default function CoresMarcaTab() {
               <Input placeholder="(11) 99999-9999" />
             </Form.Item>
 
+            <Form.Item
+              label="Email"
+              name="email"
+            >
+              <Input placeholder="contato@example.com" type="email" />
+            </Form.Item>
+
             {/* Botão Salvar */}
             <Form.Item>
               <Button
@@ -405,11 +415,14 @@ export default function CoresMarcaTab() {
         >
           <PhonePreview
             tenantName={previewData.tenantName}
+            about={previewData.about}
             description={previewData.description}
             address={previewData.address}
             city={previewData.city}
             state={previewData.state}
             zipCode={previewData.zipCode}
+            phone={form.getFieldValue('phone')}
+            email={form.getFieldValue('email')}
             businessHours={previewData.businessHours}
             paymentMethods={previewData.paymentMethods}
             amenities={previewData.amenities}
