@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react'
 import { Table, Card, Button, Input, Space, Tag, message, Popconfirm } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useApiPaginatedQuery, useApiMutation } from '@/hooks/useApi'
+import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 import { ClientFormModal } from './ClientFormModal'
 
@@ -21,17 +21,14 @@ interface Client {
  * Usa TanStack Query para cache inteligente e refetch automático
  */
 export function OptimizedClientsList() {
-  const [page, setPage] = useState(1)
   const [searchText, setSearchText] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
 
-  // Query otimizada com cache - dados serão reutilizados entre navegações
-  const { data, isLoading, isFetching, refetch } = useApiPaginatedQuery(
-    'clients',
+  // Query otimizada com cache - carrega TODOS os clientes
+  const { data: clientsData = [], isLoading, isFetching, refetch } = useApiQuery(
+    ['clients'],
     '/clients',
-    page,
-    20,
     {
       staleTime: 5 * 60 * 1000, // 5 minutos
       gcTime: 10 * 60 * 1000, // 10 minutos
@@ -43,7 +40,7 @@ export function OptimizedClientsList() {
     async (clientId: string) => {
       return await api.delete(`/clients/${clientId}`)
     },
-    [['clients', 'page', String(page)]]
+    [['clients']]
   )
 
   const columns: ColumnsType<Client> = [
@@ -120,8 +117,8 @@ export function OptimizedClientsList() {
     },
   ]
 
-  const clients = data?.data ?? []
-  const pagination = data?.pagination ?? { page: 1, limit: 20, total: 0, pages: 0 }
+  const clients = clientsData
+  const totalClients = clientsData.length
 
   const filteredClients = clients.filter((client: Client) =>
     client.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -165,13 +162,12 @@ export function OptimizedClientsList() {
           dataSource={filteredClients}
           rowKey="id"
           loading={isLoading}
+          virtual
+          scroll={{ y: 500 }}
           pagination={{
-            current: pagination.page,
-            pageSize: pagination.limit,
-            total: pagination.total,
-            showSizeChanger: false,
-            showTotal: (total) => `Total: ${total} clientes`,
-            onChange: (newPage) => setPage(newPage),
+            pageSize: 50,
+            hideOnSinglePage: false,
+            showTotal: (total) => `Total: ${total} cliente${total !== 1 ? 's' : ''}`,
           }}
         />
       </Card>
