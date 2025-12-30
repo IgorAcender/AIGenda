@@ -292,16 +292,18 @@ export default function DashboardLayout({
             alignItems: 'center',
             justifyContent: 'center',
             borderBottom: '1px solid #f0f0f0',
+            padding: collapsed ? '8px' : '8px 16px',
           }}
         >
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img
-              src="/favicon.png"
+              src={collapsed ? "/favicon.png" : "/logo-agende-ai.png"}
               alt="Agende AI"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 8,
+                height: collapsed ? 40 : 45,
+                width: 'auto',
+                maxWidth: collapsed ? 40 : 160,
+                objectFit: 'contain',
               }}
             />
           </Link>
