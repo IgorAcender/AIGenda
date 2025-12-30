@@ -58,6 +58,18 @@ interface Professional {
   partnershipContract?: boolean
   commissionRate?: number
   notes?: string
+  // Novos campos
+  scheduleStart?: string
+  scheduleEnd?: string
+  scheduleBreakStart?: string
+  scheduleBreakEnd?: string
+  auxiliaryName?: string
+  auxiliaryPhone?: string
+  commissionName?: string
+  commissionValue?: number
+  salaryValue?: number
+  valeValue?: number
+  permissions?: string[]
 }
 
 interface ProfessionalFormModalProps {
@@ -151,6 +163,16 @@ export function ProfessionalFormModal({
         partnershipContract: professional.partnershipContract,
         commissionRate: professional.commissionRate,
         notes: professional.notes,
+        scheduleStart: professional.scheduleStart,
+        scheduleEnd: professional.scheduleEnd,
+        scheduleBreakStart: professional.scheduleBreakStart,
+        scheduleBreakEnd: professional.scheduleBreakEnd,
+        auxiliaryName: professional.auxiliaryName,
+        auxiliaryPhone: professional.auxiliaryPhone,
+        commissionName: professional.commissionName,
+        commissionValue: professional.commissionValue,
+        salaryValue: professional.salaryValue,
+        valeValue: professional.valeValue,
       })
       if (professional.avatar) {
         setAvatarUrl(professional.avatar)
@@ -246,9 +268,14 @@ export function ProfessionalFormModal({
           { key: 'cadastro', label: 'Cadastro' },
           { key: 'endereco', label: 'Endereço' },
           { key: 'usuario', label: 'Usuário' },
-          { key: 'servicos', label: 'Personalizar Serviços' },
-          { key: 'comissoes', label: 'Configurar Comissões' },
-          { key: 'anotacoes', label: 'Anotações' },
+          { key: 'assinatura', label: 'Assinatura digital' },
+          { key: 'expediente', label: 'Expediente' },
+          { key: 'servicos', label: 'Personalizar serviços' },
+          { key: 'comissoes', label: 'Configurar comissões' },
+          { key: 'auxiliares', label: 'Comissões e Auxiliares' },
+          { key: 'salario', label: 'Pagar salário/comissão' },
+          { key: 'vales', label: 'Vales' },
+          { key: 'permissoes', label: 'Permissões' },
         ]}
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -271,9 +298,14 @@ export function ProfessionalFormModal({
         { key: 'cadastro', label: 'Cadastro' },
         { key: 'endereco', label: 'Endereço' },
         { key: 'usuario', label: 'Usuário' },
-        { key: 'servicos', label: 'Personalizar Serviços' },
-        { key: 'comissoes', label: 'Configurar Comissões' },
-        { key: 'anotacoes', label: 'Anotações' },
+        { key: 'assinatura', label: 'Assinatura digital' },
+        { key: 'expediente', label: 'Expediente' },
+        { key: 'servicos', label: 'Personalizar serviços' },
+        { key: 'comissoes', label: 'Configurar comissões' },
+        { key: 'auxiliares', label: 'Comissões e Auxiliares' },
+        { key: 'salario', label: 'Pagar salário/comissão' },
+        { key: 'vales', label: 'Vales' },
+        { key: 'permissoes', label: 'Permissões' },
       ]}
       activeTab={activeTab}
       onTabChange={setActiveTab}
@@ -463,12 +495,88 @@ export function ProfessionalFormModal({
         {/* Aba Usuário */}
         {activeTab === 'usuario' && (
           <>
+            <Form.Item name="isActive" label="Ativo" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+
+            <Form.Item
+              name="availableOnline"
+              label="Disponível para agendamento online"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+
+            <Form.Item
+              name="generateSchedule"
+              label="Gerar agenda"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+
+            <Form.Item
+              name="receivesCommission"
+              label="Recebe comissão"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+
+            <Form.Item
+              name="partnershipContract"
+              label="Contratado pela Lei do Salão Parceiro"
+              valuePropName="checked"
+            >
+              <Switch />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Aba Assinatura Digital */}
+        {activeTab === 'assinatura' && (
+          <>
             <Form.Item name="signature" label="Assinatura Digital">
               <Input.TextArea
                 placeholder="Insira sua assinatura digital"
-                rows={4}
+                rows={6}
               />
             </Form.Item>
+          </>
+        )}
+
+        {/* Aba Expediente */}
+        {activeTab === 'expediente' && (
+          <>
+            <Divider>Horário de Funcionamento</Divider>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="scheduleStart" label="Início do Expediente">
+                  <Input type="time" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="scheduleEnd" label="Fim do Expediente">
+                  <Input type="time" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Divider>Intervalo de Descanso</Divider>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="scheduleBreakStart" label="Início do Intervalo">
+                  <Input type="time" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="scheduleBreakEnd" label="Fim do Intervalo">
+                  <Input type="time" />
+                </Form.Item>
+              </Col>
+            </Row>
           </>
         )}
 
@@ -525,64 +633,121 @@ export function ProfessionalFormModal({
                 style={{ width: '100%' }}
               />
             </Form.Item>
-          </>
-        )}
 
-        {/* Aba Anotações */}
-        {activeTab === 'anotacoes' && (
-          <>
-            <Form.Item name="notes" label="Anotações">
-              <Input.TextArea
-                placeholder="Adicione observações sobre o profissional"
-                rows={6}
+            <Form.Item name="commissionName" label="Tipo de Comissão">
+              <Input placeholder="Ex: Comissão por Serviço" />
+            </Form.Item>
+
+            <Form.Item name="commissionValue" label="Valor da Comissão (R$)">
+              <InputNumber
+                min={0}
+                step={0.01}
+                precision={2}
+                placeholder="Ex: 50.00"
+                style={{ width: '100%' }}
               />
             </Form.Item>
           </>
         )}
 
-        {/* Configurações Gerais - sempre visível */}
-        {(activeTab === 'cadastro' || activeTab === 'endereco') && (
+        {/* Aba Comissões e Auxiliares */}
+        {activeTab === 'auxiliares' && (
           <>
-            <Divider>Configurações</Divider>
+            <Divider>Dados do Auxiliar</Divider>
 
-            <Space direction="vertical" style={{ width: '100%' }} size="large">
-              <Form.Item
-                name="isActive"
-                label="Ativo"
-                valuePropName="checked"
-              >
+            <Form.Item name="auxiliaryName" label="Nome do Auxiliar">
+              <Input placeholder="Ex: Maria Silva" />
+            </Form.Item>
+
+            <Form.Item name="auxiliaryPhone" label="Telefone do Auxiliar">
+              <Input
+                prefix={<PhoneOutlined />}
+                placeholder="(11) 99999-9999"
+              />
+            </Form.Item>
+
+            <Divider>Observações</Divider>
+
+            <Form.Item name="notes" label="Anotações sobre o auxiliar">
+              <Input.TextArea
+                placeholder="Adicione observações sobre o auxiliar"
+                rows={4}
+              />
+            </Form.Item>
+          </>
+        )}
+
+        {/* Aba Pagar Salário/Comissão */}
+        {activeTab === 'salario' && (
+          <>
+            <Form.Item name="salaryValue" label="Valor do Salário (R$)">
+              <InputNumber
+                min={0}
+                step={0.01}
+                precision={2}
+                placeholder="Ex: 2000.00"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Divider>Histórico de Pagamentos</Divider>
+
+            <p style={{ color: '#666', textAlign: 'center', margin: '40px 0' }}>
+              Nenhum pagamento registrado
+            </p>
+          </>
+        )}
+
+        {/* Aba Vales */}
+        {activeTab === 'vales' && (
+          <>
+            <Form.Item name="valeValue" label="Valor Total de Vales (R$)">
+              <InputNumber
+                min={0}
+                step={0.01}
+                precision={2}
+                placeholder="Ex: 500.00"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Divider>Histórico de Vales</Divider>
+
+            <p style={{ color: '#666', textAlign: 'center', margin: '40px 0' }}>
+              Nenhum vale registrado
+            </p>
+          </>
+        )}
+
+        {/* Aba Permissões */}
+        {activeTab === 'permissoes' && (
+          <>
+            <p style={{ color: '#666', marginBottom: 16 }}>
+              Configure as permissões de acesso para este profissional
+            </p>
+
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Form.Item name="canViewDashboard" label="Visualizar Dashboard" valuePropName="checked">
                 <Switch />
               </Form.Item>
 
-              <Form.Item
-                name="availableOnline"
-                label="Disponível para agendamento online"
-                valuePropName="checked"
-              >
+              <Form.Item name="canManageSchedule" label="Gerenciar Agenda" valuePropName="checked">
                 <Switch />
               </Form.Item>
 
-              <Form.Item
-                name="generateSchedule"
-                label="Gerar agenda"
-                valuePropName="checked"
-              >
+              <Form.Item name="canViewFinancial" label="Visualizar Dados Financeiros" valuePropName="checked">
                 <Switch />
               </Form.Item>
 
-              <Form.Item
-                name="receivesCommission"
-                label="Recebe comissão"
-                valuePropName="checked"
-              >
+              <Form.Item name="canEditProfile" label="Editar Perfil Próprio" valuePropName="checked">
                 <Switch />
               </Form.Item>
 
-              <Form.Item
-                name="partnershipContract"
-                label="Contratado pela Lei do Salão Parceiro"
-                valuePropName="checked"
-              >
+              <Form.Item name="canViewClients" label="Visualizar Clientes" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+
+              <Form.Item name="canEditServices" label="Editar Serviços" valuePropName="checked">
                 <Switch />
               </Form.Item>
             </Space>
