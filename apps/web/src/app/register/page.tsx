@@ -21,6 +21,7 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckOutlined,
+  PhoneOutlined,
 } from '@ant-design/icons'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -35,6 +36,7 @@ export default function RegisterPage() {
     name: '',
     email: '',
     password: '',
+    phone: '',
     tenantName: '',
     tenantSlug: '',
   })
@@ -89,7 +91,7 @@ export default function RegisterPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #505afb 0%, #7c3aed 100%)',
+        background: 'linear-gradient(135deg, #0056B3 0%, #0066CC 100%)',
         padding: 16,
       }}
     >
@@ -197,6 +199,18 @@ export default function RegisterPage() {
               />
             </Form.Item>
 
+            <Form.Item
+              name="phone"
+              label="Telefone / WhatsApp"
+              rules={[{ required: true, message: 'Telefone é obrigatório' }]}
+            >
+              <Input
+                prefix={<PhoneOutlined />}
+                placeholder="(11) 99999-9999"
+                size="large"
+              />
+            </Form.Item>
+
             <Form.Item>
               <Button
                 type="primary"
@@ -214,7 +228,9 @@ export default function RegisterPage() {
 
         {currentStep === 1 && (
           <Form
+            form={form}
             layout="vertical"
+            initialValues={formData}
             onFinish={handleSubmit}
             onValuesChange={(changed) => {
               if (changed.tenantName) {
