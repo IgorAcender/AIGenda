@@ -69,6 +69,18 @@ export async function publicBookingRoutes(app: FastifyInstance) {
                 avatar: true,
               },
             },
+            businessHours: {
+              select: {
+                dayOfWeek: true,
+                isClosed: true,
+                openTime: true,
+                closeTime: true,
+                interval: true,
+              },
+              orderBy: {
+                dayOfWeek: 'asc',
+              },
+            },
             configs: true,
           },
         });
@@ -81,6 +93,42 @@ export async function publicBookingRoutes(app: FastifyInstance) {
         }
 
         // Retornar dados da landing page
+        // Transformar businessHours em um objeto com dias da semana
+        const businessHoursMap: { [key: string]: string } = {};
+        const daysMap = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        if (tenant.businessHours && tenant.businessHours.length > 0) {
+          tenant.businessHours.forEach((bh: any) => {
+            const dayName = daysMap[bh.dayOfWeek];
+            if (bh.isClosed) {
+              businessHoursMap[dayName] = 'Fechado';
+            } else {
+              let time = `${bh.openTime} - ${bh.closeTime}`;
+              if (bh.interval) {
+                time += ` (Intervalo: ${bh.interval})`;
+              }
+              businessHoursMap[dayName] = time;
+            }
+          });
+        }
+
+        // Parsear paymentMethods e amenities de JSON
+        let paymentMethods: string[] = [];
+        let amenities: string[] = [];
+        
+        try {
+          if (tenant.paymentMethods) {
+            paymentMethods = JSON.parse(tenant.paymentMethods);
+          }
+          if (tenant.amenities) {
+            amenities = JSON.parse(tenant.amenities);
+          }
+        } catch (e) {
+          // Se não for JSON válido, trata como string normal
+          if (tenant.paymentMethods) paymentMethods = [tenant.paymentMethods];
+          if (tenant.amenities) amenities = [tenant.amenities];
+        }
+
         return {
           data: {
             tenant: {
@@ -95,12 +143,19 @@ export async function publicBookingRoutes(app: FastifyInstance) {
               state: tenant.state,
               zipCode: tenant.zipCode,
               website: tenant.website,
-              instagram: tenant.instagram,
-              facebook: tenant.facebook,
-              whatsapp: tenant.whatsapp,
               logo: tenant.logo,
               banner: tenant.banner,
-              theme: tenant.theme,
+              latitude: tenant.latitude,
+              longitude: tenant.longitude,
+              socialMedia: {
+                instagram: tenant.instagram,
+                facebook: tenant.facebook,
+                twitter: tenant.twitter,
+              },
+              paymentMethods,
+              amenities,
+              businessHours: businessHoursMap,
+              whatsapp: tenant.phone, // Compatibilidade com versão anterior
             },
             services: tenant.services,
             categories: tenant.categories,

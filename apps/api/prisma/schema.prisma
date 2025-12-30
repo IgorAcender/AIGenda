@@ -15,6 +15,7 @@ model Tenant {
   name      String
   slug      String   @unique
   logo      String?
+  banner    String?
   email     String   @unique
   phone     String?
   address   String?
@@ -23,6 +24,23 @@ model Tenant {
   zipCode   String?
   country   String?
   website   String?
+  
+  // Landing page
+  description     String?
+  latitude        Float?
+  longitude       Float?
+  
+  // Redes Sociais
+  instagram       String?
+  facebook        String?
+  twitter         String?
+  
+  // Formas de Pagamento (JSON array)
+  paymentMethods  String? // JSON: ["PIX", "Cartão de Crédito", ...]
+  
+  // Comodidades (JSON array)
+  amenities       String? // JSON: ["WiFi", "Estacionamento", ...]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -38,6 +56,7 @@ model Tenant {
   transactions    Transaction[]
   commissions     Commission[]
   cashRegisters   CashRegister[]
+  businessHours   BusinessHours[]
   configs         Configuration?
   subscription    Subscription?
   bookingPolicy   BookingPolicy?
@@ -639,4 +658,23 @@ model AvailabilityRule {
 
   @@unique([professionalId, dayOfWeek])
   @@index([professionalId])
+}
+
+// ============= HORÁRIOS DE FUNCIONAMENTO =============
+model BusinessHours {
+  id        String  @id @default(cuid())
+  tenantId  String
+  dayOfWeek Int     // 0 = Segunda, 1 = Terça, ..., 6 = Domingo
+  isClosed  Boolean @default(false)
+  openTime  String? // "08:00"
+  closeTime String? // "17:00"
+  interval  String? // "12:00-14:00" (Intervalo)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, dayOfWeek])
+  @@index([tenantId])
 }

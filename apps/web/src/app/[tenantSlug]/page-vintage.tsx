@@ -24,6 +24,24 @@ interface TenantData {
       whatsapp?: string;
       logo?: string;
       banner?: string;
+      latitude?: number;
+      longitude?: number;
+      socialMedia?: {
+        instagram?: string;
+        facebook?: string;
+        twitter?: string;
+      };
+      paymentMethods?: string[];
+      amenities?: string[];
+      businessHours?: {
+        monday?: string;
+        tuesday?: string;
+        wednesday?: string;
+        thursday?: string;
+        friday?: string;
+        saturday?: string;
+        sunday?: string;
+      };
     };
     services: Array<{
       id: string;
@@ -39,8 +57,8 @@ interface TenantData {
     professionals: Array<{
       id: string;
       name: string;
-      email: string;
-      phone: string;
+      email?: string;
+      phone?: string;
       avatar?: string;
     }>;
   };
@@ -228,6 +246,169 @@ export default async function LandingPage({ params }: LandingPageProps) {
               )}
             </div>
           </section>
+
+          {/* Horários */}
+          <section className="section">
+            <h2 className="section-title">
+              <i className="fas fa-clock"></i>
+              Horário de Funcionamento
+            </h2>
+            <div className="business-hours-list">
+              {tenant.businessHours ? (
+                <>
+                  {tenant.businessHours.monday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Segunda</span>
+                      <span className="hour-time">{tenant.businessHours.monday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.tuesday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Terça</span>
+                      <span className="hour-time">{tenant.businessHours.tuesday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.wednesday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Quarta</span>
+                      <span className="hour-time">{tenant.businessHours.wednesday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.thursday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Quinta</span>
+                      <span className="hour-time">{tenant.businessHours.thursday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.friday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Sexta</span>
+                      <span className="hour-time">{tenant.businessHours.friday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.saturday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Sábado</span>
+                      <span className="hour-time">{tenant.businessHours.saturday}</span>
+                    </div>
+                  )}
+                  {tenant.businessHours.sunday && (
+                    <div className="hour-item">
+                      <span className="hour-day">Domingo</span>
+                      <span className="hour-time">{tenant.businessHours.sunday}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="hour-item">
+                    <span className="hour-day">Segunda</span>
+                    <span className="hour-time">08:00 - 18:00</span>
+                  </div>
+                  <div className="hour-item">
+                    <span className="hour-day">Terça</span>
+                    <span className="hour-time">08:00 - 18:00</span>
+                  </div>
+                  <div className="hour-item">
+                    <span className="hour-day">Quarta</span>
+                    <span className="hour-time">08:00 - 18:00</span>
+                  </div>
+                  <div className="hour-item">
+                    <span className="hour-day">Quinta</span>
+                    <span className="hour-time">08:00 - 18:00</span>
+                  </div>
+                  <div className="hour-item">
+                    <span className="hour-day">Sexta</span>
+                    <span className="hour-time">08:00 - 18:00</span>
+                  </div>
+                  <div className="hour-item">
+                    <span className="hour-day">Sábado</span>
+                    <span className="hour-time">08:00 - 14:00</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* Redes Sociais */}
+          {tenant.socialMedia && (Object.values(tenant.socialMedia).some(v => v)) && (
+            <section className="section">
+              <h2 className="section-title">
+                <i className="fas fa-share-alt"></i>
+                Redes Sociais
+              </h2>
+              <div className="social-links">
+                {tenant.socialMedia.instagram && (
+                  <a
+                    href={`https://instagram.com/${tenant.socialMedia.instagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-link"
+                  >
+                    <i className="fab fa-instagram"></i>
+                    Instagram
+                  </a>
+                )}
+                {tenant.socialMedia.facebook && (
+                  <a
+                    href={`https://facebook.com/${tenant.socialMedia.facebook}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-link"
+                  >
+                    <i className="fab fa-facebook"></i>
+                    Facebook
+                  </a>
+                )}
+                {tenant.socialMedia.twitter && (
+                  <a
+                    href={`https://twitter.com/${tenant.socialMedia.twitter}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-link"
+                  >
+                    <i className="fab fa-twitter"></i>
+                    Twitter
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Formas de Pagamento */}
+          {tenant.paymentMethods && tenant.paymentMethods.length > 0 && (
+            <section className="section">
+              <h2 className="section-title">
+                <i className="fas fa-credit-card"></i>
+                Formas de Pagamento
+              </h2>
+              <div className="payment-methods-grid">
+                {tenant.paymentMethods.map((method, index) => (
+                  <div key={index} className="payment-method">
+                    {method}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Comodidades */}
+          {tenant.amenities && tenant.amenities.length > 0 && (
+            <section className="section">
+              <h2 className="section-title">
+                <i className="fas fa-star"></i>
+                Comodidades
+              </h2>
+              <div className="amenities-list">
+                {tenant.amenities.map((amenity, index) => (
+                  <div key={index} className="amenity-item">
+                    <i className="fas fa-check-circle"></i>
+                    {amenity}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Schedule CTA */}
           <section className="schedule-button-section">
