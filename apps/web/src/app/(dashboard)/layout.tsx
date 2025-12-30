@@ -295,30 +295,21 @@ export default function DashboardLayout({
           }}
         >
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
+            <img
+              src="/logo-agende-ai.svg"
+              alt="Agende AI"
               style={{
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 borderRadius: 8,
-                background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 18,
               }}
-            >
-              A
-            </div>
+            />
             {!collapsed && (
               <span
                 style={{
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: 700,
-                  background: `linear-gradient(135deg, ${token.colorPrimary}, ${token.colorPrimaryActive})`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: '#000',
                 }}
               >
                 Agende AI
