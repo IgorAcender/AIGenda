@@ -78,9 +78,11 @@ export default function BookingPage({ params }: PageProps) {
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const rawApi = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      // Rotas públicas ficam na raiz (sem /api); se a env vier com /api, removemos.
+      const publicApiBase = rawApi.replace(/\/api\/?$/, '');
       const response = await fetch(
-        `${apiUrl}/${tenantSlug}/create`,
+        `${publicApiBase}/${tenantSlug}/create`,
         {
           method: 'POST',
           headers: {
