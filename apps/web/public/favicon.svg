@@ -1,0 +1,25 @@
+<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <!-- Logo Icon - optimized for favicon -->
+  <g id="logo-icon">
+    <!-- Calendar base with tech elements -->
+    <path d="M 40 40 Q 25 40 25 55 L 25 140 Q 25 155 40 155 L 160 155 Q 175 155 175 140 L 175 55 Q 175 40 160 40 Z" fill="#1ABC9C" opacity="0.8"/>
+    
+    <!-- Calendar elements -->
+    <circle cx="60" cy="30" r="12" fill="#2ECC71"/>
+    <circle cx="100" cy="20" r="10" fill="#27AE60"/>
+    <circle cx="140" cy="30" r="11" fill="#16A085"/>
+    
+    <!-- Checkmark -->
+    <path d="M 70 90 L 90 110 L 120 60" stroke="#FFFFFF" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Tech lines -->
+    <line x1="140" y1="70" x2="165" y2="60" stroke="#3498DB" stroke-width="4" stroke-linecap="round"/>
+    <line x1="145" y1="100" x2="172" y2="82" stroke="#2980B9" stroke-width="4" stroke-linecap="round"/>
+    <line x1="135" y1="130" x2="170" y2="120" stroke="#1ABC9C" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Circles for tech -->
+    <circle cx="165" cy="57" r="7" fill="#3498DB"/>
+    <circle cx="175" cy="85" r="6" fill="#2980B9"/>
+    <circle cx="172" cy="120" r="5" fill="#1ABC9C"/>
+  </g>
+</svg>

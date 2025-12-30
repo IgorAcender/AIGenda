@@ -8,6 +8,11 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'Agende AI - Sistema de Agendamento',
   description: 'Sistema completo de agendamento e gestão para seu negócio',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 const theme = {
