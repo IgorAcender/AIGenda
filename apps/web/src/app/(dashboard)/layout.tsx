@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Avatar, Dropdown, Button, theme, Spin, Tag, message } from 'antd'
+import { Layout, Menu, Avatar, Dropdown, Button, theme, Spin, Tag, message, ConfigProvider } from 'antd'
 import {
   DashboardOutlined,
   CalendarOutlined,
@@ -33,11 +33,14 @@ import {
   BarChartOutlined,
   ShoppingCartOutlined,
   SafetyOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from '@ant-design/icons'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import type { MenuProps } from 'antd'
 import { useAuthStore, UserRole } from '@/stores/auth'
+import { useTheme } from '@/hooks/useTheme'
 
 const { Header, Sider, Content } = Layout
 
@@ -144,6 +147,7 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const router = useRouter()
   const { token } = theme.useToken()
+  const { themeType, toggleTheme, getThemeConfig, mounted } = useTheme()
   
   const { user, tenant, isAuthenticated, logout, checkAuth, isMaster, isOwner, isProfessional } = useAuthStore()
 
@@ -266,14 +270,29 @@ export default function DashboardLayout({
 
   const menuItems = getMenuItems(user.role)
 
+  if (!mounted) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#f5f5f5'
+      }}>
+        <Spin size="large" tip="Carregando..." />
+      </div>
+    )
+  }
+
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={260}
-        style={{
+    <ConfigProvider theme={getThemeConfig()}>
+      <Layout style={{ minHeight: '100vh' }}>
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={260}
+          style={{
           overflow: 'auto',
           height: '100vh',
           position: 'fixed',
@@ -395,6 +414,15 @@ export default function DashboardLayout({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Botão de tema (claro/escuro) */}
+            <Button
+              type="text"
+              icon={themeType === 'light' ? <MoonOutlined /> : <SunOutlined />}
+              onClick={toggleTheme}
+              style={{ fontSize: 18 }}
+              title={themeType === 'light' ? 'Modo escuro' : 'Modo claro'}
+            />
+
             {/* Botão de notificações */}
             <Button
               type="text"
@@ -441,5 +469,6 @@ export default function DashboardLayout({
         </Content>
       </Layout>
     </Layout>
+    </ConfigProvider>
   )
 }
