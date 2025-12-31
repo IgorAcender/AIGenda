@@ -78,7 +78,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
                 interval: true,
               },
               orderBy: {
-                dayOfWeek: 'asc',
+                dayOfWeek: 'asc' as const,
               },
             },
             configs: true,
@@ -155,7 +155,8 @@ export async function publicBookingRoutes(app: FastifyInstance) {
               paymentMethods,
               amenities,
               businessHours: businessHoursMap,
-              whatsapp: tenant.phone, // Compatibilidade com versão anterior
+              whatsapp: tenant.whatsapp || tenant.phone, // Preferir whatsapp, fallback para phone
+              about: tenant.about,
             },
             services: tenant.services,
             categories: tenant.categories,

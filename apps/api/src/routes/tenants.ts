@@ -244,8 +244,16 @@ export async function tenantRoutes(app: FastifyInstance) {
       instagram: tenant?.instagram,
       facebook: tenant?.facebook,
       twitter: tenant?.twitter,
-      paymentMethods: tenant?.paymentMethods,
-      amenities: tenant?.amenities,
+      paymentMethods: tenant?.paymentMethods ? 
+        (typeof tenant.paymentMethods === 'string' && tenant.paymentMethods.startsWith('[')
+          ? tenant.paymentMethods
+          : JSON.stringify(tenant.paymentMethods.split('\n').filter(m => m.trim())))
+        : null,
+      amenities: tenant?.amenities ?
+        (typeof tenant.amenities === 'string' && tenant.amenities.startsWith('[')
+          ? tenant.amenities
+          : JSON.stringify(tenant.amenities.split('\n').filter(a => a.trim())))
+        : null,
       latitude: tenant?.latitude,
       longitude: tenant?.longitude,
       businessHours: businessHoursMap,
@@ -340,8 +348,21 @@ export async function tenantRoutes(app: FastifyInstance) {
       if (instagram !== undefined) tenantData.instagram = instagram
       if (facebook !== undefined) tenantData.facebook = facebook
       if (twitter !== undefined) tenantData.twitter = twitter
-      if (paymentMethods !== undefined) tenantData.paymentMethods = paymentMethods
-      if (amenities !== undefined) tenantData.amenities = amenities
+      // Converter para JSON se for string com quebras de linha
+      if (paymentMethods !== undefined) {
+        tenantData.paymentMethods = Array.isArray(paymentMethods) 
+          ? JSON.stringify(paymentMethods)
+          : typeof paymentMethods === 'string' && paymentMethods.includes('\n')
+            ? JSON.stringify(paymentMethods.split('\n').filter(m => m.trim()))
+            : paymentMethods
+      }
+      if (amenities !== undefined) {
+        tenantData.amenities = Array.isArray(amenities)
+          ? JSON.stringify(amenities)
+          : typeof amenities === 'string' && amenities.includes('\n')
+            ? JSON.stringify(amenities.split('\n').filter(a => a.trim()))
+            : amenities
+      }
       if (latitude !== undefined) tenantData.latitude = latitude
       if (longitude !== undefined) tenantData.longitude = longitude
 
