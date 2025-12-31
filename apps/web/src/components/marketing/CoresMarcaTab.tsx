@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import React, { useEffect } from 'react'
 import {
   Card,
   Form,
@@ -11,18 +10,9 @@ import {
   message,
   Row,
   Col,
-  Upload,
-  Space,
-  Divider,
-  Radio,
-  Switch,
-  Alert,
 } from 'antd'
 import {
   SaveOutlined,
-  UploadOutlined,
-  EditOutlined,
-  InfoCircleOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import PhonePreview from './PhonePreview'
@@ -52,11 +42,10 @@ export default function CoresMarcaTab() {
   // Preencher form quando dados carregarem
   useEffect(() => {
     if (brandingData) {
+      console.log('📥 Dados do branding recebidos:', brandingData)
+      
       form.setFieldsValue({
-        theme: brandingData.themeTemplate || 'light',
-        tenantName: brandingData.name || '',
         about: brandingData.about || '',
-        description: brandingData.description || '',
         address: brandingData.address || '',
         city: brandingData.city || '',
         state: brandingData.state || '',
@@ -87,6 +76,8 @@ export default function CoresMarcaTab() {
         sundayOpen: brandingData.businessHours?.sunday?.split(' - ')[0] || '09:00',
         sundayClose: brandingData.businessHours?.sunday?.split(' - ')[1] || '18:00',
       })
+    } else {
+      console.log('📭 Sem dados de branding')
     }
   }, [brandingData, form])
 
@@ -94,12 +85,9 @@ export default function CoresMarcaTab() {
     try {
       const values = await form.validateFields()
 
-      // Payload com TODOS os campos do formulário
+      // Payload com APENAS os campos essenciais
       const payload = {
-        themeTemplate: values.theme || 'light',
-        name: values.tenantName,
         about: values.about,
-        description: values.description,
         address: values.address,
         city: values.city,
         state: values.state,
@@ -127,43 +115,17 @@ export default function CoresMarcaTab() {
 
       saveBranding(payload, {
         onSuccess: () => {
+          console.log('✅ Salvo com sucesso!')
           message.success('Configurações salvas com sucesso!')
         },
         onError: (error: any) => {
-          console.error('Erro detalhado:', error)
+          console.error('❌ Erro detalhado:', error)
           message.error(error?.response?.data?.error || 'Erro ao salvar configurações')
         },
       })
     } catch (error) {
       console.error(error)
     }
-  }
-
-  // Dados para preview
-  const previewData = {
-    tenantName: form.getFieldValue('tenantName'),
-    about: form.getFieldValue('about'),
-    description: form.getFieldValue('description'),
-    address: form.getFieldValue('address'),
-    city: form.getFieldValue('city'),
-    state: form.getFieldValue('state'),
-    zipCode: form.getFieldValue('zipCode'),
-    businessHours: {
-      monday: `${form.getFieldValue('mondayOpen')} - ${form.getFieldValue('mondayClose')}`,
-      tuesday: `${form.getFieldValue('tuesdayOpen')} - ${form.getFieldValue('tuesdayClose')}`,
-      wednesday: `${form.getFieldValue('wednesdayOpen')} - ${form.getFieldValue('wednesdayClose')}`,
-      thursday: `${form.getFieldValue('thursdayOpen')} - ${form.getFieldValue('thursdayClose')}`,
-      friday: `${form.getFieldValue('fridayOpen')} - ${form.getFieldValue('fridayClose')}`,
-      saturday: `${form.getFieldValue('saturdayOpen')} - ${form.getFieldValue('saturdayClose')}`,
-      sunday: `${form.getFieldValue('sundayOpen')} - ${form.getFieldValue('sundayClose')}`,
-    },
-    paymentMethods: form.getFieldValue('paymentMethods'),
-    amenities: form.getFieldValue('amenities'),
-    socialMedia: {
-      instagram: form.getFieldValue('instagram'),
-      facebook: form.getFieldValue('facebook'),
-      twitter: form.getFieldValue('twitter'),
-    },
   }
 
   return (
@@ -182,10 +144,7 @@ export default function CoresMarcaTab() {
           >
             {/* 1. SOBRE NÓS */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>SOBRE NÓS</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>SOBRE NÓS</Title>
               
               <Form.Item
                 label="Descrição"
@@ -193,65 +152,16 @@ export default function CoresMarcaTab() {
               >
                 <Input.TextArea
                   rows={4}
-                  placeholder="Somos uma barbearia"
+                  placeholder="Somos uma barbearia..."
                 />
               </Form.Item>
 
               <Text type="secondary">Texto que aparece na seção Sobre nós do site.</Text>
             </Card>
 
-            {/* 2. PROFISSIONAIS */}
+            {/* 2. CONTATO */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>PROFISSIONAIS</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
-
-              <Alert 
-                message="Exibe os membros da sua equipe no site." 
-                type="info"
-                showIcon
-                style={{ marginBottom: '16px' }}
-              />
-
-              <Button 
-                type="primary" 
-                icon={<EditOutlined />}
-                block
-              >
-                Gerenciar Profissionais
-              </Button>
-            </Card>
-
-            {/* 3. HORÁRIO DE FUNCIONAMENTO */}
-            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>HORÁRIO DE FUNCIONAMENTO</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
-
-              <Alert 
-                message="Exibe os horários de funcionamento no site."
-                type="info"
-                showIcon
-                style={{ marginBottom: '16px' }}
-              />
-
-              <Button 
-                type="primary" 
-                icon={<EditOutlined />}
-                block
-              >
-                Configurar Horários
-              </Button>
-            </Card>
-
-            {/* 4. CONTATO */}
-            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>CONTATO</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>CONTATO</Title>
 
               <Form.Item
                 label="Telefone"
@@ -260,63 +170,35 @@ export default function CoresMarcaTab() {
                 <Input placeholder="37988051626" />
               </Form.Item>
 
-              <Text type="secondary">Informações de contato exibidas no site.</Text>
-
-              <Divider />
-
-              <Title level={5} style={{ marginTop: '16px' }}>📱 WhatsApp</Title>
-
               <Form.Item
-                label="Número do WhatsApp"
+                label="WhatsApp"
                 name="whatsapp"
               >
                 <Input placeholder="37988051626" />
               </Form.Item>
 
-              <Text type="secondary">Número do WhatsApp para botão de contato.</Text>
+              <Form.Item
+                label="Email"
+                name="email"
+              >
+                <Input type="email" placeholder="contato@empresa.com" />
+              </Form.Item>
+
+              <Text type="secondary">Informações de contato exibidas no site.</Text>
             </Card>
 
-            {/* 5. ENDEREÇO */}
+            {/* 3. ENDEREÇO */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>ENDEREÇO</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>ENDEREÇO</Title>
+
+              <Form.Item
+                label="Endereço"
+                name="address"
+              >
+                <Input placeholder="Rua Pau Brasil 381" />
+              </Form.Item>
 
               <Row gutter={16}>
-                <Col xs={24}>
-                  <Form.Item
-                    label="📍 Endereço"
-                    name="address"
-                  >
-                    <Input placeholder="Rua Pau Brasil 381" />
-                  </Form.Item>
-                  <Text type="secondary">Endereço completo da sua empresa.</Text>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col xs={12}>
-                  <Form.Item
-                    label="# CEP"
-                    name="zipCode"
-                  >
-                    <Input placeholder="35501576" />
-                  </Form.Item>
-                  <Text type="secondary">CEP da empresa.</Text>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col xs={8}>
-                  <Form.Item
-                    label="Bairro"
-                    name="district"
-                  >
-                    <Input placeholder="Jardinópolis" />
-                  </Form.Item>
-                  <Text type="secondary">Bairro onde fica sua empresa.</Text>
-                </Col>
                 <Col xs={8}>
                   <Form.Item
                     label="Cidade"
@@ -324,7 +206,6 @@ export default function CoresMarcaTab() {
                   >
                     <Input placeholder="Divinópolis" />
                   </Form.Item>
-                  <Text type="secondary">Cidade da empresa.</Text>
                 </Col>
                 <Col xs={8}>
                   <Form.Item
@@ -333,7 +214,14 @@ export default function CoresMarcaTab() {
                   >
                     <Input placeholder="MG" />
                   </Form.Item>
-                  <Text type="secondary">Sigla do estado (ex: SP, RJ, MG).</Text>
+                </Col>
+                <Col xs={8}>
+                  <Form.Item
+                    label="CEP"
+                    name="zipCode"
+                  >
+                    <Input placeholder="35501576" />
+                  </Form.Item>
                 </Col>
               </Row>
 
@@ -343,7 +231,7 @@ export default function CoresMarcaTab() {
                     label="Latitude"
                     name="latitude"
                   >
-                    <Input placeholder="-23.5505" type="number" step="0.0001" />
+                    <Input placeholder="-19.8267" type="number" step="0.0001" />
                   </Form.Item>
                 </Col>
                 <Col xs={12}>
@@ -351,80 +239,111 @@ export default function CoresMarcaTab() {
                     label="Longitude"
                     name="longitude"
                   >
-                    <Input placeholder="-46.6333" type="number" step="0.0001" />
+                    <Input placeholder="-43.9945" type="number" step="0.0001" />
                   </Form.Item>
                 </Col>
               </Row>
+
+              <Text type="secondary">Localização e coordenadas do seu estabelecimento.</Text>
             </Card>
 
-            {/* 6. REDES SOCIAIS */}
+            {/* 4. REDES SOCIAIS */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>REDES SOCIAIS</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
-
-              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>📸 Instagram (site)</Title>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>REDES SOCIAIS</Title>
 
               <Form.Item
+                label="📸 Instagram"
                 name="instagram"
               >
-                <Input placeholder="https://www.instagram.com/liderboxdivinopolis/" />
+                <Input placeholder="https://instagram.com/seu_usuario" />
               </Form.Item>
 
-              <Text type="secondary">Link exibido na seção de redes sociais.</Text>
-
-              <Divider style={{ margin: '16px 0' }} />
-
-              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>👥 Facebook (site)</Title>
-
               <Form.Item
+                label="👥 Facebook"
                 name="facebook"
               >
                 <Input placeholder="https://facebook.com/seu_perfil" />
               </Form.Item>
 
-              <Text type="secondary">Link exibido na seção de redes sociais.</Text>
+              <Form.Item
+                label="𝕏 Twitter"
+                name="twitter"
+              >
+                <Input placeholder="https://twitter.com/seu_usuario" />
+              </Form.Item>
+
+              <Text type="secondary">Links para suas redes sociais.</Text>
             </Card>
 
-            {/* 7. FORMAS DE PAGAMENTO */}
+            {/* 5. FORMAS DE PAGAMENTO */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>FORMAS DE PAGAMENTO</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
-
-              <Title level={5} style={{ color: '#888', fontSize: '14px' }}>💳 Formas de Pagamento (site)</Title>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>FORMAS DE PAGAMENTO</Title>
 
               <Form.Item
                 name="paymentMethods"
               >
                 <Input.TextArea
-                  rows={5}
-                  placeholder={`PIX,\nCartão de Crédito,\nCartão de Débito,\nDinheiro,`}
+                  rows={4}
+                  placeholder={`PIX\nCartão de Crédito\nCartão de Débito\nDinheiro`}
                 />
               </Form.Item>
 
-              <Text type="secondary">Formas de pagamento aceitas. Separe por vírgula ou uma por linha.</Text>
+              <Text type="secondary">Separe cada forma em uma linha nova.</Text>
             </Card>
 
-            {/* 8. COMODIDADES */}
+            {/* 6. COMODIDADES */}
             <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>COMODIDADES</Title>
-                <Switch defaultChecked style={{ float: 'right' }} />
-              </div>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>COMODIDADES</Title>
 
               <Form.Item
                 name="amenities"
               >
                 <Input.TextArea
                   rows={4}
-                  placeholder="Descreva as comodidades oferecidas..."
+                  placeholder={`WiFi\nEstacionamento\nBebidas Quentes\nConforto`}
                 />
               </Form.Item>
 
-              <Text type="secondary">Comodidades disponíveis no estabelecimento.</Text>
+              <Text type="secondary">Comodidades disponíveis no seu estabelecimento.</Text>
+            </Card>
+
+            {/* 7. HORÁRIO DE FUNCIONAMENTO */}
+            <Card style={{ marginBottom: '16px', borderRadius: '8px' }}>
+              <Title level={4} style={{ margin: '0 0 16px 0' }}>HORÁRIO DE FUNCIONAMENTO</Title>
+
+              {[
+                { day: 'Segunda-feira', value: 'monday' },
+                { day: 'Terça-feira', value: 'tuesday' },
+                { day: 'Quarta-feira', value: 'wednesday' },
+                { day: 'Quinta-feira', value: 'thursday' },
+                { day: 'Sexta-feira', value: 'friday' },
+                { day: 'Sábado', value: 'saturday' },
+                { day: 'Domingo', value: 'sunday' },
+              ].map(({ day, value }) => (
+                <Row key={value} gutter={16} style={{ marginBottom: '12px' }}>
+                  <Col xs={24} sm={8}>
+                    <Text strong>{day}</Text>
+                  </Col>
+                  <Col xs={12} sm={8}>
+                    <Form.Item
+                      name={`${value}Open`}
+                      noStyle
+                    >
+                      <Input type="time" placeholder="Abertura" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={12} sm={8}>
+                    <Form.Item
+                      name={`${value}Close`}
+                      noStyle
+                    >
+                      <Input type="time" placeholder="Fechamento" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              ))}
+
+              <Text type="secondary">Defina os horários de funcionamento de cada dia.</Text>
             </Card>
 
             {/* Botão Salvar */}
