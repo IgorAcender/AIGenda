@@ -135,37 +135,41 @@ export default function CoresMarcaTab() {
     try {
       const values = await form.validateFields()
       
+      console.log('📝 Valores do formulário:', values)
+      
       const payload = {
         themeTemplate: theme,
         heroImage: bannerPreview,
-        about: values.about,
-        address: values.address,
-        district: values.district,
-        city: values.city,
-        state: values.state,
-        zipCode: values.zipCode,
-        phone: values.phone,
-        whatsapp: values.whatsapp,
-        email: values.email,
-        instagram: values.instagram,
-        facebook: values.facebook,
-        paymentMethods: values.paymentMethods,
+        about: values.about || '',
+        address: values.address || '',
+        district: values.district || '',
+        city: values.city || '',
+        state: values.state || '',
+        zipCode: values.zipCode || '',
+        phone: values.phone || '',
+        whatsapp: values.whatsapp || '',
+        email: values.email || '',
+        instagram: values.instagram || '',
+        facebook: values.facebook || '',
+        paymentMethods: values.paymentMethods || '',
         sectionsConfig: JSON.stringify(sections),
       }
 
-      console.log('Salvando dados:', payload)
+      console.log('💾 Payload para salvar:', payload)
 
       saveBranding(payload, {
-        onSuccess: () => {
+        onSuccess: (response: any) => {
+          console.log('✅ Salvo com sucesso:', response)
           message.success('Configurações salvas com sucesso!')
         },
         onError: (error: any) => {
-          console.error('Erro ao salvar:', error)
-          message.error('Erro ao salvar configurações')
+          console.error('❌ Erro ao salvar:', error)
+          message.error('Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'))
         },
       })
     } catch (error) {
-      console.error('Erro de validação:', error)
+      console.error('❌ Erro de validação:', error)
+      message.error('Erro ao validar formulário')
     }
   }
 
