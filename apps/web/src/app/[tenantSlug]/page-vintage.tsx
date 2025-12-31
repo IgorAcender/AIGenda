@@ -15,6 +15,7 @@ interface TenantData {
       name: string;
       slug: string;
       description: string;
+      about?: string;
       phone: string;
       email: string;
       address: string;

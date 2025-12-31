@@ -20,6 +20,7 @@ model Tenant {
   phone     String?
   whatsapp  String?
   address   String?
+  district  String?  // Bairro
   city      String?
   state     String?
   zipCode   String?

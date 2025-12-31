@@ -41,6 +41,7 @@ const brandingSchema = z.object({
   about: z.string().optional(),
   description: z.string().optional(),
   address: z.string().optional(),
+  district: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   zipCode: z.string().optional(),
@@ -235,6 +236,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       about: tenant?.about,
       description: tenant?.description,
       address: tenant?.address,
+      district: tenant?.district,
       city: tenant?.city,
       state: tenant?.state,
       zipCode: tenant?.zipCode,
@@ -270,6 +272,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       about: null,
       description: null,
       address: null,
+      district: null,
       city: null,
       state: null,
       zipCode: null,
@@ -311,6 +314,7 @@ export async function tenantRoutes(app: FastifyInstance) {
         about,
         description,
         address,
+        district,
         city,
         state,
         zipCode,
@@ -339,6 +343,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       if (about !== undefined) tenantData.about = about
       if (description !== undefined) tenantData.description = description
       if (address !== undefined) tenantData.address = address
+      if (district !== undefined) tenantData.district = district
       if (city !== undefined) tenantData.city = city
       if (state !== undefined) tenantData.state = state
       if (zipCode !== undefined) tenantData.zipCode = zipCode

@@ -15,9 +15,11 @@ interface TenantData {
       name: string;
       slug: string;
       description: string;
+      about?: string;
       phone: string;
       email: string;
       address: string;
+      district?: string;
       city: string;
       state: string;
       zipCode: string;
@@ -148,6 +150,17 @@ export default async function BarbershopLanding({ params }: LandingPageProps) {
           </div>
         </section>
 
+        {/* Sobre Nós */}
+        {tenant.about && (
+          <section className="landing-section">
+            <h2 className="landing-section-title">
+              <span className="landing-section-icon">ℹ️</span>
+              Sobre Nós
+            </h2>
+            <p className="landing-about-text">{tenant.about}</p>
+          </section>
+        )}
+
         {/* Profissionais */}
         {professionals.length > 0 && (
           <section className="landing-section">
@@ -263,6 +276,7 @@ export default async function BarbershopLanding({ params }: LandingPageProps) {
           </h2>
           <div className="landing-address-info">
             {tenant.address && <p>{tenant.address}</p>}
+            {tenant.district && <p>{tenant.district}</p>}
             {tenant.city && tenant.state && <p>{tenant.city} - {tenant.state}</p>}
             {tenant.zipCode && <p>CEP: {tenant.zipCode}</p>}
             {tenant.latitude && tenant.longitude && (

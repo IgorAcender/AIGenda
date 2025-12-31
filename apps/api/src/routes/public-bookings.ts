@@ -105,6 +105,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
               phone: tenant.phone,
               email: tenant.email,
               address: tenant.address,
+              district: tenant.district,
               city: tenant.city,
               state: tenant.state,
               zipCode: tenant.zipCode,
