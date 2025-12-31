@@ -117,6 +117,14 @@ export default function CoresMarcaTab() {
         onSuccess: () => {
           console.log('✅ Salvo com sucesso!')
           message.success('Configurações salvas com sucesso!')
+          
+          // Recarregar iframe após 500ms para garantir que dados foram atualizados
+          setTimeout(() => {
+            const iframes = document.querySelectorAll('iframe.phone-iframe')
+            iframes.forEach(iframe => {
+              (iframe as HTMLIFrameElement).src = (iframe as HTMLIFrameElement).src
+            })
+          }, 500)
         },
         onError: (error: any) => {
           console.error('❌ Erro detalhado:', error)

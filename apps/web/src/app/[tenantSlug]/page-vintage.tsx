@@ -71,7 +71,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const response = await fetch(`${apiUrl}/${tenantSlug}`, {
-      next: { revalidate: 3600 },
+      next: { revalidate: 0 }, // Sempre revalidar (sem cache)
     });
 
     if (response.ok) {
