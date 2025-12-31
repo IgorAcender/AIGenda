@@ -27,6 +27,7 @@ const configSchema = z.object({
 })
 
 const brandingSchema = z.object({
+  // Tema e cores
   themeTemplate: z.enum(['light', 'dark', 'custom']).optional(),
   backgroundColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   textColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
@@ -34,11 +35,31 @@ const brandingSchema = z.object({
   buttonTextColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   heroImage: z.string().optional().nullable(),
   sectionsConfig: z.string().optional().nullable(),
+  
+  // Informações da empresa (Tenant)
+  name: z.string().min(2).optional(),
+  about: z.string().optional(),
+  description: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  phone: z.string().optional(),
+  whatsapp: z.string().optional(),
+  email: z.string().optional(),
+  
   // Landing page fields
   paymentMethods: z.string().optional(),
   amenities: z.string().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
+  
+  // Redes sociais
+  instagram: z.string().optional(),
+  facebook: z.string().optional(),
+  twitter: z.string().optional(),
+  
+  // Horários de funcionamento
   businessHours: z.object({
     monday: z.string().optional(),
     tuesday: z.string().optional(),
@@ -200,6 +221,7 @@ export async function tenantRoutes(app: FastifyInstance) {
     }
 
     return config ? {
+      // Configuration (cores, tema)
       themeTemplate: config.themeTemplate,
       backgroundColor: config.backgroundColor,
       textColor: config.textColor,
@@ -207,12 +229,28 @@ export async function tenantRoutes(app: FastifyInstance) {
       buttonTextColor: config.buttonTextColor,
       heroImage: config.heroImage,
       sectionsConfig: config.sectionsConfig,
+      
+      // Tenant data (informações da empresa)
+      name: tenant?.name,
+      about: tenant?.about,
+      description: tenant?.description,
+      address: tenant?.address,
+      city: tenant?.city,
+      state: tenant?.state,
+      zipCode: tenant?.zipCode,
+      phone: tenant?.phone,
+      whatsapp: tenant?.whatsapp,
+      email: tenant?.email,
+      instagram: tenant?.instagram,
+      facebook: tenant?.facebook,
+      twitter: tenant?.twitter,
       paymentMethods: tenant?.paymentMethods,
       amenities: tenant?.amenities,
       latitude: tenant?.latitude,
       longitude: tenant?.longitude,
       businessHours: businessHoursMap,
     } : {
+      // Default values
       themeTemplate: 'light',
       backgroundColor: '#FFFFFF',
       textColor: '#000000',
@@ -220,6 +258,19 @@ export async function tenantRoutes(app: FastifyInstance) {
       buttonTextColor: '#FFFFFF',
       heroImage: null,
       sectionsConfig: null,
+      name: null,
+      about: null,
+      description: null,
+      address: null,
+      city: null,
+      state: null,
+      zipCode: null,
+      phone: null,
+      whatsapp: null,
+      email: null,
+      instagram: null,
+      facebook: null,
+      twitter: null,
       paymentMethods: null,
       amenities: null,
       latitude: null,
@@ -246,10 +297,23 @@ export async function tenantRoutes(app: FastifyInstance) {
         latitude,
         longitude,
         businessHours,
+        name,
+        about,
+        description,
+        address,
+        city,
+        state,
+        zipCode,
+        phone,
+        whatsapp,
+        email,
+        instagram,
+        facebook,
+        twitter,
         ...configData
       } = data
 
-      // Atualizar Configuration
+      // Atualizar Configuration (cores, tema, etc)
       const config = await prisma.configuration.upsert({
         where: { tenantId },
         update: configData,
@@ -259,8 +323,21 @@ export async function tenantRoutes(app: FastifyInstance) {
         },
       })
 
-      // Atualizar Tenant com novos campos
+      // Atualizar Tenant com TODOS os campos
       let tenantData: any = {}
+      if (name !== undefined) tenantData.name = name
+      if (about !== undefined) tenantData.about = about
+      if (description !== undefined) tenantData.description = description
+      if (address !== undefined) tenantData.address = address
+      if (city !== undefined) tenantData.city = city
+      if (state !== undefined) tenantData.state = state
+      if (zipCode !== undefined) tenantData.zipCode = zipCode
+      if (phone !== undefined) tenantData.phone = phone
+      if (whatsapp !== undefined) tenantData.whatsapp = whatsapp
+      if (email !== undefined) tenantData.email = email
+      if (instagram !== undefined) tenantData.instagram = instagram
+      if (facebook !== undefined) tenantData.facebook = facebook
+      if (twitter !== undefined) tenantData.twitter = twitter
       if (paymentMethods !== undefined) tenantData.paymentMethods = paymentMethods
       if (amenities !== undefined) tenantData.amenities = amenities
       if (latitude !== undefined) tenantData.latitude = latitude

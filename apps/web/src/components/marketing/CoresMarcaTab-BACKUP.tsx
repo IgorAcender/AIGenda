@@ -54,19 +54,6 @@ export default function CoresMarcaTab() {
     if (brandingData) {
       form.setFieldsValue({
         theme: brandingData.themeTemplate || 'light',
-        tenantName: brandingData.name || '',
-        about: brandingData.about || '',
-        description: brandingData.description || '',
-        address: brandingData.address || '',
-        city: brandingData.city || '',
-        state: brandingData.state || '',
-        zipCode: brandingData.zipCode || '',
-        phone: brandingData.phone || '',
-        whatsapp: brandingData.whatsapp || '',
-        email: brandingData.email || '',
-        instagram: brandingData.instagram || '',
-        facebook: brandingData.facebook || '',
-        twitter: brandingData.twitter || '',
         paymentMethods: brandingData.paymentMethods || '',
         amenities: brandingData.amenities || '',
         latitude: brandingData.latitude || '',
@@ -94,22 +81,9 @@ export default function CoresMarcaTab() {
     try {
       const values = await form.validateFields()
 
-      // Payload com TODOS os campos do formulário
+      // Payload para a API - apenas os campos que ela espera
       const payload = {
         themeTemplate: values.theme || 'light',
-        name: values.tenantName,
-        about: values.about,
-        description: values.description,
-        address: values.address,
-        city: values.city,
-        state: values.state,
-        zipCode: values.zipCode,
-        phone: values.phone,
-        whatsapp: values.whatsapp,
-        email: values.email,
-        instagram: values.instagram,
-        facebook: values.facebook,
-        twitter: values.twitter,
         paymentMethods: values.paymentMethods,
         amenities: values.amenities,
         latitude: values.latitude ? parseFloat(values.latitude) : undefined,
@@ -129,9 +103,9 @@ export default function CoresMarcaTab() {
         onSuccess: () => {
           message.success('Configurações salvas com sucesso!')
         },
-        onError: (error: any) => {
-          console.error('Erro detalhado:', error)
-          message.error(error?.response?.data?.error || 'Erro ao salvar configurações')
+        onError: (error) => {
+          message.error('Erro ao salvar configurações')
+          console.error(error)
         },
       })
     } catch (error) {

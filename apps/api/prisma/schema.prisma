@@ -18,6 +18,7 @@ model Tenant {
   banner    String?
   email     String   @unique
   phone     String?
+  whatsapp  String?
   address   String?
   city      String?
   state     String?
@@ -26,6 +27,7 @@ model Tenant {
   website   String?
   
   // Landing page
+  about           String?
   description     String?
   latitude        Float?
   longitude       Float?
