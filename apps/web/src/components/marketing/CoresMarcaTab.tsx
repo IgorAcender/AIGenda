@@ -157,19 +157,27 @@ export default function CoresMarcaTab() {
 
       console.log('💾 Payload para salvar:', payload)
 
-      saveBranding(payload, {
-        onSuccess: (response: any) => {
-          console.log('✅ Salvo com sucesso:', response)
-          message.success('Configurações salvas com sucesso!')
-        },
-        onError: (error: any) => {
-          console.error('❌ Erro ao salvar:', error)
-          message.error('Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'))
-        },
+      // Usar mutate com os callbacks inline
+      await new Promise((resolve, reject) => {
+        saveBranding(payload, {
+          onSuccess: (response: any) => {
+            console.log('✅ Salvo com sucesso:', response)
+            message.success('Configurações salvas com sucesso!')
+            resolve(response)
+          },
+          onError: (error: any) => {
+            console.error('❌ Erro ao salvar:', error)
+            const errorMsg = error?.response?.data?.error || error?.message || 'Erro desconhecido'
+            message.error('Erro ao salvar: ' + errorMsg)
+            reject(error)
+          },
+        })
       })
     } catch (error) {
       console.error('❌ Erro de validação:', error)
-      message.error('Erro ao validar formulário')
+      if (!(error instanceof Error && error.message.includes('Erro ao salvar'))) {
+        message.error('Erro ao validar formulário')
+      }
     }
   }
 
