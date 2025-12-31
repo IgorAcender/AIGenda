@@ -35,48 +35,14 @@ export async function publicBookingRoutes(app: FastifyInstance) {
       try {
         const { tenantSlug } = request.params;
 
+        // Buscar tenant com include (traz todos os campos escalares + relacionamentos)
         const tenant = await prisma.tenant.findUnique({
           where: { slug: tenantSlug },
           include: {
-            services: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                duration: true,
-                price: true,
-                category: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-            categories: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-              },
-            },
-            professionals: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-              },
-            },
+            services: true,
+            categories: true,
+            professionals: true,
             businessHours: {
-              select: {
-                dayOfWeek: true,
-                isClosed: true,
-                openTime: true,
-                closeTime: true,
-                interval: true,
-              },
               orderBy: {
                 dayOfWeek: 'asc' as const,
               },
