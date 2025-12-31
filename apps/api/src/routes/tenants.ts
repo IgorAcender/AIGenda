@@ -284,8 +284,10 @@ export async function tenantRoutes(app: FastifyInstance) {
     try {
       const { tenantId, role } = request.user
 
-      if (role !== 'ADMIN') {
-        return reply.status(403).send({ error: 'Apenas administradores podem atualizar branding' })
+      // Qualquer usuário do tenant pode atualizar (OWNER, PROFESSIONAL)
+      // Apenas MASTER não pode (ele não tem tenantId)
+      if (!tenantId) {
+        return reply.status(403).send({ error: 'Você não tem permissão para atualizar branding' })
       }
 
       const data = brandingSchema.parse(request.body)
