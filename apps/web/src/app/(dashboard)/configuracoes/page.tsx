@@ -59,20 +59,30 @@ export default function SettingsPage() {
     saturday: true,
   })
 
+  // Buscar dados do usuário para verificar permissão
+  const { data: userData, isLoading: loadingUser } = useApiQuery(
+    ['user'],
+    '/tenants/me',
+    { staleTime: 5 * 60 * 1000 }
+  )
+
+  // Verificar se tem permissão (apenas OWNER ou ADMIN)
+  const hasPermission = userData?.role === 'OWNER' || userData?.role === 'ADMIN'
+
   // Buscar configurações atuais da API
   const { data: configData, isLoading } = useApiQuery(
-    ['config'],
-    '/tenants/config',
+    ['branding'],
+    '/tenants/branding',
     { staleTime: 5 * 60 * 1000 }
   )
 
   // Mutation para salvar
   const { mutate: saveConfig, isPending: saving } = useApiMutation(
     async (payload: any) => {
-      const { data } = await import('@/lib/api').then(m => m.api.put('/tenants/config', payload))
+      const { data } = await import('@/lib/api').then(m => m.api.put('/tenants/branding', payload))
       return data
     },
-    [['config']]
+    [['branding']]
   )
 
   // Preencher form quando dados carregarem
@@ -102,30 +112,35 @@ export default function SettingsPage() {
         values = form.getFieldsValue()
       }
       
-      // Converter para formato da API
-      const payload: any = {
-        ...values,
-        workDays: values.workDays?.join(',') || '1,2,3,4,5',
-        workStartTime: values.workStart?.format('HH:mm') || '08:00',
-        workEndTime: values.workEnd?.format('HH:mm') || '18:00',
-      }
+      // Construir payload para /tenants/branding (mais permissivo)
+      const payload: any = {}
 
-      // Remover campos temporários
-      delete payload.workStart
-      delete payload.workEnd
+      // Dados da empresa (aba Configurações da Empresa)
+      if (values.name !== undefined) payload.name = values.name
+      if (values.phone !== undefined) payload.phone = values.phone
+      if (values.email !== undefined) payload.email = values.email
+      if (values.address !== undefined) payload.address = values.address
+      if (values.city !== undefined) payload.city = values.city
 
-      // Remover campos de horários específicos dos dias (não precisam ser salvos)
-      Object.keys(payload).forEach(key => {
-        if (key.includes('_start') || key.includes('_end') || key.includes('_lunch') || key.includes('_enabled')) {
-          delete payload[key]
-        }
-      })
+      // Dados de agendamento (aba Horários)
+      if (values.onlineBookingEnabled !== undefined) payload.onlineBookingEnabled = values.onlineBookingEnabled
+      if (values.minAdvanceHours !== undefined) payload.minAdvanceHours = values.minAdvanceHours
+      if (values.maxAdvanceDays !== undefined) payload.maxAdvanceDays = values.maxAdvanceDays
+      if (values.slotDuration !== undefined) payload.slotDuration = values.slotDuration
+
+      // Notificações
+      if (values.emailNotifications !== undefined) payload.emailNotifications = values.emailNotifications
+      if (values.smsNotifications !== undefined) payload.smsNotifications = values.smsNotifications
+      if (values.whatsappNotifications !== undefined) payload.whatsappNotifications = values.whatsappNotifications
+      if (values.reminderHours !== undefined) payload.reminderHours = values.reminderHours
+
+      console.log('Payload enviado para /tenants/branding:', payload)
 
       saveConfig(payload, {
         onSuccess: () => message.success('Configurações salvas com sucesso!'),
-        onError: (error) => {
+        onError: (error: any) => {
           console.error('Erro ao salvar:', error)
-          message.error('Erro ao salvar configurações')
+          message.error('Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'))
         },
       })
     } catch (error) {
@@ -134,10 +149,32 @@ export default function SettingsPage() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || loadingUser) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
         <Spin size="large" />
+      </div>
+    )
+  }
+
+  // Bloquear acesso para usuários sem permissão
+  if (!hasPermission) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <Card style={{ maxWidth: 500, margin: '0 auto' }}>
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+            <Title level={3}>Acesso Negado</Title>
+          </div>
+          <Text type="secondary">
+            Apenas proprietários ou administradores podem acessar as configurações da empresa.
+          </Text>
+          <div style={{ marginTop: '2rem' }}>
+            <Button type="primary" href="/dashboard">
+              Voltar ao Dashboard
+            </Button>
+          </div>
+        </Card>
       </div>
     )
   }
