@@ -20,6 +20,7 @@ import {
   Switch,
   InputNumber,
   Spin,
+  Table,
 } from 'antd'
 import {
   SaveOutlined,
@@ -29,6 +30,7 @@ import {
   SettingOutlined,
   UploadOutlined,
   UserOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
@@ -119,7 +121,7 @@ export default function SettingsPage() {
       label: (
         <span>
           <ShopOutlined />
-          Geral
+          Configurações da Empresa
         </span>
       ),
       children: (
@@ -226,60 +228,107 @@ export default function SettingsPage() {
         </span>
       ),
       children: (
-        <Card title="Horário de Funcionamento">
-          <Form.Item
-            name="workDays"
-            label="Dias de Funcionamento"
-            rules={[{ required: true, message: 'Selecione ao menos um dia' }]}
-          >
-            <Checkbox.Group options={weekDays} />
-          </Form.Item>
+        <Card title="Horário de Funcionamento Padrão da Empresa">
+          <div style={{ marginBottom: 24 }}>
+            <Text type="secondary">
+              Configure o horário padrão da empresa para cada dia da semana. Cada profissional poderá ter um horário personalizado posteriormente.
+            </Text>
+          </div>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item
-                name="workStart"
-                label="Horário de Abertura"
-                rules={[{ required: true }]}
-              >
-                <TimePicker format="HH:mm" style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="workEnd"
-                label="Horário de Fechamento"
-                rules={[{ required: true }]}
-              >
-                <TimePicker format="HH:mm" style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="slotDuration"
-                label="Duração do Slot (minutos)"
-                rules={[{ required: true }]}
-              >
-                <Select>
-                  <Select.Option value={15}>15 minutos</Select.Option>
-                  <Select.Option value={30}>30 minutos</Select.Option>
-                  <Select.Option value={60}>60 minutos</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#fafafa', borderBottom: '2px solid #d9d9d9' }}>
+                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Dias de Atendimento</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Início Expediente</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Início Intervalo</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Fim Intervalo</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600 }}>Fim Expediente</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { name: 'Domingo', value: 'sunday', index: 0 },
+                  { name: 'Segunda-Feira', value: 'monday', index: 1 },
+                  { name: 'Terça-Feira', value: 'tuesday', index: 2 },
+                  { name: 'Quarta-Feira', value: 'wednesday', index: 3 },
+                  { name: 'Quinta-Feira', value: 'thursday', index: 4 },
+                  { name: 'Sexta-Feira', value: 'friday', index: 5 },
+                  { name: 'Sábado', value: 'saturday', index: 6 },
+                ].map((day, idx) => (
+                  <tr key={day.value} style={{ borderBottom: '1px solid #e8e8e8' }}>
+                    <td style={{ padding: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Checkbox
+                          checked={form.getFieldValue(`${day.value}_enabled`) ?? true}
+                          onChange={(e) => {
+                            form.setFieldValue(`${day.value}_enabled`, e.target.checked)
+                          }}
+                        />
+                        <span style={{ fontWeight: 500 }}>{day.name}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <Form.Item
+                        name={`${day.value}_start`}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <TimePicker 
+                          format="HH:mm" 
+                          placeholder="08:00"
+                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <Form.Item
+                        name={`${day.value}_lunch_start`}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <TimePicker 
+                          format="HH:mm" 
+                          placeholder="12:00"
+                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <Form.Item
+                        name={`${day.value}_lunch_end`}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <TimePicker 
+                          format="HH:mm" 
+                          placeholder="13:30"
+                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </td>
+                    <td style={{ padding: '12px' }}>
+                      <Form.Item
+                        name={`${day.value}_end`}
+                        style={{ marginBottom: 0 }}
+                      >
+                        <TimePicker 
+                          format="HH:mm" 
+                          placeholder="19:00"
+                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
+                          style={{ width: '100%' }}
+                        />
+                      </Form.Item>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <Divider />
 
-          <Title level={5}>Agendamento Online</Title>
-
-          <Form.Item
-            name="onlineBookingEnabled"
-            valuePropName="checked"
-            label="Habilitar agendamento online"
-          >
-            <Switch />
-          </Form.Item>
+          <Title level={5}>Configurações de Agendamento Online</Title>
 
           <Row gutter={16}>
             <Col span={12}>
@@ -306,6 +355,31 @@ export default function SettingsPage() {
                   style={{ width: '100%' }}
                   addonAfter="horas"
                 />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="slotDuration"
+                label="Duração do Slot (minutos)"
+                rules={[{ required: true }]}
+              >
+                <Select placeholder="Selecione a duração">
+                  <Select.Option value={15}>15 minutos</Select.Option>
+                  <Select.Option value={30}>30 minutos</Select.Option>
+                  <Select.Option value={60}>60 minutos</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="onlineBookingEnabled"
+                valuePropName="checked"
+                label="Habilitar agendamento online"
+              >
+                <Switch />
               </Form.Item>
             </Col>
           </Row>
