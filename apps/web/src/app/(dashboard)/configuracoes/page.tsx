@@ -49,6 +49,15 @@ const weekDays = [
 
 export default function SettingsPage() {
   const [form] = Form.useForm()
+  const [enabledDays, setEnabledDays] = useState({
+    sunday: true,
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: true,
+  })
 
   // Buscar configurações atuais da API
   const { data: configData, isLoading } = useApiQuery(
@@ -255,73 +264,93 @@ export default function SettingsPage() {
                   { name: 'Quinta-Feira', value: 'thursday', index: 4 },
                   { name: 'Sexta-Feira', value: 'friday', index: 5 },
                   { name: 'Sábado', value: 'saturday', index: 6 },
-                ].map((day, idx) => (
-                  <tr key={day.value} style={{ borderBottom: '1px solid #e8e8e8' }}>
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <Checkbox
-                          checked={form.getFieldValue(`${day.value}_enabled`) ?? true}
-                          onChange={(e) => {
-                            form.setFieldValue(`${day.value}_enabled`, e.target.checked)
-                          }}
-                        />
-                        <span style={{ fontWeight: 500 }}>{day.name}</span>
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <Form.Item
-                        name={`${day.value}_start`}
-                        style={{ marginBottom: 0 }}
-                      >
-                        <TimePicker 
-                          format="HH:mm" 
-                          placeholder="08:00"
-                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
-                          style={{ width: '100%' }}
-                        />
-                      </Form.Item>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <Form.Item
-                        name={`${day.value}_lunch_start`}
-                        style={{ marginBottom: 0 }}
-                      >
-                        <TimePicker 
-                          format="HH:mm" 
-                          placeholder="12:00"
-                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
-                          style={{ width: '100%' }}
-                        />
-                      </Form.Item>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <Form.Item
-                        name={`${day.value}_lunch_end`}
-                        style={{ marginBottom: 0 }}
-                      >
-                        <TimePicker 
-                          format="HH:mm" 
-                          placeholder="13:30"
-                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
-                          style={{ width: '100%' }}
-                        />
-                      </Form.Item>
-                    </td>
-                    <td style={{ padding: '12px' }}>
-                      <Form.Item
-                        name={`${day.value}_end`}
-                        style={{ marginBottom: 0 }}
-                      >
-                        <TimePicker 
-                          format="HH:mm" 
-                          placeholder="19:00"
-                          disabled={!(form.getFieldValue(`${day.value}_enabled`) ?? true)}
-                          style={{ width: '100%' }}
-                        />
-                      </Form.Item>
-                    </td>
-                  </tr>
-                ))}
+                ].map((day) => {
+                  const isEnabled = enabledDays[day.value as keyof typeof enabledDays]
+                  
+                  return (
+                    <tr 
+                      key={day.value} 
+                      style={{ 
+                        borderBottom: '1px solid #e8e8e8',
+                        backgroundColor: isEnabled ? '#ffffff' : '#f5f5f5',
+                        opacity: isEnabled ? 1 : 0.6,
+                      }}
+                    >
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Checkbox
+                            checked={isEnabled}
+                            onChange={(e) => {
+                              setEnabledDays(prev => ({
+                                ...prev,
+                                [day.value]: e.target.checked
+                              }))
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          />
+                          <span style={{ 
+                            fontWeight: 500,
+                            color: isEnabled ? '#1a1a1a' : '#999999'
+                          }}>
+                            {day.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <Form.Item
+                          name={`${day.value}_start`}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <TimePicker 
+                            format="HH:mm" 
+                            placeholder="08:00"
+                            disabled={!isEnabled}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <Form.Item
+                          name={`${day.value}_lunch_start`}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <TimePicker 
+                            format="HH:mm" 
+                            placeholder="12:00"
+                            disabled={!isEnabled}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <Form.Item
+                          name={`${day.value}_lunch_end`}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <TimePicker 
+                            format="HH:mm" 
+                            placeholder="13:30"
+                            disabled={!isEnabled}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <Form.Item
+                          name={`${day.value}_end`}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <TimePicker 
+                            format="HH:mm" 
+                            placeholder="19:00"
+                            disabled={!isEnabled}
+                            style={{ width: '100%' }}
+                          />
+                        </Form.Item>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
