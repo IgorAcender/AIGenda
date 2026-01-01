@@ -112,6 +112,53 @@ export default function SettingsPage() {
       if (values.address !== undefined) payload.address = values.address
       if (values.city !== undefined) payload.city = values.city
 
+      // HORÁRIOS - Construir objeto businessHours a partir dos campos da tabela
+      const businessHours: any = {}
+      const daysMap = [
+        { dayName: 'sunday', label: 'Domingo' },
+        { dayName: 'monday', label: 'Segunda-Feira' },
+        { dayName: 'tuesday', label: 'Terça-Feira' },
+        { dayName: 'wednesday', label: 'Quarta-Feira' },
+        { dayName: 'thursday', label: 'Quinta-Feira' },
+        { dayName: 'friday', label: 'Sexta-Feira' },
+        { dayName: 'saturday', label: 'Sábado' },
+      ]
+
+      daysMap.forEach(({ dayName }) => {
+        const isEnabled = enabledDays[dayName as keyof typeof enabledDays]
+        
+        if (!isEnabled) {
+          businessHours[dayName] = 'Fechado'
+        } else {
+          const startTime = values[`${dayName}_start`]
+          const endTime = values[`${dayName}_end`]
+          const lunchStart = values[`${dayName}_lunch_start`]
+          const lunchEnd = values[`${dayName}_lunch_end`]
+
+          let hoursString = ''
+          
+          if (startTime && endTime) {
+            const start = startTime.format ? startTime.format('HH:mm') : startTime
+            const end = endTime.format ? endTime.format('HH:mm') : endTime
+            hoursString = `${start} - ${end}`
+
+            if (lunchStart && lunchEnd) {
+              const lStart = lunchStart.format ? lunchStart.format('HH:mm') : lunchStart
+              const lEnd = lunchEnd.format ? lunchEnd.format('HH:mm') : lunchEnd
+              hoursString += ` (Intervalo: ${lStart}-${lEnd})`
+            }
+          }
+
+          if (hoursString) {
+            businessHours[dayName] = hoursString
+          }
+        }
+      })
+
+      if (Object.keys(businessHours).length > 0) {
+        payload.businessHours = businessHours
+      }
+
       // Dados de agendamento (aba Horários)
       if (values.onlineBookingEnabled !== undefined) payload.onlineBookingEnabled = values.onlineBookingEnabled
       if (values.minAdvanceHours !== undefined) payload.minAdvanceHours = values.minAdvanceHours
@@ -127,7 +174,13 @@ export default function SettingsPage() {
       console.log('Payload enviado para /tenants/branding:', payload)
 
       saveConfig(payload, {
-        onSuccess: () => message.success('Configurações salvas com sucesso!'),
+        onSuccess: () => {
+          message.success('Configurações salvas com sucesso!')
+          // Recarregar os dados para confirmar que foi salvo
+          setTimeout(() => {
+            window.location.reload()
+          }, 500)
+        },
         onError: (error: any) => {
           console.error('Erro ao salvar:', error)
           message.error('Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'))
