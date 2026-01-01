@@ -59,16 +59,6 @@ export default function SettingsPage() {
     saturday: true,
   })
 
-  // Buscar dados do usuário para verificar permissão
-  const { data: userData, isLoading: loadingUser } = useApiQuery(
-    ['user'],
-    '/tenants/me',
-    { staleTime: 5 * 60 * 1000 }
-  )
-
-  // Verificar se tem permissão (apenas OWNER ou ADMIN)
-  const hasPermission = userData?.role === 'OWNER' || userData?.role === 'ADMIN'
-
   // Buscar configurações atuais da API
   const { data: configData, isLoading } = useApiQuery(
     ['branding'],
@@ -149,32 +139,10 @@ export default function SettingsPage() {
     }
   }
 
-  if (isLoading || loadingUser) {
+  if (isLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
         <Spin size="large" />
-      </div>
-    )
-  }
-
-  // Bloquear acesso para usuários sem permissão
-  if (!hasPermission) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <Card style={{ maxWidth: 500, margin: '0 auto' }}>
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
-            <Title level={3}>Acesso Negado</Title>
-          </div>
-          <Text type="secondary">
-            Apenas proprietários ou administradores podem acessar as configurações da empresa.
-          </Text>
-          <div style={{ marginTop: '2rem' }}>
-            <Button type="primary" href="/dashboard">
-              Voltar ao Dashboard
-            </Button>
-          </div>
-        </Card>
       </div>
     )
   }
