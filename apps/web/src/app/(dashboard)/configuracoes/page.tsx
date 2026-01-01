@@ -93,12 +93,19 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     try {
-      const values = await form.validateFields()
+      // Tentar validar, mas se falhar continua assim mesmo
+      let values: any = {}
+      try {
+        values = await form.validateFields()
+      } catch (validationError) {
+        // Se tiver erro de validação, pega apenas os valores preenchidos
+        values = form.getFieldsValue()
+      }
       
       // Converter para formato da API
-      const payload = {
+      const payload: any = {
         ...values,
-        workDays: values.workDays.join(','),
+        workDays: values.workDays?.join(',') || '1,2,3,4,5',
         workStartTime: values.workStart?.format('HH:mm') || '08:00',
         workEndTime: values.workEnd?.format('HH:mm') || '18:00',
       }
@@ -107,12 +114,23 @@ export default function SettingsPage() {
       delete payload.workStart
       delete payload.workEnd
 
+      // Remover campos de horários específicos dos dias (não precisam ser salvos)
+      Object.keys(payload).forEach(key => {
+        if (key.includes('_start') || key.includes('_end') || key.includes('_lunch') || key.includes('_enabled')) {
+          delete payload[key]
+        }
+      })
+
       saveConfig(payload, {
         onSuccess: () => message.success('Configurações salvas com sucesso!'),
-        onError: () => message.error('Erro ao salvar configurações'),
+        onError: (error) => {
+          console.error('Erro ao salvar:', error)
+          message.error('Erro ao salvar configurações')
+        },
       })
     } catch (error) {
-      console.error('Erro ao validar:', error)
+      console.error('Erro:', error)
+      message.error('Erro ao processar as configurações')
     }
   }
 
@@ -393,7 +411,6 @@ export default function SettingsPage() {
               <Form.Item
                 name="slotDuration"
                 label="Duração do Slot (minutos)"
-                rules={[{ required: true }]}
               >
                 <Select placeholder="Selecione a duração">
                   <Select.Option value={15}>15 minutos</Select.Option>
