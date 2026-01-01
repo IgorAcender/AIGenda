@@ -1,25 +1,5 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* CSS será criado do zero */
 
-:root {
-  --primary: #09913b;
-  --primary-light: #0aae46;
-  --bg-dark: #000000;
-  --bg-secondary: #1a1a1a;
-  --text-light: #ffffff;
-  --text-muted: #999999;
-  --border-color: #333333;
-}
-
-body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg-dark);
-  color: var(--text-light);
-  line-height: 1.6;
-}
 
 /* Header Fixo */
 .landing-header {
