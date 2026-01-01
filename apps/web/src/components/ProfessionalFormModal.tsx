@@ -495,6 +495,33 @@ export function ProfessionalFormModal({
         {/* Aba Usuário */}
         {activeTab === 'usuario' && (
           <>
+            <Divider>Dados de Acesso</Divider>
+
+            <Form.Item
+              name="email"
+              label="E-mail"
+              rules={[{ type: 'email', message: 'Email inválido' }]}
+            >
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="joao@example.com"
+                type="email"
+              />
+            </Form.Item>
+
+            <p style={{ 
+              background: '#f5f7fa', 
+              padding: '12px', 
+              borderRadius: '6px', 
+              fontSize: '13px',
+              color: '#666',
+              borderLeft: '4px solid #505afb'
+            }}>
+              💡 <strong>Dica:</strong> Use este e-mail para criar um login de acesso ao sistema para o profissional. O e-mail será usado para autenticação.
+            </p>
+
+            <Divider>Configurações</Divider>
+
             <Form.Item name="isActive" label="Ativo" valuePropName="checked">
               <Switch />
             </Form.Item>
