@@ -78,18 +78,78 @@ export default function SettingsPage() {
   // Preencher form quando dados carregarem
   useEffect(() => {
     if (configData) {
-      const workDaysArray = configData.workDays
-        ? configData.workDays.split(',').map(Number)
-        : [1, 2, 3, 4, 5, 6]
+      console.log('ConfigData recebida:', configData)
+      
+      const fieldsToSet: any = {
+        // Informações da empresa
+        name: configData.name,
+        phone: configData.phone,
+        email: configData.email,
+        address: configData.address,
+        city: configData.city,
+        // Agendamento
+        onlineBookingEnabled: configData.onlineBookingEnabled,
+        minAdvanceHours: configData.minAdvanceHours,
+        maxAdvanceDays: configData.maxAdvanceDays,
+        slotDuration: configData.slotDuration,
+        // Notificações
+        emailNotifications: configData.emailNotifications,
+        smsNotifications: configData.smsNotifications,
+        whatsappNotifications: configData.whatsappNotifications,
+        reminderHours: configData.reminderHours,
+      }
 
-      form.setFieldsValue({
-        ...configData,
-        workDays: workDaysArray,
-        workStart: configData.workStartTime ? dayjs(configData.workStartTime, 'HH:mm') : dayjs('08:00', 'HH:mm'),
-        workEnd: configData.workEndTime ? dayjs(configData.workEndTime, 'HH:mm') : dayjs('18:00', 'HH:mm'),
-      })
+      // Carregar businessHours (horários da tabela)
+      if (configData.businessHours && typeof configData.businessHours === 'object') {
+        const businessHours = configData.businessHours
+        const daysMap = [
+          'sunday', 'monday', 'tuesday', 'wednesday', 
+          'thursday', 'friday', 'saturday'
+        ]
+
+        // Resetar enabledDays baseado nos dados salvos
+        const newEnabledDays = { ...enabledDays }
+        
+        daysMap.forEach((dayName) => {
+          const hoursData = businessHours[dayName]
+          
+          if (hoursData && hoursData !== 'Fechado') {
+            // Dia está aberto
+            newEnabledDays[dayName as keyof typeof enabledDays] = true
+            
+            // Parse "08:00 - 18:00" ou "08:00 - 18:00 (Intervalo: 12:00-13:30)"
+            const match = hoursData.match(/(\d{2}):(\d{2})\s*-\s*(\d{2}):(\d{2})(?:\s*\(Intervalo:\s*(\d{2}):(\d{2})-(\d{2}):(\d{2})\))?/)
+            
+            if (match) {
+              const startHour = match[1]
+              const startMin = match[2]
+              const endHour = match[3]
+              const endMin = match[4]
+              const lunchStartHour = match[5]
+              const lunchStartMin = match[6]
+              const lunchEndHour = match[7]
+              const lunchEndMin = match[8]
+
+              fieldsToSet[`${dayName}_start`] = dayjs(`${startHour}:${startMin}`, 'HH:mm')
+              fieldsToSet[`${dayName}_end`] = dayjs(`${endHour}:${endMin}`, 'HH:mm')
+              
+              if (lunchStartHour) {
+                fieldsToSet[`${dayName}_lunch_start`] = dayjs(`${lunchStartHour}:${lunchStartMin}`, 'HH:mm')
+                fieldsToSet[`${dayName}_lunch_end`] = dayjs(`${lunchEndHour}:${lunchEndMin}`, 'HH:mm')
+              }
+            }
+          } else {
+            // Dia está fechado
+            newEnabledDays[dayName as keyof typeof enabledDays] = false
+          }
+        })
+
+        setEnabledDays(newEnabledDays)
+      }
+
+      form.setFieldsValue(fieldsToSet)
     }
-  }, [configData, form])
+  }, [configData, form, enabledDays])
 
   const handleSave = async () => {
     try {
@@ -176,10 +236,7 @@ export default function SettingsPage() {
       saveConfig(payload, {
         onSuccess: () => {
           message.success('Configurações salvas com sucesso!')
-          // Recarregar os dados para confirmar que foi salvo
-          setTimeout(() => {
-            window.location.reload()
-          }, 500)
+          // Não precisa recarregar - o useEffect já vai atualizar quando os dados chegarem
         },
         onError: (error: any) => {
           console.error('Erro ao salvar:', error)
