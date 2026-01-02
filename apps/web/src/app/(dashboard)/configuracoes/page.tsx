@@ -149,7 +149,7 @@ export default function SettingsPage() {
 
       form.setFieldsValue(fieldsToSet)
     }
-  }, [configData, form, enabledDays])
+  }, [configData, form])
 
   const handleSave = async () => {
     try {

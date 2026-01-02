@@ -15,10 +15,11 @@ export default function LinkAgendamentoPage() {
   const tenantSlug = tenant?.slug || 'seu-estabelecimento'
   const baseUrl = 'https://agendeai.net'
   const landingPageUrl = `${baseUrl}/${tenantSlug}`
+  const bookingUrl = `${baseUrl}/${tenantSlug}/agendamento`
 
-  const handleCopy = async () => {
+  const handleCopy = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(landingPageUrl)
+      await navigator.clipboard.writeText(url)
       message.success('Link copiado para a área de transferência!')
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -27,20 +28,20 @@ export default function LinkAgendamentoPage() {
     }
   }
 
-  const handleShare = async () => {
+  const handleShare = async (url: string, title: string) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Agende seu horário!',
+          title: title,
           text: 'Confira nossa página e agende seu horário online!',
-          url: landingPageUrl,
+          url: url,
         })
         message.success('Link compartilhado!')
       } catch (error) {
         console.log('Compartilhamento cancelado')
       }
     } else {
-      handleCopy()
+      handleCopy(url)
     }
   }
 
@@ -77,7 +78,7 @@ export default function LinkAgendamentoPage() {
                 type="primary"
                 size="large"
                 icon={<CopyOutlined />}
-                onClick={handleCopy}
+                onClick={() => handleCopy(landingPageUrl)}
               >
                 {copied ? 'Copiado!' : 'Copiar'}
               </Button>
@@ -89,7 +90,7 @@ export default function LinkAgendamentoPage() {
             <Button
               type="default"
               icon={<ShareAltOutlined />}
-              onClick={handleShare}
+              onClick={() => handleShare(landingPageUrl, 'Agende seu horário!')}
               size="large"
             >
               Compartilhar
@@ -107,24 +108,119 @@ export default function LinkAgendamentoPage() {
 
           <Divider />
 
-          {/* QR Code */}
+          {/* Link de Agendamento Direto */}
           <div>
+            <Title level={4}>
+              <LinkOutlined /> Link de Agendamento Direto
+            </Title>
+            <Paragraph type="secondary">
+              Compartilhe este link para que seus clientes agendem direto, sem passar pela landing page.
+            </Paragraph>
+
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              {/* Link */}
+              <div>
+                <Text strong>Link de agendamento:</Text>
+                <Space.Compact style={{ width: '100%', marginTop: 8 }}>
+                  <Input
+                    value={bookingUrl}
+                    readOnly
+                    size="large"
+                    prefix={<LinkOutlined />}
+                  />
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<CopyOutlined />}
+                    onClick={() => handleCopy(bookingUrl)}
+                  >
+                    Copiar
+                  </Button>
+                </Space.Compact>
+              </div>
+
+              {/* Botões de Ação */}
+              <Space wrap>
+                <Button
+                  type="default"
+                  icon={<ShareAltOutlined />}
+                  onClick={() => handleShare(bookingUrl, 'Agende agora!')}
+                  size="large"
+                >
+                  Compartilhar
+                </Button>
+                <Button
+                  type="default"
+                  href={bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="large"
+                >
+                  Agendar Agora
+                </Button>
+              </Space>
+
+              {/* QR Code */}
+              <div>
+                <Space align="start" size="large">
+                  <div>
+                    <Title level={5}>
+                      <QrcodeOutlined /> QR Code
+                    </Title>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        const canvas = document.querySelectorAll('canvas')[1]
+                        if (canvas) {
+                          const url = canvas.toDataURL()
+                          const link = document.createElement('a')
+                          link.download = 'qrcode-agendamento-direto.png'
+                          link.href = url
+                          link.click()
+                          message.success('QR Code baixado!')
+                        }
+                      }}
+                    >
+                      Baixar QR Code
+                    </Button>
+                  </div>
+                  <div style={{ 
+                    padding: 16, 
+                    background: '#fff', 
+                    borderRadius: 8,
+                    border: '1px solid #f0f0f0'
+                  }}>
+                    <QRCode
+                      value={bookingUrl}
+                      size={150}
+                      level="H"
+                    />
+                  </div>
+                </Space>
+              </div>
+            </Space>
+          </div>
+
+          <Divider />
+
+          {/* QR Code da Landing Page */}
+          <div>
+            <Title level={4}>
+              <QrcodeOutlined /> QR Code - Landing Page
+            </Title>
+            <Paragraph type="secondary">
+              Seus clientes podem escanear este QR Code para acessar sua página de agendamento.
+            </Paragraph>
             <Space align="start" size="large">
               <div>
-                <Title level={4}>
-                  <QrcodeOutlined /> QR Code
-                </Title>
-                <Paragraph type="secondary">
-                  Seus clientes podem escanear este QR Code para acessar sua página de agendamento.
-                </Paragraph>
                 <Button
                   type="primary"
                   onClick={() => {
-                    const canvas = document.querySelector('canvas')
+                    const canvas = document.querySelectorAll('canvas')[0]
                     if (canvas) {
                       const url = canvas.toDataURL()
                       const link = document.createElement('a')
-                      link.download = 'qrcode-agendamento.png'
+                      link.download = 'qrcode-landing-page.png'
                       link.href = url
                       link.click()
                       message.success('QR Code baixado!')
@@ -142,7 +238,7 @@ export default function LinkAgendamentoPage() {
               }}>
                 <QRCode
                   value={landingPageUrl}
-                  size={200}
+                  size={150}
                   level="H"
                 />
               </div>

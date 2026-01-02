@@ -14,7 +14,8 @@ interface Professional {
   email: string | null
   phone: string | null
   specialty: string | null
-  active: boolean
+  isActive?: boolean
+  color?: string
 }
 
 /**
@@ -31,7 +32,7 @@ export function OptimizedProfessionalsList() {
     ['professionals'],
     '/professionals',
     {
-      staleTime: 5 * 60 * 1000, // 5 minutos
+      staleTime: 0, // Sempre refetch após operações
       gcTime: 10 * 60 * 1000, // 10 minutos
     }
   )
@@ -48,14 +49,33 @@ export function OptimizedProfessionalsList() {
   )
 
   const handleDeleteProfessional = (professionalId: string) => {
+    console.log('🗑️ Tentando deletar profissional:', professionalId)
+    
     deleteProfessionalMutation.mutate(professionalId, {
-      onSuccess: () => {
+      onSuccess: async (response: any) => {
+        console.log('✅ Resposta do servidor:', response)
+        console.log('✅ Profissional deletado com sucesso!')
         message.success('Profissional excluído com sucesso!')
+        
+        // Aguarda um pouco para garantir que a cache foi invalidada
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // Força refetch para remover da lista
+        console.log('🔄 Refetchando lista de profissionais...')
+        await refetch()
+        console.log('✅ Lista atualizada')
       },
       onError: (error: any) => {
-        message.error(
-          error?.response?.data?.message || 'Erro ao excluir profissional'
-        )
+        console.error('❌ Erro ao deletar:', error)
+        console.error('Status:', error?.response?.status)
+        console.error('Data:', error?.response?.data)
+        
+        const errorMessage = 
+          error?.response?.data?.message || 
+          error?.response?.data?.error ||
+          error?.message ||
+          'Erro ao excluir profissional'
+        message.error(errorMessage)
       },
     })
   }
@@ -87,11 +107,11 @@ export function OptimizedProfessionalsList() {
     },
     {
       title: 'Status',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active) => (
-        <Tag color={active ? 'green' : 'red'}>
-          {active ? 'Ativo' : 'Inativo'}
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (isActive) => (
+        <Tag color={isActive !== false ? 'green' : 'red'}>
+          {isActive !== false ? 'Ativo' : 'Inativo'}
         </Tag>
       ),
     },
@@ -194,8 +214,16 @@ export function OptimizedProfessionalsList() {
         onClose={() => {
           setModalVisible(false)
           setSelectedProfessionalId(undefined)
+          // Garantir que sempre refetch ao fechar a modal
+          setTimeout(() => {
+            console.log('🔄 Forçando refetch após fechar modal')
+            refetch()
+          }, 300)
         }}
-        onSuccess={() => refetch()}
+        onSuccess={() => {
+          console.log('✅ Modal chamou onSuccess, refetchando...')
+          refetch()
+        }}
         professionalId={selectedProfessionalId}
       />
     </div>

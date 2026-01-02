@@ -24,10 +24,13 @@ import {
   MailOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 import { ModalWithSidebar } from './ModalWithSidebar'
+import dayjs from 'dayjs'
 
 interface Professional {
   id: string
@@ -109,15 +112,23 @@ export function ProfessionalFormModal({
   // Mutation para criar/atualizar
   const { mutate: saveProfessional, isPending: saving } = useApiMutation(
     async (payload: any) => {
-      if (isEditing) {
-        const { data } = await api.put(`/professionals/${professionalId}`, payload)
-        return data
-      } else {
-        const { data } = await api.post('/professionals', payload)
-        return data
+      try {
+        console.log('📤 Enviando dados para API:', { isEditing, professionalId, payload })
+        if (isEditing && professionalId) {
+          const { data } = await api.put(`/professionals/${professionalId}`, payload)
+          console.log('✅ PUT sucesso:', data)
+          return data
+        } else {
+          const { data } = await api.post('/professionals', payload)
+          console.log('✅ POST sucesso:', data)
+          return data
+        }
+      } catch (error: any) {
+        console.error('❌ Erro na requisição:', error.response?.data || error.message)
+        throw error
       }
     },
-    [['professionals'], ['professional', professionalId || '']]
+    isEditing && professionalId ? [['professionals'], ['professional', professionalId]] : [['professionals']]
   )
 
   // Mutation para vincular serviços
@@ -185,6 +196,17 @@ export function ProfessionalFormModal({
     }
   }, [professional, form])
 
+  // Normalizar dados antes de enviar (converter isActive para active)
+  const normalizeFormData = (data: any) => {
+    const normalized = { ...data }
+    // Converter isActive para active se existir
+    if ('isActive' in normalized) {
+      normalized.active = normalized.isActive
+      delete normalized.isActive
+    }
+    return normalized
+  }
+
   // Limpar form ao abrir/fechar modal
   useEffect(() => {
     if (!visible) {
@@ -209,14 +231,21 @@ export function ProfessionalFormModal({
   const handleSave = async () => {
     try {
       const values = await form.validateFields()
+      console.log('✅ Formulário válido:', values)
+      
+      // Normalizar dados
+      let normalizedValues = normalizeFormData(values)
       
       // Adicionar avatar se houver
       if (avatarUrl) {
-        values.avatar = avatarUrl
+        normalizedValues.avatar = avatarUrl
       }
 
-      saveProfessional(values, {
-        onSuccess: (professional) => {
+      console.log('📤 Enviando dados normalizados:', normalizedValues)
+      saveProfessional(normalizedValues, {
+        onSuccess: (professional: any) => {
+          console.log('✅ Profissional salvo com sucesso:', professional)
+          console.log('📞 Chamando onSuccess callback (refetch)...')
           // Se editando e serviços foram selecionados, vincular
           if (isEditing && selectedServices.length > 0) {
             linkServices(selectedServices, {
@@ -226,6 +255,7 @@ export function ProfessionalFormModal({
                 setAvatarUrl(null)
                 setSelectedServices([])
                 setActiveTab('cadastro')
+                console.log('📞 Refetch chamado após linkServices')
                 onSuccess()
                 onClose()
               },
@@ -243,18 +273,20 @@ export function ProfessionalFormModal({
             setAvatarUrl(null)
             setSelectedServices([])
             setActiveTab('cadastro')
+            console.log('📞 Refetch chamado após sucesso')
             onSuccess()
             onClose()
           }
         },
         onError: (error: any) => {
+          console.error('❌ Erro ao salvar profissional:', error)
           message.error(
             error.response?.data?.error || 'Erro ao salvar profissional'
           )
         },
       })
     } catch (error) {
-      console.error('Erro ao validar:', error)
+      console.error('❌ Erro ao validar:', error)
     }
   }
 
@@ -497,15 +529,41 @@ export function ProfessionalFormModal({
           <>
             <Divider>Dados de Acesso</Divider>
 
+            {isEditing && (
+              <p style={{ 
+                background: '#fff7e6', 
+                padding: '12px', 
+                borderRadius: '6px', 
+                fontSize: '13px',
+                color: '#d46b08',
+                borderLeft: '4px solid #faad14',
+                marginBottom: '16px'
+              }}>
+                ⚠️ <strong>Atenção:</strong> Alterar o email mudará o login de acesso do profissional no sistema.
+              </p>
+            )}
+
             <Form.Item
               name="email"
-              label="E-mail"
-              rules={[{ type: 'email', message: 'Email inválido' }]}
+              label="E-mail *"
+              rules={[
+                { type: 'email', message: 'Email inválido' },
+              ]}
             >
               <Input
                 prefix={<MailOutlined />}
                 placeholder="joao@example.com"
                 type="email"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              label={isEditing ? "Senha (deixe em branco para manter)" : "Senha *"}
+              rules={isEditing ? [] : [{ required: true, message: 'Senha é obrigatória' }]}
+            >
+              <Input.Password
+                placeholder={isEditing ? "Deixe em branco para não alterar" : "Digite uma senha forte"}
               />
             </Form.Item>
 
@@ -517,7 +575,7 @@ export function ProfessionalFormModal({
               color: '#666',
               borderLeft: '4px solid #505afb'
             }}>
-              💡 <strong>Dica:</strong> Use este e-mail para criar um login de acesso ao sistema para o profissional. O e-mail será usado para autenticação.
+              💡 <strong>Dica:</strong> O e-mail e senha serão usados pelo profissional para fazer login no sistema.
             </p>
 
             <Divider>Configurações</Divider>
@@ -574,37 +632,7 @@ export function ProfessionalFormModal({
 
         {/* Aba Expediente */}
         {activeTab === 'expediente' && (
-          <>
-            <Divider>Horário de Funcionamento</Divider>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="scheduleStart" label="Início do Expediente">
-                  <Input type="time" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="scheduleEnd" label="Fim do Expediente">
-                  <Input type="time" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Divider>Intervalo de Descanso</Divider>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="scheduleBreakStart" label="Início do Intervalo">
-                  <Input type="time" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="scheduleBreakEnd" label="Fim do Intervalo">
-                  <Input type="time" />
-                </Form.Item>
-              </Col>
-            </Row>
-          </>
+          <ExpedienteTab professionalId={professional?.id} />
         )}
 
         {/* Aba Personalizar Serviços */}
@@ -784,3 +812,186 @@ export function ProfessionalFormModal({
     </ModalWithSidebar>
   )
 }
+
+// Componente da Aba Expediente
+function ExpedienteTab({ professionalId }: { professionalId?: string }) {
+  const [loading, setLoading] = useState(false)
+  const [schedule, setSchedule] = useState<any>(null)
+  const [usePersonalized, setUsePersonalized] = useState<Record<number, boolean>>({})
+
+  const daysOfWeek = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado']
+
+  useEffect(() => {
+    if (!professionalId) return
+    
+    const fetchSchedule = async () => {
+      try {
+        setLoading(true)
+        const response = await api.get(`/professionals/${professionalId}/schedule`)
+        setSchedule(response.data.schedule)
+        
+        // Inicializar personalizações
+        const personalized: Record<number, boolean> = {}
+        response.data.schedule.forEach((day: any) => {
+          if (day.professional) {
+            personalized[day.dayOfWeek] = true
+          }
+        })
+        setUsePersonalized(personalized)
+      } catch (error) {
+        console.error('Erro ao buscar expediente:', error)
+        message.error('Erro ao buscar expediente')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSchedule()
+  }, [professionalId])
+
+  const handleSaveSchedule = async () => {
+    try {
+      setLoading(true)
+      const scheduleToSave = schedule.map((day: any) => ({
+        dayOfWeek: day.dayOfWeek,
+        startTime: usePersonalized[day.dayOfWeek] ? day.professional?.startTime : null,
+        endTime: usePersonalized[day.dayOfWeek] ? day.professional?.endTime : null,
+        breakStartTime: usePersonalized[day.dayOfWeek] ? day.professional?.breakStartTime : null,
+        breakEndTime: usePersonalized[day.dayOfWeek] ? day.professional?.breakEndTime : null,
+        isActive: usePersonalized[day.dayOfWeek] ? (day.professional?.isActive ?? day.business?.isActive) : day.business?.isActive,
+      }))
+
+      await api.put(`/professionals/${professionalId}/schedule`, { schedule: scheduleToSave })
+      message.success('Expediente atualizado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar expediente:', error)
+      message.error('Erro ao salvar expediente')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!professionalId) {
+    return <p style={{ color: '#999', textAlign: 'center' }}>Salve o profissional primeiro para configurar o expediente</p>
+  }
+
+  if (loading) return <Spin />
+
+  if (!schedule) return <p>Carregando expediente...</p>
+
+  return (
+    <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+      <Divider>Horário de Atendimento</Divider>
+      <p style={{ color: '#666', marginBottom: 16 }}>
+        Use o horário padrão da barbearia ou crie um expediente personalizado para este profissional
+      </p>
+
+      {schedule.map((day: any, index: number) => (
+        <div
+          key={day.dayOfWeek}
+          style={{
+            padding: '12px',
+            marginBottom: '12px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '6px',
+            backgroundColor: '#fafafa',
+          }}
+        >
+          <Row gutter={16} align="middle">
+            <Col span={6}>
+              <strong style={{ fontSize: '14px' }}>
+                {day.dayOfWeek === 0 ? '✓ ' : ''}{daysOfWeek[day.dayOfWeek]}
+              </strong>
+            </Col>
+
+            <Col span={12}>
+              {usePersonalized[day.dayOfWeek] ? (
+                // Horário Personalizado
+                <Row gutter={8} align="middle">
+                  <Col flex="auto">
+                    <Input
+                      type="time"
+                      value={day.professional?.startTime || ''}
+                      onChange={(e) => {
+                        const newSchedule = [...schedule]
+                        if (!newSchedule[index].professional) {
+                          newSchedule[index].professional = { isActive: true }
+                        }
+                        newSchedule[index].professional.startTime = e.target.value
+                        setSchedule(newSchedule)
+                      }}
+                      placeholder="Início"
+                      size="small"
+                    />
+                  </Col>
+                  <Col style={{ textAlign: 'center' }}>–</Col>
+                  <Col flex="auto">
+                    <Input
+                      type="time"
+                      value={day.professional?.endTime || ''}
+                      onChange={(e) => {
+                        const newSchedule = [...schedule]
+                        if (!newSchedule[index].professional) {
+                          newSchedule[index].professional = { isActive: true }
+                        }
+                        newSchedule[index].professional.endTime = e.target.value
+                        setSchedule(newSchedule)
+                      }}
+                      placeholder="Fim"
+                      size="small"
+                    />
+                  </Col>
+                </Row>
+              ) : (
+                // Horário Padrão (apenas visualização)
+                <div style={{ color: '#666' }}>
+                  {day.business?.isActive ? (
+                    <>
+                      <ClockCircleOutlined style={{ marginRight: '6px' }} />
+                      {day.business?.startTime} – {day.business?.endTime}
+                    </>
+                  ) : (
+                    <span style={{ color: '#999' }}>Fechado</span>
+                  )}
+                </div>
+              )}
+            </Col>
+
+            <Col span={6} style={{ textAlign: 'right' }}>
+              <Button
+                type={usePersonalized[day.dayOfWeek] ? 'primary' : 'default'}
+                size="small"
+                onClick={() => {
+                  const newPersonalized = { ...usePersonalized }
+                  newPersonalized[day.dayOfWeek] = !newPersonalized[day.dayOfWeek]
+                  setUsePersonalized(newPersonalized)
+
+                  if (newPersonalized[day.dayOfWeek]) {
+                    const newSchedule = [...schedule]
+                    newSchedule[index].professional = {
+                      startTime: day.business?.startTime || '08:00',
+                      endTime: day.business?.endTime || '18:00',
+                      breakStartTime: day.business?.breakStartTime || '12:00',
+                      breakEndTime: day.business?.breakEndTime || '13:00',
+                      isActive: day.business?.isActive ?? true,
+                    }
+                    setSchedule(newSchedule)
+                  }
+                }}
+              >
+                {usePersonalized[day.dayOfWeek] ? 'Personalizado' : 'Padrão'}
+              </Button>
+            </Col>
+          </Row>
+        </div>
+      ))}
+
+      <Space style={{ marginTop: '16px', width: '100%' }}>
+        <Button type="primary" loading={loading} onClick={handleSaveSchedule} style={{ marginTop: '16px' }}>
+          Salvar Expediente
+        </Button>
+      </Space>
+    </div>
+  )
+}
+
