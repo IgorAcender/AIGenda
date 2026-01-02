@@ -34,7 +34,6 @@ COPY --from=deps /app ./
 
 # Copy source code
 COPY apps/api/src ./apps/api/src
-C
 
 # Production stage
 FROM base AS runner
