@@ -85,18 +85,32 @@ export default function LandingPageContent({
       {/* Hero Banner */}
       <div style={{
         width: '100%',
-        height: isPreview ? '150px' : '200px',
-        backgroundColor: '#333',
-        backgroundImage: tenant.banner ? `url(${tenant.banner})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '20px'
+        backgroundColor: '#111',
+        display: 'block',
+        marginBottom: '20px',
+        borderRadius: '8px',
+        overflow: 'hidden'
       }}>
-        {!tenant.banner && (
-          <span style={{ fontSize: '48px' }}>💈</span>
+        {tenant.banner ? (
+          <img
+            src={tenant.banner}
+            alt="Banner do estabelecimento"
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+              objectFit: 'contain',
+              backgroundColor: '#111'
+            }}
+          />
+        ) : (
+          <div style={{
+            width: '100%',
+            padding: isPreview ? '40px 0' : '56px 0',
+            textAlign: 'center'
+          }}>
+            <span style={{ fontSize: '48px' }}>💈</span>
+          </div>
         )}
       </div>
 

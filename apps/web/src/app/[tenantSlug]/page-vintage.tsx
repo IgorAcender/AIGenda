@@ -101,10 +101,21 @@ export default async function LandingPage({ params }: LandingPageProps) {
       </div>
 
       {/* Header Section */}
-      <div className="header-section">
-        <div className="logo-container">
+      <div className="header-section" style={{ overflow: 'visible', padding: 0, height: 'auto' }}>
+        <div className="logo-container" style={{ minHeight: 'auto', height: 'auto', overflow: 'visible' }}>
           {tenant.banner ? (
-            <img src={tenant.banner} alt={tenant.name} />
+            <img 
+              src={tenant.banner} 
+              alt={tenant.name} 
+              style={{ 
+                maxHeight: 'none', 
+                height: 'auto', 
+                width: '100%',
+                display: 'block',
+                margin: 0,
+                padding: 0
+              }} 
+            />
           ) : (
             <div style={{ fontSize: '3.5rem' }}>💈</div>
           )}

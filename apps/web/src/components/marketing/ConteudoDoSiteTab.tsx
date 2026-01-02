@@ -142,16 +142,15 @@ export default function ConteudoDoSiteTab() {
               </label>
               <Upload
                 beforeUpload={beforeUpload}
-                onChange={handleUpload}
                 maxCount={1}
                 accept="image/*"
                 listType="picture"
-                showUploadList={true}
+                showUploadList={false}
               >
                 <Button style={{ width: '100%' }}>Selecionar Foto</Button>
               </Upload>
               <p style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
-                Recomendado: 1920x1080px (16:9) | Máximo: 5MB
+                Recomendado: 1920x1080px (16:9) | Máximo: 2MB
               </p>
               
               {previewImage && (
@@ -160,10 +159,15 @@ export default function ConteudoDoSiteTab() {
                   alt="Prévia"
                   style={{
                     width: '100%',
-                    maxHeight: 200,
-                    objectFit: 'cover',
-                    borderRadius: 4,
+                    maxWidth: 160,
+                    height: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: 8,
                     marginTop: 12,
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    background: '#0b0b0b',
+                    display: 'block',
                   }}
                 />
               )}
