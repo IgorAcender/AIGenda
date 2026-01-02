@@ -6,14 +6,22 @@ WORKDIR /app
 
 # Dependencies
 FROM base AS deps
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
 COPY package.json ./
-RUN pnpm install
+COPY apps/web/package.json ./apps/web/
+
+RUN pnpm install --frozen-lockfile
 
 # Build
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps /app ./
+COPY apps/web/src ./apps/web/src
+COPY apps/web/public ./apps/web/public
+COPY apps/web/tsconfig.json ./apps/web/
+COPY apps/web/next.config.js ./apps/web/
 
+WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN pnpm run build
@@ -28,9 +36,14 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy node_modules
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/package.json ./apps/web/
+
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
@@ -39,4 +52,6 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+WORKDIR /app/apps/web
+
+CMD ["node", "node_modules/next/dist/bin/next", "start"]

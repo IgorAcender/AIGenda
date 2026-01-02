@@ -13,37 +13,49 @@ WORKDIR /app
 
 # Dependencies stage
 FROM base AS deps
-# Copy package files
+
+# Copy root package files for workspace
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
 COPY package.json ./
-COPY prisma ./prisma/
 
-# Install dependencies (without lockfile since we're in a subpackage)
-RUN pnpm install
+# Copy app-specific files
+COPY apps/api/package.json ./apps/api/
+COPY apps/api/prisma ./apps/api/prisma/
 
-# Generate Prisma client here (no DB connection needed for generate)
-RUN npx prisma generate
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 
 # Build stage
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/prisma ./prisma
-COPY . .
-RUN pnpm run build
+
+# Copy everything from deps
+COPY --from=deps /app ./
+
+# Copy source code
+COPY apps/api/src ./apps/api/src
+C
 
 # Production stage
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./
+# Install all dependencies (including devDependencies for prisma)
+COPY pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/api/prisma ./apps/api/prisma/
 
-# Regenerate Prisma client in production stage
-RUN npx prisma generate
+RUN pnpm install --frozen-lockfile
 
-# Run migrations and start
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+# Copy built application
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Generate Prisma files (run before starting the app)
+RUN cd apps/api && npx -y prisma@5 generate
 
 EXPOSE 3001
+
+CMD ["node", "apps/api/dist/index.js"]

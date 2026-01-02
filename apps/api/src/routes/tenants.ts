@@ -29,47 +29,39 @@ const configSchema = z.object({
 const brandingSchema = z.object({
   // Tema e cores
   themeTemplate: z.enum(['light', 'dark', 'custom']).optional(),
-  backgroundColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
-  textColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
-  buttonColorPrimary: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
-  buttonTextColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
+  backgroundColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
+  textColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
+  buttonColorPrimary: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
+  buttonTextColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
   heroImage: z.string().optional().nullable(),
   sectionsConfig: z.string().optional().nullable(),
   
   // Informações da empresa (Tenant)
-  name: z.string().min(2).optional(),
-  about: z.string().optional(),
-  description: z.string().optional(),
-  address: z.string().optional(),
-  district: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  phone: z.string().optional(),
-  whatsapp: z.string().optional(),
-  email: z.string().optional(),
+  name: z.string().min(2).optional().nullable(),
+  about: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  district: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  zipCode: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  whatsapp: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
   
   // Landing page fields
-  paymentMethods: z.string().optional(),
-  amenities: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
+  paymentMethods: z.string().optional().nullable(),
+  amenities: z.string().optional().nullable(),
+  latitude: z.number().optional().nullable(),
+  longitude: z.number().optional().nullable(),
   
   // Redes sociais
-  instagram: z.string().optional(),
-  facebook: z.string().optional(),
-  twitter: z.string().optional(),
+  instagram: z.string().optional().nullable(),
+  facebook: z.string().optional().nullable(),
+  twitter: z.string().optional().nullable(),
   
-  // Horários de funcionamento
-  businessHours: z.object({
-    monday: z.string().optional(),
-    tuesday: z.string().optional(),
-    wednesday: z.string().optional(),
-    thursday: z.string().optional(),
-    friday: z.string().optional(),
-    saturday: z.string().optional(),
-    sunday: z.string().optional(),
-  }).optional(),
+  // Horários de funcionamento - aceita qualquer formato
+  businessHours: z.record(z.any()).optional(),
 })
 
 export async function tenantRoutes(app: FastifyInstance) {
@@ -301,7 +293,11 @@ export async function tenantRoutes(app: FastifyInstance) {
         return reply.status(403).send({ error: 'Você não tem permissão para atualizar branding' })
       }
 
+      console.log('Request body recebido:', JSON.stringify(request.body, null, 2))
+
       const data = brandingSchema.parse(request.body)
+      
+      console.log('Dados validados:', JSON.stringify(data, null, 2))
 
       // Separar dados de Tenant dos dados de Configuration
       const {
@@ -327,12 +323,17 @@ export async function tenantRoutes(app: FastifyInstance) {
         ...configData
       } = data
 
+      // Limpar valores null do configData
+      const cleanConfigData = Object.fromEntries(
+        Object.entries(configData).filter(([, v]) => v !== null && v !== undefined)
+      )
+
       // Atualizar Configuration (cores, tema, etc)
       const config = await prisma.configuration.upsert({
         where: { tenantId },
-        update: configData,
+        update: cleanConfigData,
         create: {
-          ...configData,
+          ...cleanConfigData,
           tenantId,
         },
       })
@@ -393,18 +394,30 @@ export async function tenantRoutes(app: FastifyInstance) {
         for (const [day, hours] of Object.entries(businessHours)) {
           const dayOfWeek = daysMap[day as keyof typeof daysMap]
           if (hours) {
-            const isClosed = hours.toLowerCase() === 'fechado'
+            let isClosed = false
             let openTime = null
             let closeTime = null
             let interval = null
 
-            if (!isClosed) {
-              // Parse "08:00 - 17:00" ou "08:00 - 17:00 (Intervalo: 12:00-14:00)"
-              const match = hours.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})(?:\s*\(Intervalo:\s*([^\)]+)\))?/)
-              if (match) {
-                openTime = match[1]
-                closeTime = match[2]
-                interval = match[3] || null
+            // Se é um objeto com campos separados
+            if (typeof hours === 'object' && hours !== null) {
+              const hourObj = hours as any
+              isClosed = hourObj.isClosed ?? false
+              openTime = hourObj.openTime ?? null
+              closeTime = hourObj.closeTime ?? null
+              interval = hourObj.interval ?? null
+            } else if (typeof hours === 'string') {
+              // Se é uma string no formato antigo
+              isClosed = hours.toLowerCase() === 'fechado'
+
+              if (!isClosed) {
+                // Parse "08:00 - 17:00" ou "08:00 - 17:00 (Intervalo: 12:00-14:00)"
+                const match = hours.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})(?:\s*\(Intervalo:\s*([^\)]+)\))?/)
+                if (match) {
+                  openTime = match[1]
+                  closeTime = match[2]
+                  interval = match[3] || null
+                }
               }
             }
 
@@ -437,8 +450,10 @@ export async function tenantRoutes(app: FastifyInstance) {
       return config
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Erro de validação de branding:', error.errors)
         return reply.status(400).send({ error: 'Dados inválidos', details: error.errors })
       }
+      console.error('Erro ao atualizar branding:', error)
       throw error
     }
   })

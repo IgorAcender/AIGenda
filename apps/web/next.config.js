@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['antd', '@ant-design/icons'],
-  output: 'standalone',
   
   // Otimizações de performance
   compiler: {
@@ -22,7 +21,7 @@ const nextConfig = {
 
   // Otimizar imagens
   images: {
-    unoptimized: false,
+    unoptimized: true, // Necessário para standalone
     formats: ['image/avif', 'image/webp'],
   },
 
