@@ -1,6 +1,9 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
+import * as fs from 'fs'
+import * as path from 'path'
+import { pipeline } from 'stream/promises'
 
 const tenantUpdateSchema = z.object({
   name: z.string().min(2).optional(),
@@ -320,12 +323,13 @@ export async function tenantRoutes(app: FastifyInstance) {
         instagram,
         facebook,
         twitter,
+        heroImage, // Extrair heroImage separadamente para salvar também no Tenant.banner
         ...configData
       } = data
 
-      // Limpar valores null do configData
+      // Limpar valores null do configData e adicionar heroImage
       const cleanConfigData = Object.fromEntries(
-        Object.entries(configData).filter(([, v]) => v !== null && v !== undefined)
+        Object.entries({ ...configData, heroImage }).filter(([, v]) => v !== null && v !== undefined)
       )
 
       // Atualizar Configuration (cores, tema, etc)
@@ -354,6 +358,8 @@ export async function tenantRoutes(app: FastifyInstance) {
       if (instagram !== undefined) tenantData.instagram = instagram
       if (facebook !== undefined) tenantData.facebook = facebook
       if (twitter !== undefined) tenantData.twitter = twitter
+      // Salvar heroImage também como banner no Tenant para uso na landing page pública
+      if (heroImage !== undefined) tenantData.banner = heroImage
       // Converter para JSON se for string com quebras de linha
       if (paymentMethods !== undefined) {
         tenantData.paymentMethods = Array.isArray(paymentMethods) 
@@ -455,6 +461,51 @@ export async function tenantRoutes(app: FastifyInstance) {
       }
       console.error('Erro ao atualizar branding:', error)
       throw error
+    }
+  })
+
+  // Upload de imagem
+  app.post('/upload', async (request: any, reply) => {
+    const { tenantId } = request.user
+
+    try {
+      const data = await request.file()
+      
+      if (!data) {
+        return reply.status(400).send({ error: 'Nenhum arquivo enviado' })
+      }
+
+      // Validar tipo de arquivo
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+      if (!allowedMimeTypes.includes(data.mimetype)) {
+        return reply.status(400).send({ error: 'Tipo de arquivo não permitido. Use: JPG, PNG, GIF ou WebP' })
+      }
+
+      // Criar diretório de uploads se não existir
+      const uploadsDir = path.join(process.cwd(), 'uploads', tenantId)
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true })
+      }
+
+      // Gerar nome único para o arquivo
+      const ext = path.extname(data.filename) || '.jpg'
+      const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(7)}${ext}`
+      const filePath = path.join(uploadsDir, uniqueName)
+
+      // Salvar arquivo
+      await pipeline(data.file, fs.createWriteStream(filePath))
+
+      // URL pública do arquivo
+      const fileUrl = `/uploads/${tenantId}/${uniqueName}`
+
+      return { 
+        url: fileUrl,
+        filename: uniqueName,
+        message: 'Upload realizado com sucesso' 
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error)
+      return reply.status(500).send({ error: 'Erro ao fazer upload do arquivo' })
     }
   })
 }

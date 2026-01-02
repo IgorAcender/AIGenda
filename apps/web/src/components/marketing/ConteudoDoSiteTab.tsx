@@ -29,14 +29,19 @@ export default function ConteudoDoSiteTab() {
 
   const loadLandingPageContent = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/tenants/${tenant?.id}/landing-content`)
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:3001/api/tenants/branding`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
       if (response.ok) {
-        const data: LandingPageContent = await response.json()
+        const data = await response.json()
         form.setFieldsValue({
-          aboutUs: data.aboutUs || '',
+          aboutUs: data.description || data.about || '',
         })
-        if (data.banner) {
-          setPreviewImage(data.banner)
+        if (data.heroImage) {
+          setPreviewImage(data.heroImage)
         }
       }
     } catch (error) {
@@ -46,16 +51,32 @@ export default function ConteudoDoSiteTab() {
     }
   }
 
-  const handleUpload = ({ file }: any) => {
-    if (file.status === 'done') {
-      const response = file.response
-      if (response?.url) {
-        setPreviewImage(response.url)
-        message.success('Foto carregada com sucesso!')
-      }
-    } else if (file.status === 'error') {
-      message.error('Erro ao fazer upload da foto')
+  const beforeUpload = async (file: File) => {
+    // Validar tamanho (max 2MB para não sobrecarregar o banco)
+    const isLt2M = file.size / 1024 / 1024 < 2
+    if (!isLt2M) {
+      message.error('A imagem deve ter no máximo 2MB!')
+      return false
     }
+
+    // Validar tipo
+    const isImage = file.type.startsWith('image/')
+    if (!isImage) {
+      message.error('Apenas imagens são permitidas!')
+      return false
+    }
+
+    // Converter para Base64 e salvar no estado
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string
+      setPreviewImage(base64)
+      message.success('Imagem carregada! Clique em Salvar para confirmar.')
+    }
+    reader.readAsDataURL(file)
+    
+    // Retorna false para não fazer upload automático (vamos salvar via API de branding)
+    return false
   }
 
   const handleSave = async (values: any) => {
@@ -66,15 +87,17 @@ export default function ConteudoDoSiteTab() {
 
     setLoading(true)
     try {
+      const token = localStorage.getItem('token')
       const payload = {
-        aboutUs: values.aboutUs,
-        banner: previewImage,
+        description: values.aboutUs,
+        heroImage: previewImage,
       }
 
-      const response = await fetch(`http://localhost:3001/api/tenants/${tenant.id}/landing-content`, {
+      const response = await fetch(`http://localhost:3001/api/tenants/branding`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       })
@@ -95,15 +118,6 @@ export default function ConteudoDoSiteTab() {
 
   if (fetching) {
     return <Spin />
-  }
-
-  // Dados para o preview em tempo real
-  const previewData = {
-    businessName: tenant?.name || 'Seu Negócio',
-    primaryColor: tenant?.configuration?.primaryColor || '#4CAF50',
-    secondaryColor: tenant?.configuration?.secondaryColor || '#2196F3',
-    heroImage: previewImage || '',
-    aboutUs: form.getFieldValue('aboutUs') || 'Sua descrição aparecerá aqui...',
   }
 
   return (
@@ -127,11 +141,12 @@ export default function ConteudoDoSiteTab() {
                 Foto da Landing Page
               </label>
               <Upload
-                action="http://localhost:3001/api/tenants/upload"
+                beforeUpload={beforeUpload}
                 onChange={handleUpload}
                 maxCount={1}
                 accept="image/*"
                 listType="picture"
+                showUploadList={true}
               >
                 <Button style={{ width: '100%' }}>Selecionar Foto</Button>
               </Upload>
@@ -195,11 +210,9 @@ export default function ConteudoDoSiteTab() {
             📱 Preview em Tempo Real
           </h3>
           <PhonePreview
-            businessName={previewData.businessName}
-            primaryColor={previewData.primaryColor}
-            secondaryColor={previewData.secondaryColor}
-            heroImage={previewData.heroImage}
-            aboutUs={previewData.aboutUs}
+            tenantName={tenant?.name}
+            description={form.getFieldValue('aboutUs')}
+            banner={previewImage}
           />
         </div>
       </Col>

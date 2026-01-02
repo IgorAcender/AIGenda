@@ -32,8 +32,13 @@ FROM base AS builder
 # Copy everything from deps
 COPY --from=deps /app ./
 
-# Copy source code
+# Copy source code and config
 COPY apps/api/src ./apps/api/src
+COPY apps/api/tsconfig.json ./apps/api/tsconfig.json
+COPY apps/api/tsconfig.build.json ./apps/api/tsconfig.build.json
+
+# Build TypeScript (usando tsconfig de produção)
+RUN cd apps/api && npx tsc -p tsconfig.build.json
 
 # Production stage
 FROM base AS runner

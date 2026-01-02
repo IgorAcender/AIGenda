@@ -2,6 +2,9 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import rateLimit from '@fastify/rate-limit'
+import multipart from '@fastify/multipart'
+import * as fs from 'fs'
+import * as path from 'path'
 import { authRoutes } from './routes/auth'
 import { clientRoutes } from './routes/clients'
 import { professionalRoutes } from './routes/professionals'
@@ -16,6 +19,7 @@ import { isRedisAvailable } from './lib/redis'
 
 const app = Fastify({
   logger: true,
+  bodyLimit: 5 * 1024 * 1024, // 5MB para suportar imagens em Base64
 })
 
 // Plugins - CORS configurado para aceitar requisições de qualquer origem em dev
@@ -24,6 +28,13 @@ app.register(cors, {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+})
+
+// Multipart para upload de arquivos
+app.register(multipart, {
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
 })
 
 app.register(jwt, {
@@ -66,6 +77,32 @@ app.get('/health', async () => {
     timestamp: new Date().toISOString(),
     redis: isRedisAvailable() ? 'connected' : 'disconnected'
   }
+})
+
+// Servir arquivos de upload
+app.get('/uploads/:tenantId/:filename', async (request: any, reply) => {
+  const { tenantId, filename } = request.params
+  const filePath = path.join(process.cwd(), 'uploads', tenantId, filename)
+  
+  if (!fs.existsSync(filePath)) {
+    return reply.status(404).send({ error: 'Arquivo não encontrado' })
+  }
+
+  // Determinar content-type
+  const ext = path.extname(filename).toLowerCase()
+  const contentTypes: Record<string, string> = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+  }
+  
+  const contentType = contentTypes[ext] || 'application/octet-stream'
+  reply.header('Content-Type', contentType)
+  
+  const stream = fs.createReadStream(filePath)
+  return reply.send(stream)
 })
 
 // Routes

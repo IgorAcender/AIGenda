@@ -3,6 +3,7 @@
 import React from 'react'
 import { Spin } from 'antd'
 import { useAuthStore } from '@/stores/auth'
+import LandingPageContent from './LandingPageContent'
 import './PhonePreview.css'
 
 interface PhonePreviewProps {
@@ -26,18 +27,42 @@ interface PhonePreviewProps {
   phone?: string
   email?: string
   loading?: boolean
+  services?: Array<{
+    id: string
+    name: string
+    description?: string
+    price: number
+    duration: number
+  }>
+  professionals?: Array<{
+    id: string
+    name: string
+    avatar?: string
+  }>
 }
 
 export default function PhonePreview({
   loading = false,
+  tenantName,
+  description,
+  banner,
+  phone,
+  email,
+  services = [],
+  professionals = [],
 }: PhonePreviewProps) {
   const { tenant } = useAuthStore()
   const tenantSlug = tenant?.slug
 
-  // Construir URL da landing page
-  const landingPageUrl = tenantSlug 
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${tenantSlug}`
-    : null
+  // Usar dados passados por props ou do tenant
+  const displayTenant = {
+    name: tenantName || tenant?.name || 'Seu Negócio',
+    description: description || 'Sua descrição aparecerá aqui...',
+    banner: banner || tenant?.banner,
+    phone: phone || tenant?.phone,
+    email: email || tenant?.email,
+    slug: tenantSlug || '',
+  }
 
   return (
     <div className="phone-preview-container">
@@ -48,17 +73,14 @@ export default function PhonePreview({
             <div className="preview-loading">
               <Spin />
             </div>
-          ) : landingPageUrl ? (
-            <iframe
-              src={landingPageUrl}
-              className="phone-iframe"
-              title="Landing Page Preview"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
           ) : (
-            <div className="preview-no-tenant">
-              <p>Nenhum tenant configurado</p>
-            </div>
+            <LandingPageContent
+              tenant={displayTenant}
+              services={services}
+              professionals={professionals}
+              tenantSlug={tenantSlug || ''}
+              isPreview={true}
+            />
           )}
         </div>
         <div className="phone-button" />

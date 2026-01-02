@@ -78,7 +78,9 @@ services:
     restart: unless-stopped
     command: sh -c "cd /app/apps/web && pnpm run dev"
     environment:
-      # Deixar vazio para usar a mesma origem automaticamente
+      # Para SSR: comunicação interna entre containers (server-side)
+      API_URL_INTERNAL: http://api:3001
+      # Para client-side: deixar vazio para usar a mesma origem automaticamente
       NEXT_PUBLIC_API_URL:
       NODE_ENV: development
     ports:
