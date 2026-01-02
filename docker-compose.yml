@@ -58,6 +58,10 @@ services:
       JWT_EXPIRES_IN: 7d
     ports:
       - "3001:3001"
+    volumes:
+      # Montar código fonte para hot reload em desenvolvimento
+      - ./apps/api/src:/app/apps/api/src
+      - ./apps/api/prisma:/app/apps/api/prisma
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,13 +73,22 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      target: deps  # Usar apenas a camada de dependências
     container_name: agende-ai-web
     restart: unless-stopped
+    command: sh -c "cd /app/apps/web && pnpm run dev"
     environment:
       # Deixar vazio para usar a mesma origem automaticamente
-      NEXT_PUBLIC_API_URL: 
+      NEXT_PUBLIC_API_URL:
+      NODE_ENV: development
     ports:
       - "3000:3000"
+    volumes:
+      # Montar código fonte para hot reload em desenvolvimento
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/public:/app/apps/web/public
+      - ./apps/web/next.config.js:/app/apps/web/next.config.js
+      - ./apps/web/tsconfig.json:/app/apps/web/tsconfig.json
     depends_on:
       - api
 

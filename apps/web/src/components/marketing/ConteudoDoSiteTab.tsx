@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Form, Input, Button, Upload, message, Row, Col, Image, Space, Spin } from 'antd'
 import { useAuthStore } from '@/stores/auth'
+import PhonePreview from './PhonePreview'
 import type { UploadFile } from 'antd'
 
 const { TextArea } = Input
@@ -96,19 +97,35 @@ export default function ConteudoDoSiteTab() {
     return <Spin />
   }
 
+  // Dados para o preview em tempo real
+  const previewData = {
+    businessName: tenant?.name || 'Seu Negócio',
+    primaryColor: tenant?.configuration?.primaryColor || '#4CAF50',
+    secondaryColor: tenant?.configuration?.secondaryColor || '#2196F3',
+    heroImage: previewImage || '',
+    aboutUs: form.getFieldValue('aboutUs') || 'Sua descrição aparecerá aqui...',
+  }
+
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSave}
-      autoComplete="off"
-    >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* Foto da Landing Page */}
-        <div>
-          <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto da Landing Page</label>
-          <Row gutter={24}>
-            <Col xs={24} lg={12}>
+    <Row gutter={[32, 32]}>
+      {/* Coluna Esquerda - Formulário */}
+      <Col xs={24} lg={14}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          autoComplete="off"
+          onValuesChange={() => {
+            // Força re-render para atualizar preview
+            setPreviewImage(previewImage)
+          }}
+        >
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            {/* Foto da Landing Page */}
+            <div>
+              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+                Foto da Landing Page
+              </label>
               <Upload
                 action="http://localhost:3001/api/tenants/upload"
                 onChange={handleUpload}
@@ -121,70 +138,71 @@ export default function ConteudoDoSiteTab() {
               <p style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
                 Recomendado: 1920x1080px (16:9) | Máximo: 5MB
               </p>
-            </Col>
-
-            <Col xs={24} lg={12}>
-              {previewImage ? (
+              
+              {previewImage && (
                 <Image
                   src={previewImage}
                   alt="Prévia"
                   style={{
                     width: '100%',
-                    maxHeight: 300,
+                    maxHeight: 200,
                     objectFit: 'cover',
                     borderRadius: 4,
+                    marginTop: 12,
                   }}
                 />
-              ) : (
-                <div
-                  style={{
-                    width: '100%',
-                    height: 200,
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: 4,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999',
-                  }}
-                >
-                  Nenhuma foto selecionada
-                </div>
               )}
-            </Col>
-          </Row>
-        </div>
+            </div>
 
-        {/* Sobre Nós */}
-        <div>
-          <Form.Item
-            name="aboutUs"
-            label="Sobre Nós"
-            rules={[
-              { max: 500, message: 'Máximo 500 caracteres' },
-            ]}
-          >
-            <TextArea
-              placeholder="Conte a história do seu negócio..."
-              rows={5}
-              showCount
-              maxLength={500}
-            />
-          </Form.Item>
-        </div>
+            {/* Sobre Nós */}
+            <div>
+              <Form.Item
+                name="aboutUs"
+                label="Sobre Nós"
+                rules={[
+                  { max: 500, message: 'Máximo 500 caracteres' },
+                ]}
+              >
+                <TextArea
+                  placeholder="Conte a história do seu negócio..."
+                  rows={6}
+                  showCount
+                  maxLength={500}
+                />
+              </Form.Item>
+            </div>
 
-        {/* Botão Salvar */}
-        <Row justify="end">
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            style={{ minWidth: 120 }}
-          >
-            Salvar
-          </Button>
-        </Row>
-      </Space>
-    </Form>
+            {/* Botão Salvar */}
+            <Row justify="end">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                size="large"
+                style={{ minWidth: 120 }}
+              >
+                Salvar
+              </Button>
+            </Row>
+          </Space>
+        </Form>
+      </Col>
+
+      {/* Coluna Direita - Preview do Celular */}
+      <Col xs={24} lg={10}>
+        <div style={{ position: 'sticky', top: 24 }}>
+          <h3 style={{ marginBottom: 16, textAlign: 'center' }}>
+            📱 Preview em Tempo Real
+          </h3>
+          <PhonePreview
+            businessName={previewData.businessName}
+            primaryColor={previewData.primaryColor}
+            secondaryColor={previewData.secondaryColor}
+            heroImage={previewData.heroImage}
+            aboutUs={previewData.aboutUs}
+          />
+        </div>
+      </Col>
+    </Row>
   )
 }

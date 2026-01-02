@@ -1,37 +1,13 @@
 'use client'
 
 import React from 'react'
-import { Card, Typography, Tabs } from 'antd'
-import { BgColorsOutlined, GlobalOutlined, FileTextOutlined } from '@ant-design/icons'
-import CoresMarcaTab from '@/components/marketing/CoresMarcaTab'
+import { Card, Typography } from 'antd'
+import { GlobalOutlined, FileTextOutlined } from '@ant-design/icons'
 import ConteudoDoSiteTab from '@/components/marketing/ConteudoDoSiteTab'
 
 const { Title, Paragraph } = Typography
 
 export default function AgendamentoOnlinePage() {
-  const tabs = [
-    {
-      key: 'cores',
-      label: (
-        <>
-          <BgColorsOutlined />
-          Cores e Marca
-        </>
-      ),
-      children: <CoresMarcaTab />,
-    },
-    {
-      key: 'conteudo',
-      label: (
-        <>
-          <FileTextOutlined />
-          Conteúdo do Site
-        </>
-      ),
-      children: <ConteudoDoSiteTab />,
-    },
-  ]
-
   return (
     <div>
       <Title level={2}>
@@ -39,11 +15,11 @@ export default function AgendamentoOnlinePage() {
         Agendamento Online
       </Title>
       <Paragraph type="secondary">
-        Personalize a aparência da sua página de agendamento online.
+        Personalize o conteúdo da sua página de agendamento online.
       </Paragraph>
 
       <Card style={{ marginTop: 24 }}>
-        <Tabs items={tabs} />
+        <ConteudoDoSiteTab />
       </Card>
     </div>
   )
