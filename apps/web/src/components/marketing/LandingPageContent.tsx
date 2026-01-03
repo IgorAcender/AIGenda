@@ -79,9 +79,9 @@ export default function LandingPageContent({
           {tenant.name}
         </h1>
         <button style={{
-          background: 'rgba(9, 145, 59, 0.1)',
-          border: '1px solid rgba(9, 145, 59, 0.2)',
-          color: '#09913b',
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          color: '#fff',
           cursor: 'pointer',
           padding: '10px',
           borderRadius: '8px',
@@ -124,15 +124,19 @@ export default function LandingPageContent({
           <div style={{
             width: '100%',
             padding: isPreview ? '40px 0' : '56px 0',
-            textAlign: 'center'
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)'
           }}>
-            <span style={{ fontSize: '48px' }}>💈</span>
           </div>
         )}
       </div>
 
-      {/* CTA Button */}
-      <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+      {/* Premium CTA Section */}
+      <div style={{ 
+        padding: '24px 16px 20px 16px',
+        background: 'linear-gradient(135deg, rgba(9, 145, 59, 0.05) 0%, rgba(9, 145, 59, 0) 100%)',
+        borderBottom: '1px solid rgba(9, 145, 59, 0.1)'
+      }}>
         <Link href={`/agendar/${tenantSlug}`} style={{
           display: 'flex',
           alignItems: 'center',
@@ -141,16 +145,17 @@ export default function LandingPageContent({
           backgroundColor: '#09913b',
           color: '#fff',
           textAlign: 'center',
-          padding: '14px 24px',
-          borderRadius: '8px',
+          padding: '16px 32px',
+          borderRadius: '10px',
           textDecoration: 'none',
-          fontWeight: '600',
+          fontWeight: '700',
           fontSize: '16px',
           marginBottom: '12px',
           border: 'none',
           cursor: 'pointer',
           transition: 'all 0.3s ease',
-          boxShadow: '0 4px 12px rgba(9, 145, 59, 0.3)'
+          boxShadow: '0 8px 24px rgba(9, 145, 59, 0.3)',
+          letterSpacing: '0.3px'
         }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -159,66 +164,70 @@ export default function LandingPageContent({
           </svg>
           Agendar Agora
         </Link>
+
+        {/* Secondary Button */}
+        <div style={{ paddingTop: '8px', textAlign: 'center' }}>
+          <Link href={`/${tenantSlug}/meus-agendamentos`} style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            backgroundColor: 'transparent',
+            color: '#09913b',
+            border: '1.5px solid rgba(9, 145, 59, 0.4)',
+            textAlign: 'center',
+            padding: '10px 18px',
+            borderRadius: '10px',
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontSize: '14px',
+            transition: 'all 0.3s ease',
+            letterSpacing: '0.2px'
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Meus Agendamentos
+          </Link>
+        </div>
       </div>
 
-      {/* Secondary Button */}
-      <div style={{ padding: '0 16px', marginBottom: '20px', textAlign: 'center' }}>
-        <Link href={`/${tenantSlug}/meus-agendamentos`} style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          backgroundColor: 'transparent',
-          color: '#09913b',
-          border: '1.5px solid #09913b',
-          textAlign: 'center',
-          padding: '8px 16px',
-          borderRadius: '8px',
-          textDecoration: 'none',
-          fontWeight: '600',
-          fontSize: '14px',
-          transition: 'all 0.3s ease'
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          Meus Agendamentos
-        </Link>
-      </div>
-
-      {/* Main Content */}
-      <div style={{ padding: '0 16px', paddingBottom: '40px', flex: 1 }}>
+      {/* Main Content - Premium */}
+      <div style={{ padding: '24px 16px 40px 16px', flex: 1 }}>
         {/* Sobre Nós */}
         <div style={{
-          backgroundColor: '#1a1a1a',
-          padding: '16px',
-          borderRadius: '8px',
-          marginBottom: '16px',
-          borderLeft: '4px solid #09913b'
+          background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+          padding: '20px',
+          borderRadius: '12px',
+          marginBottom: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease'
         }}>
           <h2 style={{
-            fontSize: '16px',
+            fontSize: '18px',
             marginTop: 0,
-            marginBottom: '12px',
-            fontWeight: '600',
-            letterSpacing: '0.5px',
+            marginBottom: '14px',
+            fontWeight: '700',
+            letterSpacing: '-0.2px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '12px'
           }}>
             <span style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
-              height: '32px',
-              backgroundColor: '#09913b',
-              borderRadius: '6px'
+              width: '40px',
+              height: '40px',
+              background: '#2a2a2a',
+              borderRadius: '10px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -227,10 +236,11 @@ export default function LandingPageContent({
             Sobre Nós
           </h2>
           <p style={{
-            fontSize: '14px',
-            color: '#aaa',
-            lineHeight: '1.6',
-            margin: 0
+            fontSize: '15px',
+            color: '#ccc',
+            lineHeight: '1.7',
+            margin: 0,
+            fontWeight: '400'
           }}>
             {tenant.description || `Bem-vindo ao ${tenant.name}!`}
           </p>
@@ -239,51 +249,54 @@ export default function LandingPageContent({
         {/* Serviços */}
         {services && services.length > 0 && (
           <div style={{
-            backgroundColor: '#1a1a1a',
-            padding: '16px',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            borderLeft: '4px solid #09913b'
+            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
           }}>
             <h2 style={{
-              fontSize: '16px',
+              fontSize: '18px',
               marginTop: 0,
-              marginBottom: '12px',
-              fontWeight: '600',
-              letterSpacing: '0.5px',
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '12px'
             }}>
               <span style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '32px',
-                height: '32px',
-                backgroundColor: '#09913b',
-                borderRadius: '6px'
+                width: '40px',
+                height: '40px',
+                background: '#2a2a2a',
+                borderRadius: '10px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
               </span>
               Nossos Serviços
             </h2>
-            <div style={{ fontSize: '14px', color: '#aaa' }}>
+            <div style={{ fontSize: '15px', color: '#ccc' }}>
               {services.map((service, idx) => (
                 <div 
                   key={service.id} 
                   style={{
-                    padding: '10px 0',
-                    borderBottom: idx < services.length - 1 ? '1px solid #333' : 'none'
+                    padding: '12px 0',
+                    borderBottom: idx < services.length - 1 ? '1px solid rgba(9, 145, 59, 0.1)' : 'none'
                   }}
                 >
-                  <div style={{ fontWeight: '500', color: '#fff' }}>
+                  <div style={{ fontWeight: '600', color: '#fff', fontSize: '15px' }}>
                     {service.name}
                   </div>
-                  <div style={{ fontSize: '12px', marginTop: '4px', color: '#888' }}>
+                  <div style={{ fontSize: '13px', marginTop: '4px', color: '#999' }}>
                     R$ {service.price.toFixed(2)} • {service.duration} min
                   </div>
                 </div>
@@ -295,32 +308,35 @@ export default function LandingPageContent({
         {/* Equipe */}
         {professionals && professionals.length > 0 && (
           <div style={{
-            backgroundColor: '#1a1a1a',
-            padding: '16px',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            borderLeft: '4px solid #09913b'
+            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
           }}>
             <h2 style={{
-              fontSize: '16px',
+              fontSize: '18px',
               marginTop: 0,
-              marginBottom: '12px',
-              fontWeight: '600',
-              letterSpacing: '0.5px',
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px',
               display: 'flex',
               alignItems: 'center',
-              gap: '10px'
+              gap: '12px'
             }}>
               <span style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '32px',
-                height: '32px',
-                backgroundColor: '#09913b',
-                borderRadius: '6px'
+                width: '40px',
+                height: '40px',
+                background: '#2a2a2a',
+                borderRadius: '10px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -331,8 +347,8 @@ export default function LandingPageContent({
             </h2>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
-              gap: '12px'
+              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+              gap: '14px'
             }}>
               {professionals.map((prof) => (
                 <div 
@@ -340,18 +356,19 @@ export default function LandingPageContent({
                   style={{ textAlign: 'center' }}
                 >
                   <div style={{
-                    width: '70px',
-                    height: '70px',
-                    borderRadius: '50%',
-                    backgroundColor: '#09913b',
-                    margin: '0 auto 8px',
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '12px',
+                    background: '#2a2a2a',
+                    margin: '0 auto 10px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     overflow: 'hidden',
                     fontSize: '28px',
                     fontWeight: 'bold',
-                    border: '2px solid #1a1a1a'
+                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
                   }}>
                     {prof.avatar ? (
                       <img src={prof.avatar} alt={prof.name} style={{
@@ -366,10 +383,11 @@ export default function LandingPageContent({
                     )}
                   </div>
                   <p style={{
-                    fontSize: '12px',
+                    fontSize: '13px',
                     margin: 0,
-                    color: '#aaa',
-                    fontWeight: '500'
+                    color: '#ccc',
+                    fontWeight: '600',
+                    lineHeight: '1.4'
                   }}>
                     {prof.name}
                   </p>
@@ -381,38 +399,41 @@ export default function LandingPageContent({
 
         {/* Contato */}
         <div style={{
-          backgroundColor: '#1a1a1a',
-          padding: '16px',
-          borderRadius: '8px',
+          background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+          padding: '20px',
+          borderRadius: '12px',
           marginBottom: '16px',
-          borderLeft: '4px solid #09913b'
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease'
         }}>
           <h2 style={{
-            fontSize: '16px',
+            fontSize: '18px',
             marginTop: 0,
-            marginBottom: '12px',
-            fontWeight: '600',
-            letterSpacing: '0.5px',
+            marginBottom: '14px',
+            fontWeight: '700',
+            letterSpacing: '-0.2px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '12px'
           }}>
             <span style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: '32px',
-              height: '32px',
-              backgroundColor: '#09913b',
-              borderRadius: '6px'
+              width: '40px',
+              height: '40px',
+              background: '#2a2a2a',
+              borderRadius: '10px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
             </span>
             Contato
           </h2>
-          <div style={{ fontSize: '14px', color: '#aaa' }}>
+          <div style={{ fontSize: '15px', color: '#ccc' }}>
             {tenant.phone && (
               <div style={{ marginBottom: '12px' }}>
                 <a 
@@ -420,16 +441,17 @@ export default function LandingPageContent({
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    color: '#09913b',
+                    color: '#ccc',
                     textDecoration: 'none',
-                    fontWeight: '500',
+                    fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '10px',
+                    transition: 'all 0.3s ease'
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.707 12.293l-5-5a1 1 0 00-1.414 1.414L15.586 11H6a1 1 0 000 2h9.586l-4.293 4.293a1 1 0 101.414 1.414l5-5a1 1 0 000-1.414z"></path>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                   </svg>
                   {tenant.phone}
                 </a>
@@ -440,15 +462,16 @@ export default function LandingPageContent({
                 <a 
                   href={`mailto:${tenant.email}`}
                   style={{
-                    color: '#09913b',
+                    color: '#ccc',
                     textDecoration: 'none',
-                    fontWeight: '500',
+                    fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '10px',
+                    transition: 'all 0.3s ease'
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                     <path d="m22 7-10 5L2 7"></path>
                   </svg>
