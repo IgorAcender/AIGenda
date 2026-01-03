@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 interface Service {
   id: string
@@ -25,6 +26,14 @@ interface Tenant {
   slug?: string
 }
 
+interface LandingBlock {
+  id: string
+  name: string
+  label: string
+  enabled: boolean
+  order: number
+}
+
 interface LandingPageContentProps {
   tenant: Tenant
   services?: Service[]
@@ -40,6 +49,234 @@ export default function LandingPageContent({
   tenantSlug = '',
   isPreview = false
 }: LandingPageContentProps) {
+  const [blocks, setBlocks] = useState<LandingBlock[]>([
+    { id: 'sobre-nos', name: 'Sobre Nós', label: 'Sobre Nós', enabled: true, order: 1 },
+    { id: 'equipe', name: 'Profissionais', label: 'Profissionais', enabled: true, order: 2 },
+    { id: 'contato', name: 'Horário', label: 'Horário de Funcionamento', enabled: true, order: 3 },
+  ])
+
+  useEffect(() => {
+    // Carregar configurações de blocos
+    if (!isPreview) {
+      console.log('🔄 LandingPageContent: Carregando blocos da API (isPreview=false)')
+      loadBlocks()
+    } else {
+      console.log('⏭️ LandingPageContent: Preview mode ativado, usando blocos padrão')
+    }
+  }, [isPreview])
+
+  const loadBlocks = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      console.log('🔐 Token disponível:', !!token)
+      
+      const response = await fetch(`http://localhost:3001/api/tenants/landing-blocks`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      
+      console.log('📡 Resposta do GET /landing-blocks:', response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ Blocos carregados da API:', data.blocks)
+        if (data.blocks && Array.isArray(data.blocks)) {
+          console.log('📦 Atualizando estado com blocos:', data.blocks)
+          setBlocks(data.blocks)
+        }
+      } else {
+        console.error('❌ Erro ao carregar blocos:', response.status)
+        const error = await response.json()
+        console.error('Detalhes:', error)
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar blocos:', error)
+    }
+  }
+
+  const getSortedBlocks = () => {
+    return [...blocks].sort((a, b) => a.order - b.order)
+  }
+
+  const isBlockEnabled = (blockId: string) => {
+    return blocks.find(b => b.id === blockId)?.enabled ?? true
+  }
+
+  const renderBlock = (blockId: string) => {
+    switch (blockId) {
+      case 'sobre-nos':
+        if (!isBlockEnabled('sobre-nos')) return null
+        return (
+          <div key="sobre-nos" style={{
+            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
+          }}>
+            <h2 style={{
+              fontSize: '18px',
+              marginTop: 0,
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px'
+            }}>
+              Sobre Nós
+            </h2>
+            <p style={{
+              fontSize: '15px',
+              color: '#ccc',
+              lineHeight: '1.7',
+              margin: 0,
+              fontWeight: '400'
+            }}>
+              {tenant.description || `Bem-vindo ao ${tenant.name}!`}
+            </p>
+          </div>
+        )
+
+      case 'equipe':
+        if (!isBlockEnabled('equipe') || !professionals || professionals.length === 0) return null
+        return (
+          <div key="equipe" style={{
+            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
+          }}>
+            <h2 style={{
+              fontSize: '18px',
+              marginTop: 0,
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px'
+            }}>
+              Nossa Equipe
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+              gap: '14px'
+            }}>
+              {professionals.map((prof) => (
+                <div 
+                  key={prof.id} 
+                  style={{ textAlign: 'center' }}
+                >
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '12px',
+                    background: '#2a2a2a',
+                    margin: '0 auto 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    fontSize: '28px',
+                    fontWeight: 'bold',
+                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
+                  }}>
+                    {prof.avatar ? (
+                      <img src={prof.avatar} alt={prof.name} style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }} />
+                    ) : (
+                      <span style={{ color: '#fff' }}>
+                        {prof.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{
+                    fontSize: '13px',
+                    margin: 0,
+                    color: '#ccc',
+                    fontWeight: '600',
+                    lineHeight: '1.4'
+                  }}>
+                    {prof.name}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 'contato':
+        if (!isBlockEnabled('contato')) return null
+        return (
+          <div key="contato" style={{
+            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
+          }}>
+            <h2 style={{
+              fontSize: '18px',
+              marginTop: 0,
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px'
+            }}>
+              Contato
+            </h2>
+            <div style={{ fontSize: '15px', color: '#ccc' }}>
+              {tenant.phone && (
+                <div style={{ marginBottom: '12px' }}>
+                  <a 
+                    href={`https://wa.me/${tenant.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#ccc',
+                      textDecoration: 'none',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    📱 {tenant.phone}
+                  </a>
+                </div>
+              )}
+              {tenant.email && (
+                <div>
+                  <a 
+                    href={`mailto:${tenant.email}`}
+                    style={{
+                      color: '#ccc',
+                      textDecoration: 'none',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                  >
+                    ✉️ {tenant.email}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
   return (
     <div style={{
       backgroundColor: '#000',
@@ -197,54 +434,13 @@ export default function LandingPageContent({
 
       {/* Main Content - Premium */}
       <div style={{ padding: '24px 16px 40px 16px', flex: 1 }}>
-        {/* Sobre Nós */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
-          padding: '20px',
-          borderRadius: '12px',
-          marginBottom: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          transition: 'all 0.3s ease'
-        }}>
-          <h2 style={{
-            fontSize: '18px',
-            marginTop: 0,
-            marginBottom: '14px',
-            fontWeight: '700',
-            letterSpacing: '-0.2px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <span style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              background: '#2a2a2a',
-              borderRadius: '10px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-            </span>
-            Sobre Nós
-          </h2>
-          <p style={{
-            fontSize: '15px',
-            color: '#ccc',
-            lineHeight: '1.7',
-            margin: 0,
-            fontWeight: '400'
-          }}>
-            {tenant.description || `Bem-vindo ao ${tenant.name}!`}
-          </p>
-        </div>
+        {/* Renderizar blocos em ordem */}
+        {(() => {
+          const sortedBlocks = getSortedBlocks()
+          console.log('🎨 Renderizando blocos. Total carregados:', blocks.length)
+          console.log('📊 Ordem dos blocos:', sortedBlocks.map(b => ({ id: b.id, enabled: b.enabled, order: b.order })))
+          return sortedBlocks.map((block) => renderBlock(block.id))
+        })()}
 
         {/* Serviços */}
         {services && services.length > 0 && (
@@ -304,183 +500,6 @@ export default function LandingPageContent({
             </div>
           </div>
         )}
-
-        {/* Equipe */}
-        {professionals && professionals.length > 0 && (
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
-            padding: '20px',
-            borderRadius: '12px',
-            marginBottom: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease'
-          }}>
-            <h2 style={{
-              fontSize: '18px',
-              marginTop: 0,
-              marginBottom: '14px',
-              fontWeight: '700',
-              letterSpacing: '-0.2px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
-              <span style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                background: '#2a2a2a',
-                borderRadius: '10px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </span>
-              Nossa Equipe
-            </h2>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-              gap: '14px'
-            }}>
-              {professionals.map((prof) => (
-                <div 
-                  key={prof.id} 
-                  style={{ textAlign: 'center' }}
-                >
-                  <div style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '12px',
-                    background: '#2a2a2a',
-                    margin: '0 auto 10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    fontSize: '28px',
-                    fontWeight: 'bold',
-                    border: '2px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
-                  }}>
-                    {prof.avatar ? (
-                      <img src={prof.avatar} alt={prof.name} style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }} />
-                    ) : (
-                      <span style={{ color: '#fff' }}>
-                        {prof.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <p style={{
-                    fontSize: '13px',
-                    margin: 0,
-                    color: '#ccc',
-                    fontWeight: '600',
-                    lineHeight: '1.4'
-                  }}>
-                    {prof.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Contato */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
-          padding: '20px',
-          borderRadius: '12px',
-          marginBottom: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          transition: 'all 0.3s ease'
-        }}>
-          <h2 style={{
-            fontSize: '18px',
-            marginTop: 0,
-            marginBottom: '14px',
-            fontWeight: '700',
-            letterSpacing: '-0.2px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <span style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              background: '#2a2a2a',
-              borderRadius: '10px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-              </svg>
-            </span>
-            Contato
-          </h2>
-          <div style={{ fontSize: '15px', color: '#ccc' }}>
-            {tenant.phone && (
-              <div style={{ marginBottom: '12px' }}>
-                <a 
-                  href={`https://wa.me/${tenant.phone.replace(/\D/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#ccc',
-                    textDecoration: 'none',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                  </svg>
-                  {tenant.phone}
-                </a>
-              </div>
-            )}
-            {tenant.email && (
-              <div>
-                <a 
-                  href={`mailto:${tenant.email}`}
-                  style={{
-                    color: '#ccc',
-                    textDecoration: 'none',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                    <path d="m22 7-10 5L2 7"></path>
-                  </svg>
-                  {tenant.email}
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   )

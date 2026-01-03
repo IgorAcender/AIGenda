@@ -44,6 +44,9 @@ model Tenant {
   // Comodidades (JSON array)
   amenities       String? // JSON: ["WiFi", "Estacionamento", ...]
   
+  // Configuração de blocos da landing page (JSON array)
+  landingBlocks   String? // JSON: [{id, name, label, enabled, order}, ...]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

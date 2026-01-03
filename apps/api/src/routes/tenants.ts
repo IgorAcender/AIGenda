@@ -68,6 +68,71 @@ const brandingSchema = z.object({
 })
 
 export async function tenantRoutes(app: FastifyInstance) {
+  // NÃO adicionar hook global - verificar autenticação por rota
+
+  // ========== LANDING PAGE BLOCKS ==========
+
+  // Obter configuração de blocos da landing page (PUBLICO - sem autenticação)
+  // Pode usar /landing-blocks/:tenantSlug ou /landing-blocks (se tiver no contexto)
+  app.get('/landing-blocks/:tenantSlug?', async (request: any, reply: any) => {
+    try {
+      const { tenantSlug } = request.params
+      const token = request.headers.authorization?.split(' ')[1]
+
+      let tenant: any
+
+      if (tenantSlug) {
+        // Buscar por slug (público)
+        tenant = await prisma.tenant.findUnique({
+          where: { slug: tenantSlug },
+          select: { 
+            id: true,
+            landingBlocks: true 
+          } as any,
+        })
+      } else if (token) {
+        // Buscar por tenantId do token (admin)
+        try {
+          await request.jwtVerify()
+          const { tenantId } = request.user
+          tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { landingBlocks: true } as any,
+          })
+        } catch {
+          // Token inválido, tentar como público
+          return reply.status(401).send({ error: 'Token inválido' })
+        }
+      } else {
+        return reply.status(400).send({ error: 'Tenant slug ou autenticação necessária' })
+      }
+
+      if (!tenant) {
+        return reply.status(404).send({ error: 'Tenant não encontrado' })
+      }
+
+      if (!tenant.landingBlocks) {
+        // Retornar configuração padrão se não existir
+        const defaultBlocks = [
+          { id: 'sobre-nos', name: 'sobre-nos', label: 'Sobre Nós', enabled: true, order: 1 },
+          { id: 'equipe', name: 'equipe', label: 'Profissionais', enabled: true, order: 2 },
+          { id: 'contato', name: 'contato', label: 'Horário & Contato', enabled: true, order: 3 },
+        ]
+        return { blocks: defaultBlocks }
+      }
+
+      const blocks = typeof tenant.landingBlocks === 'string' 
+        ? JSON.parse(tenant.landingBlocks)
+        : tenant.landingBlocks
+
+      return { blocks }
+    } catch (error) {
+      console.error('Erro ao buscar blocos da landing page:', error)
+      return reply.status(500).send({ error: 'Erro ao buscar configuração de blocos' })
+    }
+  })
+
+  // ROUTES COM AUTENTICAÇÃO - adicionar hook aqui
   app.addHook('preHandler', app.authenticate)
 
   // Buscar dados do tenant atual
@@ -461,6 +526,54 @@ export async function tenantRoutes(app: FastifyInstance) {
       }
       console.error('Erro ao atualizar branding:', error)
       throw error
+    }
+  })
+
+  // Salvar configuração de blocos da landing page
+  app.put('/landing-blocks', async (request: any, reply: any) => {
+    try {
+      const { tenantId, role } = request.user
+
+      if (role !== 'ADMIN' && role !== 'OWNER') {
+        return reply.status(403).send({ error: 'Apenas administradores podem atualizar blocos da landing page' })
+      }
+
+      const { blocks } = request.body
+
+      if (!Array.isArray(blocks)) {
+        return reply.status(400).send({ error: 'Blocos deve ser um array' })
+      }
+
+      // Validar estrutura de cada bloco
+      blocks.forEach((block: any, index: number) => {
+        if (!block.id || !block.name || !block.label || typeof block.enabled !== 'boolean' || typeof block.order !== 'number') {
+          throw new Error(`Bloco ${index} tem estrutura inválida`)
+        }
+      })
+
+      // Salvar configuração no tenant
+      const tenant: any = await prisma.tenant.update({
+        where: { id: tenantId },
+        data: {
+          landingBlocks: JSON.stringify(blocks),
+        } as any,
+        select: { landingBlocks: true } as any,
+      })
+
+      const updatedBlocks = typeof tenant.landingBlocks === 'string'
+        ? JSON.parse(tenant.landingBlocks)
+        : tenant.landingBlocks
+
+      return { 
+        blocks: updatedBlocks,
+        message: 'Configuração de blocos atualizada com sucesso'
+      }
+    } catch (error) {
+      console.error('Erro ao salvar blocos da landing page:', error)
+      if (error instanceof Error) {
+        return reply.status(400).send({ error: error.message })
+      }
+      return reply.status(500).send({ error: 'Erro ao salvar configuração de blocos' })
     }
   })
 
