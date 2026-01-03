@@ -68,44 +68,20 @@ const brandingSchema = z.object({
 })
 
 export async function tenantRoutes(app: FastifyInstance) {
-  // NÃO adicionar hook global - verificar autenticação por rota
-
-  // ========== LANDING PAGE BLOCKS ==========
+  // ========== LANDING PAGE BLOCKS (ROTAS PÚBLICAS) ==========
 
   // Obter configuração de blocos da landing page (PUBLICO - sem autenticação)
-  // Pode usar /landing-blocks/:tenantSlug ou /landing-blocks (se tiver no contexto)
-  app.get('/landing-blocks/:tenantSlug?', async (request: any, reply: any) => {
+  app.get('/landing-blocks/:tenantSlug', async (request: any, reply: any) => {
     try {
       const { tenantSlug } = request.params
-      const token = request.headers.authorization?.split(' ')[1]
 
-      let tenant: any
-
-      if (tenantSlug) {
-        // Buscar por slug (público)
-        tenant = await prisma.tenant.findUnique({
-          where: { slug: tenantSlug },
-          select: { 
-            id: true,
-            landingBlocks: true 
-          } as any,
-        })
-      } else if (token) {
-        // Buscar por tenantId do token (admin)
-        try {
-          await request.jwtVerify()
-          const { tenantId } = request.user
-          tenant = await prisma.tenant.findUnique({
-            where: { id: tenantId },
-            select: { landingBlocks: true } as any,
-          })
-        } catch {
-          // Token inválido, tentar como público
-          return reply.status(401).send({ error: 'Token inválido' })
-        }
-      } else {
-        return reply.status(400).send({ error: 'Tenant slug ou autenticação necessária' })
-      }
+      const tenant = await prisma.tenant.findUnique({
+        where: { slug: tenantSlug },
+        select: { 
+          id: true,
+          landingBlocks: true 
+        } as any,
+      })
 
       if (!tenant) {
         return reply.status(404).send({ error: 'Tenant não encontrado' })
@@ -135,8 +111,55 @@ export async function tenantRoutes(app: FastifyInstance) {
   // ROUTES COM AUTENTICAÇÃO - adicionar hook aqui
   app.addHook('preHandler', app.authenticate)
 
+  // Obter blocos por autenticação (GET /landing-blocks sem slug)
+  app.get('/landing-blocks', async (request: any, reply: any) => {
+    try {
+      // Verificar autenticação manualmente
+      try {
+        await request.jwtVerify()
+      } catch {
+        return reply.status(401).send({ error: 'Não autorizado' })
+      }
+
+      const { tenantId } = request.user
+
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { landingBlocks: true } as any,
+      })
+
+      if (!tenant) {
+        return reply.status(404).send({ error: 'Tenant não encontrado' })
+      }
+
+      if (!tenant.landingBlocks) {
+        const defaultBlocks = [
+          { id: 'sobre-nos', name: 'sobre-nos', label: 'Sobre Nós', enabled: true, order: 1 },
+          { id: 'equipe', name: 'equipe', label: 'Profissionais', enabled: true, order: 2 },
+          { id: 'contato', name: 'contato', label: 'Horário & Contato', enabled: true, order: 3 },
+        ]
+        return { blocks: defaultBlocks }
+      }
+
+      const blocks = typeof tenant.landingBlocks === 'string' 
+        ? JSON.parse(tenant.landingBlocks)
+        : tenant.landingBlocks
+
+      return { blocks }
+    } catch (error) {
+      console.error('Erro ao buscar blocos (autenticado):', error)
+      return reply.status(500).send({ error: 'Erro ao buscar configuração de blocos' })
+    }
+  })
+
   // Buscar dados do tenant atual
-  app.get('/me', async (request: any) => {
+  app.get('/me', async (request: any, reply: any) => {
+    try {
+      await request.jwtVerify()
+    } catch {
+      return reply.status(401).send({ error: 'Não autorizado' })
+    }
+
     const { tenantId } = request.user
 
     const tenant = await prisma.tenant.findUnique({

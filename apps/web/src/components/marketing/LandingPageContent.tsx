@@ -57,24 +57,21 @@ export default function LandingPageContent({
 
   useEffect(() => {
     // Carregar configurações de blocos
-    if (!isPreview) {
-      console.log('🔄 LandingPageContent: Carregando blocos da API (isPreview=false)')
-      loadBlocks()
+    if (!isPreview && tenantSlug) {
+      console.log('🔄 LandingPageContent: Carregando blocos da API (isPreview=false)', tenantSlug)
+      loadBlocks(tenantSlug)
+    } else if (!tenantSlug) {
+      console.log('⚠️ LandingPageContent: Sem tenantSlug, usando blocos padrão')
     } else {
       console.log('⏭️ LandingPageContent: Preview mode ativado, usando blocos padrão')
     }
-  }, [isPreview])
+  }, [isPreview, tenantSlug])
 
-  const loadBlocks = async () => {
+  const loadBlocks = async (slug: string) => {
     try {
-      const token = localStorage.getItem('token')
-      console.log('🔐 Token disponível:', !!token)
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
       
-      const response = await fetch(`http://localhost:3001/api/tenants/landing-blocks`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      const response = await fetch(`${baseUrl}/api/tenants/landing-blocks/${slug}`)
       
       console.log('📡 Resposta do GET /landing-blocks:', response.status)
       
