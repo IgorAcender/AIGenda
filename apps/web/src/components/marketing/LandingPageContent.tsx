@@ -294,7 +294,9 @@ export default function LandingPageContent({
         return null
     }
   }
-  return (
+
+  // Conteúdo mobile da landing page
+  const MobileContent = () => (
     <div style={{
       backgroundColor: '#000',
       color: '#fff',
@@ -519,5 +521,237 @@ export default function LandingPageContent({
         )}
       </div>
     </div>
+  )
+
+  // Wrapper para desktop - simula tela de celular
+  return (
+    <>
+      {/* Estilos CSS para responsividade */}
+      <style jsx global>{`
+        @media (min-width: 768px) {
+          .desktop-phone-wrapper {
+            display: flex !important;
+          }
+          .mobile-direct {
+            display: none !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .desktop-phone-wrapper {
+            display: none !important;
+          }
+          .mobile-direct {
+            display: block !important;
+          }
+        }
+      `}</style>
+
+      {/* Versão Desktop - Simula celular */}
+      <div 
+        className="desktop-phone-wrapper"
+        style={{
+          display: 'none',
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 20px',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Efeitos de fundo */}
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          left: '-50%',
+          width: '200%',
+          height: '200%',
+          background: 'radial-gradient(circle at 30% 20%, rgba(9, 145, 59, 0.1) 0%, transparent 50%)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-30%',
+          right: '-30%',
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle at 70% 80%, rgba(9, 145, 59, 0.08) 0%, transparent 40%)',
+          pointerEvents: 'none'
+        }} />
+
+        {/* Informações laterais */}
+        <div style={{
+          position: 'absolute',
+          left: '5%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          maxWidth: '300px',
+          color: '#fff',
+          zIndex: 10
+        }}>
+          <h2 style={{
+            fontSize: '32px',
+            fontWeight: '700',
+            marginBottom: '16px',
+            background: 'linear-gradient(135deg, #fff 0%, #09913b 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            {tenant.name}
+          </h2>
+          <p style={{
+            fontSize: '16px',
+            color: 'rgba(255,255,255,0.7)',
+            lineHeight: '1.6',
+            marginBottom: '24px'
+          }}>
+            Agende seus serviços de forma rápida e prática pelo celular ou desktop.
+          </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: '14px'
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+            Visualização otimizada para mobile
+          </div>
+        </div>
+
+        {/* Frame do celular */}
+        <div style={{
+          position: 'relative',
+          width: '375px',
+          height: '812px',
+          background: '#000',
+          borderRadius: '50px',
+          padding: '12px',
+          boxShadow: '0 50px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 0 1px rgba(255,255,255,0.05)',
+          zIndex: 20
+        }}>
+          {/* Notch do iPhone */}
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '150px',
+            height: '30px',
+            background: '#000',
+            borderRadius: '0 0 20px 20px',
+            zIndex: 30
+          }} />
+          
+          {/* Dynamic Island */}
+          <div style={{
+            position: 'absolute',
+            top: '18px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '120px',
+            height: '35px',
+            background: '#1a1a1a',
+            borderRadius: '20px',
+            zIndex: 31,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            paddingRight: '12px'
+          }}>
+            <div style={{
+              width: '10px',
+              height: '10px',
+              background: '#1a3a2a',
+              borderRadius: '50%',
+              boxShadow: '0 0 4px rgba(9, 145, 59, 0.5)'
+            }} />
+          </div>
+
+          {/* Tela do celular */}
+          <div style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '40px',
+            overflow: 'hidden',
+            background: '#000'
+          }}>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}>
+              <MobileContent />
+            </div>
+          </div>
+
+          {/* Barra inferior (home indicator) */}
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '134px',
+            height: '5px',
+            background: 'rgba(255,255,255,0.3)',
+            borderRadius: '3px'
+          }} />
+        </div>
+
+        {/* QR Code ou link */}
+        <div style={{
+          position: 'absolute',
+          right: '5%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          textAlign: 'center',
+          color: 'rgba(255,255,255,0.6)',
+          zIndex: 10
+        }}>
+          <div style={{
+            width: '140px',
+            height: '140px',
+            background: '#fff',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '12px',
+            padding: '10px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+          }}>
+            {/* QR Code gerado via API externa - usa IP da rede local para acesso mobile */}
+            <img 
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+                typeof window !== 'undefined' 
+                  ? window.location.href.replace('localhost', '172.20.10.2')
+                  : `http://172.20.10.2:3000/${tenantSlug}`
+              )}&bgcolor=ffffff&color=000000&margin=0`}
+              alt="QR Code para acessar no celular"
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '8px'
+              }}
+            />
+          </div>
+          <p style={{ fontSize: '13px', margin: 0, fontWeight: '500' }}>
+            Escaneie para acessar<br/>no seu celular
+          </p>
+        </div>
+      </div>
+
+      {/* Versão Mobile - Direto */}
+      <div className="mobile-direct" style={{ display: 'block' }}>
+        <MobileContent />
+      </div>
+    </>
   )
 }
