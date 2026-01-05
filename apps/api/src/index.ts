@@ -14,7 +14,7 @@ import { appointmentRoutes } from './routes/appointments'
 import { publicBookingRoutes } from './routes/public-bookings'
 import { transactionRoutes } from './routes/transactions'
 import { dashboardRoutes } from './routes/dashboard'
-import { tenantRoutes } from './routes/tenants'
+import { tenantRoutes, tenantPublicRoutes } from './routes/tenants'
 import { isRedisAvailable } from './lib/redis'
 
 const app = Fastify({
@@ -107,7 +107,8 @@ app.get('/uploads/:tenantId/:filename', async (request: any, reply) => {
 
 // Routes
 app.register(authRoutes, { prefix: '/api/auth' })
-app.register(tenantRoutes, { prefix: '/api/tenants' })
+app.register(tenantPublicRoutes, { prefix: '/api/tenants' }) // Rotas públicas de tenants (sem autenticação)
+app.register(tenantRoutes, { prefix: '/api/tenants' }) // Rotas autenticadas de tenants
 app.register(clientRoutes, { prefix: '/api/clients' })
 app.register(professionalRoutes, { prefix: '/api/professionals' })
 app.register(serviceRoutes, { prefix: '/api/services' })

@@ -67,9 +67,8 @@ const brandingSchema = z.object({
   businessHours: z.record(z.any()).optional(),
 })
 
-export async function tenantRoutes(app: FastifyInstance) {
-  // ========== LANDING PAGE BLOCKS (ROTAS PÚBLICAS) ==========
-
+// ========== ROTAS PÚBLICAS (sem autenticação) ==========
+export async function tenantPublicRoutes(app: FastifyInstance) {
   // Obter configuração de blocos da landing page (PUBLICO - sem autenticação)
   app.get('/landing-blocks/:tenantSlug', async (request: any, reply: any) => {
     try {
@@ -107,8 +106,11 @@ export async function tenantRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: 'Erro ao buscar configuração de blocos' })
     }
   })
+}
 
-  // ROUTES COM AUTENTICAÇÃO - adicionar hook aqui
+// ========== ROTAS AUTENTICADAS ==========
+export async function tenantRoutes(app: FastifyInstance) {
+  // Hook de autenticação para TODAS as rotas deste plugin
   app.addHook('preHandler', app.authenticate)
 
   // Obter blocos por autenticação (GET /landing-blocks sem slug)

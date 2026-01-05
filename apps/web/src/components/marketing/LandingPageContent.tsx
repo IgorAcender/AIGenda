@@ -48,12 +48,25 @@ export default function LandingPageContent({
   services = [],
   professionals = [],
   tenantSlug = '',
-  isPreview = false
+  isPreview: isPreviewProp = false
 }: LandingPageContentProps) {
+  // Detecta se está em modo preview via prop OU via URL param (?preview=1)
+  const [isPreview, setIsPreview] = useState(isPreviewProp)
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const previewParam = urlParams.get('preview')
+      if (previewParam === '1') {
+        setIsPreview(true)
+      }
+    }
+  }, [])
+
   const defaultBlocks: LandingBlock[] = [
-    { id: 'sobre-nos', name: 'Sobre Nós', label: 'Sobre Nós', enabled: true, order: 1 },
-    { id: 'equipe', name: 'Profissionais', label: 'Profissionais', enabled: true, order: 2 },
-    { id: 'contato', name: 'Horário', label: 'Horário de Funcionamento', enabled: true, order: 3 },
+    { id: 'sobre-nos', name: 'sobre-nos', label: 'Sobre Nós', enabled: true, order: 1 },
+    { id: 'equipe', name: 'equipe', label: 'Profissionais', enabled: true, order: 2 },
+    { id: 'contato', name: 'contato', label: 'Horário & Contato', enabled: true, order: 3 },
   ]
 
   const initialBlocks = (tenant.landingBlocks && tenant.landingBlocks.length > 0)
@@ -71,21 +84,16 @@ export default function LandingPageContent({
   }, [tenant.landingBlocks])
 
   useEffect(() => {
-    // Carregar configurações de blocos da API pública apenas se não houver no tenant
-    const shouldFetch = !isPreview && tenantSlug && (!tenant.landingBlocks || tenant.landingBlocks.length === 0)
-
-    if (shouldFetch) {
-      console.log('🔄 LandingPageContent: Carregando blocos da API pública', tenantSlug)
+    // Sempre carregar blocos da API pública para garantir dados atualizados
+    // Isso é importante para o preview em tempo real funcionar corretamente
+    if (tenantSlug) {
+      console.log('🔄 LandingPageContent: Carregando blocos da API pública', tenantSlug, isPreview ? '(preview)' : '')
       loadBlocks(tenantSlug)
-    } else if (!tenantSlug) {
-      console.log('⚠️ LandingPageContent: Sem tenantSlug, usando blocos padrão')
-    } else if (tenant.landingBlocks && tenant.landingBlocks.length > 0) {
-      console.log('✅ LandingPageContent: Usando blocos vindos do tenant (SSR/preload)')
     } else {
-      console.log('⏭️ LandingPageContent: Preview mode ativado, usando blocos padrão')
+      console.log('⚠️ LandingPageContent: Sem tenantSlug, usando blocos padrão')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPreview, tenantSlug])
+  }, [tenantSlug])
 
   const loadBlocks = async (slug: string) => {
     try {
@@ -97,9 +105,12 @@ export default function LandingPageContent({
       
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Blocos carregados da API:', data.blocks)
+        console.log('✅ Blocos carregados da API:', JSON.stringify(data.blocks, null, 2))
         if (data.blocks && Array.isArray(data.blocks)) {
-          console.log('📦 Atualizando estado com blocos:', data.blocks)
+          // Log detalhado de cada bloco
+          data.blocks.forEach((b: LandingBlock) => {
+            console.log(`📦 Bloco ${b.id}: enabled=${b.enabled}, order=${b.order}`)
+          })
           setBlocks(data.blocks)
         }
       } else {
@@ -523,34 +534,51 @@ export default function LandingPageContent({
     </div>
   )
 
+  // Se for preview (iframe no admin), mostra direto o conteúdo mobile sem wrapper
+  if (isPreview) {
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: `
+          /* Esconde scrollbar no preview */
+          html, body {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+          }
+          html::-webkit-scrollbar,
+          body::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+          }
+        `}} />
+        <MobileContent />
+      </>
+    )
+  }
+
   // Wrapper para desktop - simula tela de celular
   return (
     <>
-      {/* Estilos CSS para responsividade */}
-      <style jsx global>{`
+      {/* Estilos CSS para responsividade - carrega ANTES do JS */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* Esconde tudo até CSS carregar - evita flash */
+        .desktop-phone-wrapper { display: none !important; }
+        .mobile-direct { display: none !important; }
+        
         @media (min-width: 768px) {
-          .desktop-phone-wrapper {
-            display: flex !important;
-          }
-          .mobile-direct {
-            display: none !important;
-          }
+          .desktop-phone-wrapper { display: flex !important; }
+          .mobile-direct { display: none !important; }
         }
         @media (max-width: 767px) {
-          .desktop-phone-wrapper {
-            display: none !important;
-          }
-          .mobile-direct {
-            display: block !important;
-          }
+          .desktop-phone-wrapper { display: none !important; }
+          .mobile-direct { display: block !important; }
         }
-      `}</style>
+      `}} />
 
       {/* Versão Desktop - Simula celular */}
       <div 
         className="desktop-phone-wrapper"
         style={{
-          display: 'none',
           minHeight: '100vh',
           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
           alignItems: 'center',
@@ -727,12 +755,14 @@ export default function LandingPageContent({
             padding: '10px',
             boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
           }}>
-            {/* QR Code gerado via API externa - usa IP da rede local para acesso mobile */}
+            {/* QR Code gerado via API externa - em dev usa IP local, em prod usa URL real */}
             <img 
               src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
                 typeof window !== 'undefined' 
-                  ? window.location.href.replace('localhost', '172.20.10.2')
-                  : `http://172.20.10.2:3000/${tenantSlug}`
+                  ? (window.location.hostname === 'localhost' 
+                      ? window.location.href.replace('localhost', '172.20.10.2')
+                      : window.location.href)
+                  : `https://agende.ai/${tenantSlug}`
               )}&bgcolor=ffffff&color=000000&margin=0`}
               alt="QR Code para acessar no celular"
               style={{
@@ -749,7 +779,7 @@ export default function LandingPageContent({
       </div>
 
       {/* Versão Mobile - Direto */}
-      <div className="mobile-direct" style={{ display: 'block' }}>
+      <div className="mobile-direct">
         <MobileContent />
       </div>
     </>

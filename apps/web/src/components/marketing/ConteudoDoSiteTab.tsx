@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Form, Input, Button, Upload, message, Row, Col, Image, Space, Spin, Card, Switch, Divider, Tooltip } from 'antd'
+import React, { useState, useEffect, useRef } from 'react'
+import { Form, Input, Button, Upload, message, Row, Col, Image, Space, Spin, Card, Switch, Divider, Tooltip, Modal } from 'antd'
 import { useAuthStore } from '@/stores/auth'
-import PhonePreview from './PhonePreview'
+import PhonePreview, { PhonePreviewRef } from './PhonePreview'
 import type { UploadFile } from 'antd'
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
+import { ArrowUpOutlined, ArrowDownOutlined, CloseOutlined } from '@ant-design/icons'
+import { OptimizedProfessionalsList } from '@/components/OptimizedProfessionalsList'
+import { HorariosConfig } from '@/components/HorariosConfig'
 
 const { TextArea } = Input
 
@@ -27,11 +29,15 @@ export default function ConteudoDoSiteTab() {
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [previewImage, setPreviewImage] = useState<string>('')
+  const [professionalsModalVisible, setProfessionalsModalVisible] = useState(false)
+  const [horariosModalVisible, setHorariosModalVisible] = useState(false)
   const { tenant } = useAuthStore()
+  const phonePreviewRef = useRef<PhonePreviewRef>(null)
   const [blocks, setBlocks] = useState<LandingBlock[]>([
-    { id: 'sobre-nos', name: 'Sobre Nós', label: 'Sobre Nós', enabled: true, order: 1 },
-    { id: 'equipe', name: 'Profissionais', label: 'Profissionais', enabled: true, order: 2 },
-    { id: 'contato', name: 'Horário', label: 'Horário de Funcionamento', enabled: true, order: 3 },
+    { id: 'sobre-nos', name: 'sobre-nos', label: 'Sobre Nós', enabled: true, order: 1 },
+    { id: 'equipe', name: 'equipe', label: 'Profissionais', enabled: true, order: 2 },
+    { id: 'horarios', name: 'horarios', label: 'Horário de Funcionamento', enabled: true, order: 3 },
+    { id: 'contato', name: 'contato', label: 'Contato', enabled: true, order: 4 },
   ])
 
   // Carregar dados ao montar
@@ -178,12 +184,39 @@ export default function ConteudoDoSiteTab() {
       return false
     }
 
-    // Converter para Base64 e salvar no estado
+    // Converter para Base64 e salvar automaticamente
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const base64 = e.target?.result as string
       setPreviewImage(base64)
-      message.success('Imagem carregada! Clique em Salvar para confirmar.')
+      
+      // Salvar automaticamente no servidor
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch('http://localhost:3001/api/tenants/branding', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ heroImage: base64 }),
+        })
+        
+        if (response.ok) {
+          message.success('Foto atualizada!')
+          // Aguarda um pouco para o servidor processar e atualiza o preview
+          setTimeout(() => {
+            phonePreviewRef.current?.refresh()
+          }, 500)
+        } else {
+          const error = await response.json()
+          console.error('Erro ao salvar foto:', error)
+          message.error('Erro ao salvar foto')
+        }
+      } catch (error) {
+        console.error('Erro ao salvar foto:', error)
+        message.error('Erro ao conectar com o servidor')
+      }
     }
     reader.readAsDataURL(file)
     
@@ -241,6 +274,10 @@ export default function ConteudoDoSiteTab() {
           const blocksData = await blocksResponse.json()
           console.log('Blocos salvos com sucesso:', blocksData)
           message.success('Conteúdo e seções atualizadas com sucesso!')
+          // Atualizar o preview após salvar
+          setTimeout(() => {
+            phonePreviewRef.current?.refresh()
+          }, 500)
         } else {
           const error = await blocksResponse.json()
           console.error('Erro ao salvar blocos:', error)
@@ -389,7 +426,10 @@ export default function ConteudoDoSiteTab() {
             <p style={{ margin: '0 0 8px 0', fontSize: 13, color: '#666' }}>
               ℹ️ Exibe os membros da sua equipe no site.
             </p>
-            <a href="#" style={{ color: '#1890ff', textDecoration: 'none', fontWeight: 500, fontSize: 13 }}>
+            <a 
+              onClick={() => setProfessionalsModalVisible(true)} 
+              style={{ color: '#1890ff', textDecoration: 'none', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+            >
               ✏️ Gerenciar Profissionais
             </a>
           </div>
@@ -452,7 +492,10 @@ export default function ConteudoDoSiteTab() {
             <p style={{ margin: '0 0 8px 0', fontSize: 13, color: '#666' }}>
               ℹ️ Exibe os horários de funcionamento no site.
             </p>
-            <a href="#" style={{ color: '#1890ff', textDecoration: 'none', fontWeight: 500, fontSize: 13 }}>
+            <a 
+              onClick={() => setHorariosModalVisible(true)} 
+              style={{ color: '#1890ff', textDecoration: 'none', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+            >
               ✏️ Configurar Horários
             </a>
           </div>
@@ -481,37 +524,36 @@ export default function ConteudoDoSiteTab() {
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
                 Foto da Landing Page
               </label>
-              <Upload
-                beforeUpload={beforeUpload}
-                maxCount={1}
-                accept="image/*"
-                listType="picture"
-                showUploadList={false}
-              >
-                <Button style={{ width: '100%' }}>Selecionar Foto</Button>
-              </Upload>
-              <p style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
-                Recomendado: 1920x1080px (16:9) | Máximo: 2MB
-              </p>
-              
-              {previewImage && (
-                <Image
-                  src={previewImage}
-                  alt="Prévia"
-                  style={{
-                    width: '100%',
-                    maxWidth: 160,
-                    height: 'auto',
-                    objectFit: 'contain',
-                    borderRadius: 8,
-                    marginTop: 12,
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    background: '#0b0b0b',
-                    display: 'block',
-                  }}
-                />
-              )}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div>
+                  <Upload
+                    beforeUpload={beforeUpload}
+                    maxCount={1}
+                    accept="image/*"
+                    listType="picture"
+                    showUploadList={false}
+                  >
+                    <Button>Selecionar Foto</Button>
+                  </Upload>
+                  <p style={{ fontSize: 12, color: '#666', margin: '8px 0 0 0' }}>
+                    Recomendado: 1080x1080px (1:1) | Máximo: 2MB
+                  </p>
+                </div>
+                {previewImage && (
+                  <Image
+                    src={previewImage}
+                    alt="Prévia"
+                    style={{
+                      width: 80,
+                      height: 80,
+                      objectFit: 'contain',
+                      borderRadius: 8,
+                      background: '#f5f5f5',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Renderizar blocos em ordem */}
@@ -539,13 +581,112 @@ export default function ConteudoDoSiteTab() {
           <h3 style={{ marginBottom: 16, textAlign: 'center' }}>
             📱 Preview em Tempo Real
           </h3>
-          <PhonePreview
-            tenantName={tenant?.name}
-            description={form.getFieldValue('aboutUs')}
-            banner={previewImage}
-          />
+          <PhonePreview ref={phonePreviewRef} />
         </div>
       </Col>
+
+      {/* CSS Global para Modais Slide-out */}
+      <style>{`
+        .slideout-modal-wrap .ant-modal {
+          position: fixed !important;
+          top: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          height: 100vh !important;
+        }
+        .slideout-modal-wrap .ant-modal-content {
+          height: 100vh !important;
+          border-radius: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+        }
+        .slideout-modal-wrap .ant-modal-body {
+          flex: 1 !important;
+          overflow: auto !important;
+        }
+        .slideout-modal-content-scaled {
+          transform: scale(0.85);
+          transform-origin: top left;
+          width: 117.65%;
+        }
+      `}</style>
+
+      {/* Modal de Gerenciamento de Profissionais - Slide-out sem sidebar */}
+      <Modal
+        title="Gerenciar Profissionais"
+        open={professionalsModalVisible}
+        onCancel={() => setProfessionalsModalVisible(false)}
+        footer={
+          <Button onClick={() => setProfessionalsModalVisible(false)}>
+            Fechar
+          </Button>
+        }
+        width="60%"
+        wrapClassName="slideout-modal-wrap"
+        styles={{
+          mask: { backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+          body: {
+            height: 'calc(100vh - 120px)',
+            overflow: 'auto',
+            padding: '16px',
+          },
+          header: {
+            borderBottom: '1px solid #f0f0f0',
+            padding: '16px 24px',
+            marginBottom: 0,
+          },
+          footer: {
+            borderTop: '1px solid #f0f0f0',
+            padding: '16px 24px',
+          },
+        }}
+        destroyOnClose
+      >
+        <div className="slideout-modal-content-scaled">
+          <OptimizedProfessionalsList />
+        </div>
+      </Modal>
+
+      {/* Modal de Configuração de Horários - Slide-out sem sidebar */}
+      <Modal
+        title="Configurar Horários"
+        open={horariosModalVisible}
+        onCancel={() => setHorariosModalVisible(false)}
+        footer={
+          <Button onClick={() => setHorariosModalVisible(false)}>
+            Fechar
+          </Button>
+        }
+        width="60%"
+        wrapClassName="slideout-modal-wrap"
+        styles={{
+          mask: { backgroundColor: 'rgba(0, 0, 0, 0.45)' },
+          body: {
+            height: 'calc(100vh - 120px)',
+            overflow: 'auto',
+            padding: '16px',
+          },
+          header: {
+            borderBottom: '1px solid #f0f0f0',
+            padding: '16px 24px',
+            marginBottom: 0,
+          },
+          footer: {
+            borderTop: '1px solid #f0f0f0',
+            padding: '16px 24px',
+          },
+        }}
+        destroyOnClose
+      >
+        <div className="slideout-modal-content-scaled">
+          <HorariosConfig onSuccess={() => {
+            setHorariosModalVisible(false)
+            phonePreviewRef.current?.refresh()
+          }} />
+        </div>
+      </Modal>
     </Row>
   )
 }
