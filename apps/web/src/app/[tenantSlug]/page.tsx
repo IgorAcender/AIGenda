@@ -32,6 +32,13 @@ interface TenantData {
         facebook?: string;
         twitter?: string;
       };
+      landingBlocks?: Array<{
+        id: string;
+        name: string;
+        label: string;
+        enabled: boolean;
+        order: number;
+      }>;
       paymentMethods?: string[];
       amenities?: string[];
       businessHours?: {
@@ -103,6 +110,7 @@ export default async function LandingPage({ params }: LandingPageProps) {
       services={services}
       professionals={professionals}
       tenantSlug={tenantSlug}
+      // Blocos já vêm no tenant; LandingPageContent usa como fonte principal
     />
   );
 }

@@ -78,6 +78,18 @@ export async function publicBookingRoutes(app: FastifyInstance) {
           });
         }
 
+        // Parsear blocos da landing (pode vir string ou JSON)
+        let landingBlocksParsed: any[] = []
+        if (tenant.landingBlocks) {
+          try {
+            landingBlocksParsed = typeof tenant.landingBlocks === 'string'
+              ? JSON.parse(tenant.landingBlocks)
+              : tenant.landingBlocks
+          } catch (e) {
+            console.error('Erro ao parsear landingBlocks:', e)
+          }
+        }
+
         // Parsear paymentMethods e amenities de JSON
         let paymentMethods: string[] = [];
         let amenities: string[] = [];
@@ -114,6 +126,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
               banner: tenant.banner,
               latitude: tenant.latitude,
               longitude: tenant.longitude,
+              landingBlocks: landingBlocksParsed,
               socialMedia: {
                 instagram: tenant.instagram,
                 facebook: tenant.facebook,

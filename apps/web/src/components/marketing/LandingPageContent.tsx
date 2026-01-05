@@ -24,6 +24,7 @@ interface Tenant {
   phone?: string
   email?: string
   slug?: string
+  landingBlocks?: LandingBlock[]
 }
 
 interface LandingBlock {
@@ -49,22 +50,41 @@ export default function LandingPageContent({
   tenantSlug = '',
   isPreview = false
 }: LandingPageContentProps) {
-  const [blocks, setBlocks] = useState<LandingBlock[]>([
+  const defaultBlocks: LandingBlock[] = [
     { id: 'sobre-nos', name: 'Sobre Nós', label: 'Sobre Nós', enabled: true, order: 1 },
     { id: 'equipe', name: 'Profissionais', label: 'Profissionais', enabled: true, order: 2 },
     { id: 'contato', name: 'Horário', label: 'Horário de Funcionamento', enabled: true, order: 3 },
-  ])
+  ]
+
+  const initialBlocks = (tenant.landingBlocks && tenant.landingBlocks.length > 0)
+    ? tenant.landingBlocks
+    : defaultBlocks
+
+  const [blocks, setBlocks] = useState<LandingBlock[]>(initialBlocks)
 
   useEffect(() => {
-    // Carregar configurações de blocos
-    if (!isPreview && tenantSlug) {
-      console.log('🔄 LandingPageContent: Carregando blocos da API (isPreview=false)', tenantSlug)
+    // Atualiza blocos se vierem do tenant (SSR) ou volta ao padrão
+    const nextBlocks = (tenant.landingBlocks && tenant.landingBlocks.length > 0)
+      ? tenant.landingBlocks
+      : defaultBlocks
+    setBlocks(nextBlocks)
+  }, [tenant.landingBlocks])
+
+  useEffect(() => {
+    // Carregar configurações de blocos da API pública apenas se não houver no tenant
+    const shouldFetch = !isPreview && tenantSlug && (!tenant.landingBlocks || tenant.landingBlocks.length === 0)
+
+    if (shouldFetch) {
+      console.log('🔄 LandingPageContent: Carregando blocos da API pública', tenantSlug)
       loadBlocks(tenantSlug)
     } else if (!tenantSlug) {
       console.log('⚠️ LandingPageContent: Sem tenantSlug, usando blocos padrão')
+    } else if (tenant.landingBlocks && tenant.landingBlocks.length > 0) {
+      console.log('✅ LandingPageContent: Usando blocos vindos do tenant (SSR/preload)')
     } else {
       console.log('⏭️ LandingPageContent: Preview mode ativado, usando blocos padrão')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPreview, tenantSlug])
 
   const loadBlocks = async (slug: string) => {
