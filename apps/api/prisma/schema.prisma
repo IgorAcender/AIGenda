@@ -688,11 +688,9 @@ model BusinessHours {
 }
 
 // ============= EVOLUTION API (WhatsApp Integration) =============
-/**
- * Armazena informações sobre as instâncias da Evolution API
- * Cada instância pode suportar até 100 tenants
- * Total de 10 instâncias para até 1000 tenants
- */
+// Armazena informações sobre as instâncias da Evolution API
+// Cada instância pode suportar até 100 tenants
+// Total de 10 instâncias para até 1000 tenants
 model EvolutionInstance {
   id Int @id @default(autoincrement())
   
@@ -721,11 +719,9 @@ model EvolutionInstance {
   @@index([tenantCount])
 }
 
-/**
- * Mapeia tenants para suas instâncias da Evolution API
- * Cada tenant pode ter apenas uma conexão WhatsApp
- * Uma instância Evolution pode servir até 100 tenants
- */
+// Mapeia tenants para suas instâncias da Evolution API
+// Cada tenant pode ter apenas uma conexão WhatsApp
+// Uma instância Evolution pode servir até 100 tenants
 model TenantEvolutionMapping {
   tenantId String @id
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)

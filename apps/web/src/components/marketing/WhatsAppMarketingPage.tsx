@@ -33,7 +33,7 @@ interface EvolutionInstance {
   occupancyPercent: number
 }
 
-export function WhatsAppMarketingPage() {
+export default function WhatsAppMarketingPage() {
   const { user, tenant } = useAuth()
   const [status, setStatus] = useState<WhatsAppStatus | null>(null)
   const [qrCode, setQrCode] = useState<QRCodeResponse | null>(null)
