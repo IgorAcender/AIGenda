@@ -9,6 +9,7 @@ import './PhonePreview.css'
 interface PhonePreviewProps {
   tenantSlug?: string
   loading?: boolean
+  showBannerOverlay?: boolean
 }
 
 export interface PhonePreviewRef {
@@ -17,6 +18,7 @@ export interface PhonePreviewRef {
 
 const PhonePreview = forwardRef<PhonePreviewRef, PhonePreviewProps>(({
   loading = false,
+  showBannerOverlay = true,
 }, ref) => {
   const { tenant } = useAuthStore()
   const tenantSlug = tenant?.slug
@@ -24,7 +26,11 @@ const PhonePreview = forwardRef<PhonePreviewRef, PhonePreviewProps>(({
   const [iframeLoading, setIframeLoading] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  const previewUrl = tenantSlug ? `/${tenantSlug}?preview=1` : ''
+  // URL da landing page pública - usa slug do tenant autenticado
+  // Precisa ser URL absoluta para funcionar dentro de iframe na página protegida
+  const previewUrl = tenantSlug 
+    ? `http://localhost:3000/${tenantSlug}?showBannerOverlay=${showBannerOverlay}` 
+    : ''
 
   const handleRefresh = () => {
     setIframeLoading(true)

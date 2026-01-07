@@ -25,6 +25,13 @@ interface Tenant {
   email?: string
   slug?: string
   landingBlocks?: LandingBlock[]
+  businessHours?: { [key: string]: string }
+  // Cores do tema
+  themeTemplate?: string
+  backgroundColor?: string
+  textColor?: string
+  buttonColorPrimary?: string
+  buttonTextColor?: string
 }
 
 interface LandingBlock {
@@ -52,13 +59,21 @@ export default function LandingPageContent({
 }: LandingPageContentProps) {
   // Detecta se está em modo preview via prop OU via URL param (?preview=1)
   const [isPreview, setIsPreview] = useState(isPreviewProp)
+  const [showBannerOverlay, setShowBannerOverlay] = useState(true)
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
       const previewParam = urlParams.get('preview')
+      const overlayParam = urlParams.get('showBannerOverlay')
+      
       if (previewParam === '1') {
         setIsPreview(true)
+      }
+      
+      // Controlar o overlay baseado no parâmetro
+      if (overlayParam !== null) {
+        setShowBannerOverlay(overlayParam === 'true')
       }
     }
   }, [])
@@ -66,20 +81,59 @@ export default function LandingPageContent({
   const defaultBlocks: LandingBlock[] = [
     { id: 'sobre-nos', name: 'sobre-nos', label: 'Sobre Nós', enabled: true, order: 1 },
     { id: 'equipe', name: 'equipe', label: 'Profissionais', enabled: true, order: 2 },
-    { id: 'contato', name: 'contato', label: 'Horário & Contato', enabled: true, order: 3 },
+    { id: 'horarios', name: 'horarios', label: 'Horário de Funcionamento', enabled: true, order: 3 },
+    { id: 'contato', name: 'contato', label: 'Contato', enabled: true, order: 4 },
   ]
 
-  const initialBlocks = (tenant.landingBlocks && tenant.landingBlocks.length > 0)
-    ? tenant.landingBlocks
-    : defaultBlocks
+  // Função para fazer merge dos blocos salvos com os padrão
+  const mergeBlocks = (savedBlocks: LandingBlock[] | undefined): LandingBlock[] => {
+    if (!savedBlocks || savedBlocks.length === 0) {
+      return defaultBlocks
+    }
+    
+    const savedBlockIds = savedBlocks.map(b => b.id)
+    const mergedBlocks = [...savedBlocks]
+    
+    // Adicionar blocos que não existem nos salvos
+    defaultBlocks.forEach(defaultBlock => {
+      if (!savedBlockIds.includes(defaultBlock.id)) {
+        mergedBlocks.push({
+          ...defaultBlock,
+          order: mergedBlocks.length + 1
+        })
+      }
+    })
+    
+    // Ordenar por order
+    mergedBlocks.sort((a, b) => a.order - b.order)
+    return mergedBlocks
+  }
+
+  const initialBlocks = mergeBlocks(tenant.landingBlocks)
 
   const [blocks, setBlocks] = useState<LandingBlock[]>(initialBlocks)
 
+  // Cores do tema (com fallback para tema escuro)
+  const theme = {
+    backgroundColor: tenant.backgroundColor || '#000000',
+    textColor: tenant.textColor || '#ffffff',
+    buttonColor: tenant.buttonColorPrimary || '#22c55e',
+    buttonTextColor: tenant.buttonTextColor || '#ffffff',
+    // Cores derivadas
+    cardBackground: tenant.backgroundColor === '#ffffff' || tenant.backgroundColor === '#FFFFFF' 
+      ? 'rgba(0, 0, 0, 0.03)' 
+      : 'rgba(255, 255, 255, 0.05)',
+    borderColor: tenant.backgroundColor === '#ffffff' || tenant.backgroundColor === '#FFFFFF'
+      ? 'rgba(0, 0, 0, 0.1)'
+      : 'rgba(255, 255, 255, 0.1)',
+    subtextColor: tenant.backgroundColor === '#ffffff' || tenant.backgroundColor === '#FFFFFF'
+      ? '#666666'
+      : '#cccccc',
+  }
+
   useEffect(() => {
     // Atualiza blocos se vierem do tenant (SSR) ou volta ao padrão
-    const nextBlocks = (tenant.landingBlocks && tenant.landingBlocks.length > 0)
-      ? tenant.landingBlocks
-      : defaultBlocks
+    const nextBlocks = mergeBlocks(tenant.landingBlocks)
     setBlocks(nextBlocks)
   }, [tenant.landingBlocks])
 
@@ -137,11 +191,11 @@ export default function LandingPageContent({
         if (!isBlockEnabled('sobre-nos')) return null
         return (
           <div key="sobre-nos" style={{
-            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            background: theme.cardBackground,
             padding: '20px',
             borderRadius: '12px',
             marginBottom: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: `1px solid ${theme.borderColor}`,
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease'
           }}>
@@ -150,13 +204,14 @@ export default function LandingPageContent({
               marginTop: 0,
               marginBottom: '14px',
               fontWeight: '700',
-              letterSpacing: '-0.2px'
+              letterSpacing: '-0.2px',
+              color: theme.textColor
             }}>
               Sobre Nós
             </h2>
             <p style={{
               fontSize: '15px',
-              color: '#ccc',
+              color: theme.subtextColor,
               lineHeight: '1.7',
               margin: 0,
               fontWeight: '400'
@@ -170,11 +225,11 @@ export default function LandingPageContent({
         if (!isBlockEnabled('equipe') || !professionals || professionals.length === 0) return null
         return (
           <div key="equipe" style={{
-            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            background: theme.cardBackground,
             padding: '20px',
             borderRadius: '12px',
             marginBottom: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: `1px solid ${theme.borderColor}`,
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease'
           }}>
@@ -183,7 +238,8 @@ export default function LandingPageContent({
               marginTop: 0,
               marginBottom: '14px',
               fontWeight: '700',
-              letterSpacing: '-0.2px'
+              letterSpacing: '-0.2px',
+              color: theme.textColor
             }}>
               Nossa Equipe
             </h2>
@@ -201,7 +257,7 @@ export default function LandingPageContent({
                     width: '80px',
                     height: '80px',
                     borderRadius: '12px',
-                    background: '#2a2a2a',
+                    background: theme.cardBackground,
                     margin: '0 auto 10px',
                     display: 'flex',
                     alignItems: 'center',
@@ -209,7 +265,7 @@ export default function LandingPageContent({
                     overflow: 'hidden',
                     fontSize: '28px',
                     fontWeight: 'bold',
-                    border: '2px solid rgba(255, 255, 255, 0.1)',
+                    border: `2px solid ${theme.borderColor}`,
                     boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
                   }}>
                     {prof.avatar ? (
@@ -219,7 +275,7 @@ export default function LandingPageContent({
                         objectFit: 'cover'
                       }} />
                     ) : (
-                      <span style={{ color: '#fff' }}>
+                      <span style={{ color: theme.textColor }}>
                         {prof.name.charAt(0).toUpperCase()}
                       </span>
                     )}
@@ -227,7 +283,7 @@ export default function LandingPageContent({
                   <p style={{
                     fontSize: '13px',
                     margin: 0,
-                    color: '#ccc',
+                    color: theme.subtextColor,
                     fontWeight: '600',
                     lineHeight: '1.4'
                   }}>
@@ -239,15 +295,24 @@ export default function LandingPageContent({
           </div>
         )
 
-      case 'contato':
-        if (!isBlockEnabled('contato')) return null
+      case 'horarios':
+        if (!isBlockEnabled('horarios')) return null
+        const daysConfig = [
+          { key: 'sunday', label: 'Domingo' },
+          { key: 'monday', label: 'Segunda' },
+          { key: 'tuesday', label: 'Terça' },
+          { key: 'wednesday', label: 'Quarta' },
+          { key: 'thursday', label: 'Quinta' },
+          { key: 'friday', label: 'Sexta' },
+          { key: 'saturday', label: 'Sábado' },
+        ]
         return (
-          <div key="contato" style={{
-            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+          <div key="horarios" style={{
+            background: theme.cardBackground,
             padding: '20px',
             borderRadius: '12px',
             marginBottom: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: `1px solid ${theme.borderColor}`,
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease'
           }}>
@@ -256,11 +321,90 @@ export default function LandingPageContent({
               marginTop: 0,
               marginBottom: '14px',
               fontWeight: '700',
-              letterSpacing: '-0.2px'
+              letterSpacing: '-0.2px',
+              color: theme.textColor
+            }}>
+              Horário de Funcionamento
+            </h2>
+            <div style={{ fontSize: '14px' }}>
+              {tenant.businessHours && Object.keys(tenant.businessHours).length > 0 ? (
+                daysConfig.map((day, index) => {
+                  const hours = tenant.businessHours?.[day.key]
+                  if (!hours) return null
+                  
+                  // Separar horário e intervalo
+                  const isClosed = hours === 'Fechado'
+                  let mainHours = hours
+                  let interval = ''
+                  
+                  if (!isClosed && hours.includes('(Intervalo:')) {
+                    const match = hours.match(/^([\d:]+\s*-\s*[\d:]+)\s*\(Intervalo:\s*([\d:-]+)\)$/)
+                    if (match) {
+                      mainHours = match[1]
+                      interval = match[2]
+                    }
+                  }
+                  
+                  return (
+                    <div key={day.key} style={{ 
+                      padding: '8px 0',
+                      borderBottom: index < 6 ? `1px solid ${theme.borderColor}` : 'none'
+                    }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span style={{ fontWeight: 500, color: theme.textColor }}>{day.label}</span>
+                        <span style={{ color: theme.textColor, fontWeight: 500 }}>
+                          {isClosed ? 'Fechado' : mainHours}
+                        </span>
+                      </div>
+                      {interval && (
+                        <div style={{ 
+                          textAlign: 'right',
+                          fontSize: '12px',
+                          color: theme.subtextColor,
+                          marginTop: '2px'
+                        }}>
+                          Intervalo: {interval}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              ) : (
+                <p style={{ color: theme.subtextColor, fontStyle: 'italic' }}>
+                  Horários não configurados
+                </p>
+              )}
+            </div>
+          </div>
+        )
+
+      case 'contato':
+        if (!isBlockEnabled('contato')) return null
+        return (
+          <div key="contato" style={{
+            background: theme.cardBackground,
+            padding: '20px',
+            borderRadius: '12px',
+            marginBottom: '16px',
+            border: `1px solid ${theme.borderColor}`,
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease'
+          }}>
+            <h2 style={{
+              fontSize: '18px',
+              marginTop: 0,
+              marginBottom: '14px',
+              fontWeight: '700',
+              letterSpacing: '-0.2px',
+              color: theme.textColor
             }}>
               Contato
             </h2>
-            <div style={{ fontSize: '15px', color: '#ccc' }}>
+            <div style={{ fontSize: '15px', color: theme.subtextColor }}>
               {tenant.phone && (
                 <div style={{ marginBottom: '12px' }}>
                   <a 
@@ -268,7 +412,7 @@ export default function LandingPageContent({
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      color: '#ccc',
+                      color: theme.subtextColor,
                       textDecoration: 'none',
                       fontWeight: '600',
                       display: 'flex',
@@ -285,7 +429,7 @@ export default function LandingPageContent({
                   <a 
                     href={`mailto:${tenant.email}`}
                     style={{
-                      color: '#ccc',
+                      color: theme.subtextColor,
                       textDecoration: 'none',
                       fontWeight: '600',
                       display: 'flex',
@@ -309,8 +453,8 @@ export default function LandingPageContent({
   // Conteúdo mobile da landing page
   const MobileContent = () => (
     <div style={{
-      backgroundColor: '#000',
-      color: '#fff',
+      backgroundColor: theme.backgroundColor,
+      color: theme.textColor,
       fontFamily: "'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       minHeight: '100vh',
       margin: 0,
@@ -321,12 +465,12 @@ export default function LandingPageContent({
       {/* Premium Header */}
       <div style={{
         padding: '12px 20px',
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+        backgroundColor: theme.backgroundColor,
         backdropFilter: 'blur(10px)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderBottom: '1px solid rgba(9, 145, 59, 0.1)',
+        borderBottom: `1px solid ${theme.borderColor}`,
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -338,17 +482,14 @@ export default function LandingPageContent({
           fontWeight: '700', 
           margin: 0,
           letterSpacing: '-0.5px',
-          background: 'linear-gradient(135deg, #fff 0%, #aaa 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          color: theme.textColor,
         }}>
           {tenant.name}
         </h1>
         <button style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          color: '#fff',
+          background: theme.cardBackground,
+          border: `1px solid ${theme.borderColor}`,
+          color: theme.textColor,
           cursor: 'pointer',
           padding: '10px',
           borderRadius: '8px',
@@ -372,21 +513,38 @@ export default function LandingPageContent({
         display: 'block',
         marginBottom: '20px',
         borderRadius: '8px',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        position: 'relative'
       }}>
         {tenant.banner ? (
-          <img
-            src={tenant.banner}
-            alt="Banner do estabelecimento"
-            className="hero-banner-image"
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              objectFit: 'contain',
-              backgroundColor: '#111'
-            }}
-          />
+          <>
+            <img
+              src={tenant.banner}
+              alt="Banner do estabelecimento"
+              className="hero-banner-image"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                objectFit: 'contain',
+                backgroundColor: '#111'
+              }}
+            />
+            {/* Overlay com gradiente dinâmico */}
+            {showBannerOverlay && (
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                width: '100%',
+                height: '30%',
+                background: `linear-gradient(to bottom, transparent 0%, ${theme.backgroundColor} 100%)`,
+                pointerEvents: 'none',
+                zIndex: 10
+              }} />
+            )}
+          </>
         ) : (
           <div style={{
             width: '100%',
@@ -401,16 +559,16 @@ export default function LandingPageContent({
       {/* Premium CTA Section */}
       <div style={{ 
         padding: '24px 16px 20px 16px',
-        background: 'linear-gradient(135deg, rgba(9, 145, 59, 0.05) 0%, rgba(9, 145, 59, 0) 100%)',
-        borderBottom: '1px solid rgba(9, 145, 59, 0.1)'
+        background: `linear-gradient(135deg, ${theme.buttonColor}10 0%, transparent 100%)`,
+        borderBottom: `1px solid ${theme.borderColor}`
       }}>
         <Link href={`/agendar/${tenantSlug}`} style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '10px',
-          backgroundColor: '#09913b',
-          color: '#fff',
+          backgroundColor: theme.buttonColor,
+          color: theme.buttonTextColor,
           textAlign: 'center',
           padding: '16px 32px',
           borderRadius: '10px',
@@ -421,7 +579,7 @@ export default function LandingPageContent({
           border: 'none',
           cursor: 'pointer',
           transition: 'all 0.3s ease',
-          boxShadow: '0 8px 24px rgba(9, 145, 59, 0.3)',
+          boxShadow: `0 8px 24px ${theme.buttonColor}40`,
           letterSpacing: '0.3px'
         }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -440,8 +598,8 @@ export default function LandingPageContent({
             justifyContent: 'center',
             gap: '8px',
             backgroundColor: 'transparent',
-            color: '#09913b',
-            border: '1.5px solid rgba(9, 145, 59, 0.4)',
+            color: theme.buttonColor,
+            border: `1.5px solid ${theme.buttonColor}60`,
             textAlign: 'center',
             padding: '10px 18px',
             borderRadius: '10px',
@@ -475,11 +633,11 @@ export default function LandingPageContent({
         {/* Serviços */}
         {services && services.length > 0 && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(42, 42, 42, 0.4) 0%, rgba(42, 42, 42, 0.2) 100%)',
+            background: theme.cardBackground,
             padding: '20px',
             borderRadius: '12px',
             marginBottom: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: `1px solid ${theme.borderColor}`,
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease'
           }}>
@@ -489,6 +647,7 @@ export default function LandingPageContent({
               marginBottom: '14px',
               fontWeight: '700',
               letterSpacing: '-0.2px',
+              color: theme.textColor,
               display: 'flex',
               alignItems: 'center',
               gap: '12px'
@@ -499,30 +658,30 @@ export default function LandingPageContent({
                 justifyContent: 'center',
                 width: '40px',
                 height: '40px',
-                background: '#2a2a2a',
+                background: theme.cardBackground,
                 borderRadius: '10px',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
               }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={theme.subtextColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
               </span>
               Nossos Serviços
             </h2>
-            <div style={{ fontSize: '15px', color: '#ccc' }}>
+            <div style={{ fontSize: '15px', color: theme.subtextColor }}>
               {services.map((service, idx) => (
                 <div 
                   key={service.id} 
                   style={{
                     padding: '12px 0',
-                    borderBottom: idx < services.length - 1 ? '1px solid rgba(9, 145, 59, 0.1)' : 'none'
+                    borderBottom: idx < services.length - 1 ? `1px solid ${theme.borderColor}` : 'none'
                   }}
                 >
-                  <div style={{ fontWeight: '600', color: '#fff', fontSize: '15px' }}>
+                  <div style={{ fontWeight: '600', color: theme.textColor, fontSize: '15px' }}>
                     {service.name}
                   </div>
-                  <div style={{ fontSize: '13px', marginTop: '4px', color: '#999' }}>
+                  <div style={{ fontSize: '13px', marginTop: '4px', color: theme.subtextColor }}>
                     R$ {service.price.toFixed(2)} • {service.duration} min
                   </div>
                 </div>

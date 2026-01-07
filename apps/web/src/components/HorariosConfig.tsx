@@ -138,8 +138,10 @@ export function HorariosConfig({ onSuccess }: { onSuccess?: () => void }) {
           message.success('Horários salvos com sucesso!')
           onSuccess?.()
         },
-        onError: () => {
-          message.error('Erro ao salvar horários')
+        onError: (error: any) => {
+          console.error('Erro ao salvar horários:', error)
+          const errorMsg = error?.response?.data?.message || error?.message || 'Erro ao salvar horários'
+          message.error(errorMsg)
         },
       })
     } catch (error) {

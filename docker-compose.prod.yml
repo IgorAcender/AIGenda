@@ -3,34 +3,11 @@ version: '3.8'
 # ===========================================
 # PRODUÇÃO - EasyPanel
 # PostgreSQL e Redis são instalados como apps separados no EasyPanel
-# Este compose é apenas para API e Frontend
+# Este compose é para API, Frontend e 10 Evolutions
 # ===========================================
 
 services:
-  # API Backend
-  api:
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: agende-ai-api
-    restart: unless-stopped
-    environment:
-      # Configurar no EasyPanel com os valores reais
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      API_PORT: 3001
-      API_HOST: 0.0.0.0
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: 7d
-    ports:
-      - "3001:3001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Frontend Web
+  # ==================== FRONTEND ====================
   web:
     build:
       context: ./apps/web
@@ -38,11 +15,296 @@ services:
     container_name: agende-ai-web
     restart: unless-stopped
     environment:
-      # Deixar vazio para detectar automaticamente https/http
-      # Ou definir URL completa da API se necessário
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-}
+      - NODE_ENV=production
     ports:
       - "3000:3000"
     depends_on:
       api:
         condition: service_healthy
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== BACKEND ====================
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: agende-ai-api
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - API_PORT=3001
+      - API_HOST=0.0.0.0
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=7d
+      - NODE_ENV=production
+      - EVOLUTION_1_URL=http://evolution-1:8080
+      - EVOLUTION_2_URL=http://evolution-2:8080
+      - EVOLUTION_3_URL=http://evolution-3:8080
+      - EVOLUTION_4_URL=http://evolution-4:8080
+      - EVOLUTION_5_URL=http://evolution-5:8080
+      - EVOLUTION_6_URL=http://evolution-6:8080
+      - EVOLUTION_7_URL=http://evolution-7:8080
+      - EVOLUTION_8_URL=http://evolution-8:8080
+      - EVOLUTION_9_URL=http://evolution-9:8080
+      - EVOLUTION_10_URL=http://evolution-10:8080
+      - EVOLUTION_DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - EVOLUTION_REDIS_URL=${EVOLUTION_REDIS_URL}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - evolution-1
+      - evolution-2
+      - evolution-3
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 1 ====================
+  evolution-1:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-1
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-1
+    ports:
+      - "8001:8080"
+    volumes:
+      - evolution-1-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 2 ====================
+  evolution-2:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-2
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-2
+    ports:
+      - "8002:8080"
+    volumes:
+      - evolution-2-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 3 ====================
+  evolution-3:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-3
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-3
+    ports:
+      - "8003:8080"
+    volumes:
+      - evolution-3-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 4 ====================
+  evolution-4:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-4
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-4
+    ports:
+      - "8004:8080"
+    volumes:
+      - evolution-4-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 5 ====================
+  evolution-5:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-5
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-5
+    ports:
+      - "8005:8080"
+    volumes:
+      - evolution-5-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 6 ====================
+  evolution-6:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-6
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-6
+    ports:
+      - "8006:8080"
+    volumes:
+      - evolution-6-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 7 ====================
+  evolution-7:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-7
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-7
+    ports:
+      - "8007:8080"
+    volumes:
+      - evolution-7-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 8 ====================
+  evolution-8:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-8
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-8
+    ports:
+      - "8008:8080"
+    volumes:
+      - evolution-8-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 9 ====================
+  evolution-9:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-9
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-9
+    ports:
+      - "8009:8080"
+    volumes:
+      - evolution-9-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 10 ====================
+  evolution-10:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-10
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${EVOLUTION_DATABASE_URL}
+      - REDIS_URL=${EVOLUTION_REDIS_URL}
+      - INSTANCE_NAME=evolution-10
+    ports:
+      - "8010:8080"
+    volumes:
+      - evolution-10-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ==================== VOLUMES ====================
+volumes:
+  evolution-1-data:
+    driver: local
+  evolution-2-data:
+    driver: local
+  evolution-3-data:
+    driver: local
+  evolution-4-data:
+    driver: local
+  evolution-5-data:
+    driver: local
+  evolution-6-data:
+    driver: local
+  evolution-7-data:
+    driver: local
+  evolution-8-data:
+    driver: local
+  evolution-9-data:
+    driver: local
+  evolution-10-data:
+    driver: local
+
+# ==================== NETWORKS ====================
+networks:
+  agende-ai-network:
+    driver: bridge

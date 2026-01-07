@@ -50,6 +50,12 @@ interface TenantData {
         saturday?: string;
         sunday?: string;
       };
+      // Cores do tema
+      themeTemplate?: string;
+      backgroundColor?: string;
+      textColor?: string;
+      buttonColorPrimary?: string;
+      buttonTextColor?: string;
     };
     services: Array<{
       id: string;

@@ -287,6 +287,43 @@ async function main() {
   console.log('│ Email: carlos@barbearia-exemplo.com                         │')
   console.log('│ Senha: Barbeiro@123                                         │')
   console.log('└─────────────────────────────────────────────────────────────┘')
+  // ============= CRIAR EVOLUTION INSTANCES =============
+  console.log('\n🌱 Inicializando Evolution instances...')
+
+  for (let i = 1; i <= 10; i++) {
+    const name = `evolution-${i}`
+    const port = 8000 + i
+
+    // Em desenvolvimento: localhost
+    // Em produção: nome do serviço Docker
+    const isDev = process.env.NODE_ENV === 'development'
+    const url = isDev
+      ? `http://localhost:${port}`
+      : `http://evolution-${i}:${port}`
+
+    const existingInstance = await prisma.evolutionInstance.findUnique({
+      where: { name },
+    })
+
+    if (!existingInstance) {
+      const instance = await prisma.evolutionInstance.create({
+        data: {
+          name,
+          url,
+          maxConnections: 100,
+          tenantCount: 0,
+          isActive: true,
+        },
+      })
+      console.log(`✅ Evolution instance "${name}" criada`)
+    } else {
+      console.log(`⚠️  Evolution instance "${name}" já existe`)
+    }
+  }
+
+  console.log(
+    '✨ Evolution instances inicializadas! Capacidade: 1.000 tenants (10 × 100)'
+  )
 }
 
 main()

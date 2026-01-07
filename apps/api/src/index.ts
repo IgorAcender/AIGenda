@@ -15,6 +15,7 @@ import { publicBookingRoutes } from './routes/public-bookings'
 import { transactionRoutes } from './routes/transactions'
 import { dashboardRoutes } from './routes/dashboard'
 import { tenantRoutes, tenantPublicRoutes } from './routes/tenants'
+import { whatsappRoutes } from './routes/whatsapp'
 import { isRedisAvailable } from './lib/redis'
 
 const app = Fastify({
@@ -117,6 +118,7 @@ app.register(appointmentRoutes, { prefix: '/api/appointments' })
 app.register(publicBookingRoutes, { prefix: '' }) // Sem prefixo para rotas públicas
 app.register(transactionRoutes, { prefix: '/api/transactions' })
 app.register(dashboardRoutes, { prefix: '/api/dashboard' })
+app.register(whatsappRoutes, { prefix: '/api/whatsapp' }) // Rotas de WhatsApp/Evolution
 
 // Start server
 const start = async () => {

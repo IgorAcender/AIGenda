@@ -107,6 +107,9 @@ export async function publicBookingRoutes(app: FastifyInstance) {
           if (tenant.amenities) amenities = [tenant.amenities];
         }
 
+        // Obter configurações de tema
+        const config = tenant.configs
+
         return {
           data: {
             tenant: {
@@ -137,11 +140,17 @@ export async function publicBookingRoutes(app: FastifyInstance) {
               businessHours: businessHoursMap,
               whatsapp: tenant.whatsapp || tenant.phone, // Preferir whatsapp, fallback para phone
               about: tenant.about,
+              // Cores do tema da landing page
+              themeTemplate: config?.themeTemplate || 'dark',
+              backgroundColor: config?.backgroundColor || '#000000',
+              textColor: config?.textColor || '#ffffff',
+              buttonColorPrimary: config?.buttonColorPrimary || '#22c55e',
+              buttonTextColor: config?.buttonTextColor || '#ffffff',
             },
             services: tenant.services,
             categories: tenant.categories,
             professionals: tenant.professionals,
-            config: tenant.configs?.[0] || null,
+            config: config || null,
           },
         };
       } catch (error) {

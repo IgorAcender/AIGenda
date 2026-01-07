@@ -31,7 +31,7 @@ const configSchema = z.object({
 
 const brandingSchema = z.object({
   // Tema e cores
-  themeTemplate: z.enum(['light', 'dark', 'custom']).optional(),
+  themeTemplate: z.enum(['light', 'dark', 'ocean', 'sunset', 'royal', 'rose', 'sunshine', 'custom']).optional(),
   backgroundColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
   textColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
   buttonColorPrimary: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional().nullable(),
@@ -386,11 +386,19 @@ export async function tenantRoutes(app: FastifyInstance) {
         return reply.status(403).send({ error: 'Você não tem permissão para atualizar branding' })
       }
 
-      console.log('Request body recebido:', JSON.stringify(request.body, null, 2))
+      console.log('🎨 PUT /branding - Request body recebido:', JSON.stringify(request.body, null, 2))
 
-      const data = brandingSchema.parse(request.body)
-      
-      console.log('Dados validados:', JSON.stringify(data, null, 2))
+      let data
+      try {
+        data = brandingSchema.parse(request.body)
+        console.log('✅ Dados validados com sucesso:', JSON.stringify(data, null, 2))
+      } catch (zodError: any) {
+        console.error('❌ Erro de validação Zod:', zodError.errors)
+        return reply.status(400).send({ 
+          error: 'Erro de validação', 
+          details: zodError.errors 
+        })
+      }
 
       // Separar dados de Tenant dos dados de Configuration
       const {

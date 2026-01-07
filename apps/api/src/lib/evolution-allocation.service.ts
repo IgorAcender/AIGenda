@@ -1,0 +1,385 @@
+import { prisma } from './prisma';
+import { getEvolutionService } from './evolution.service';
+
+export const EVOLUTION_INSTANCES_COUNT = 10;
+export const MAX_TENANTS_PER_EVOLUTION = 100;
+
+interface AllocationResult {
+  success: boolean;
+  evolutionId?: number;
+  evolutionUrl?: string;
+  error?: string;
+}
+
+interface QRCodeResult {
+  success: boolean;
+  qr?: string;
+  code?: string;
+  base64?: string;
+  error?: string;
+}
+
+/**
+ * Serviço de alocação de tenants para as instâncias da Evolution
+ * Responsável por:
+ * - Encontrar Evolution disponível com menos tenants
+ * - Alocar novo tenant
+ * - Gerar QR Code
+ * - Gerenciar conexões de tenants
+ */
+export class EvolutionAllocationService {
+  /**
+   * Encontra a instância Evolution com menos tenants conectados
+   * Usa estratégia de hash para distribuição consistente
+   */
+  async findAvailableEvolutionInstance(): Promise<{
+    evolutionId: number;
+    url: string;
+  } | null> {
+    // Tenta encontrar instância com menos tenants
+    const evolution = await prisma.evolutionInstance.findFirst({
+      orderBy: {
+        tenantCount: 'asc',
+      },
+      where: {
+        tenantCount: {
+          lt: MAX_TENANTS_PER_EVOLUTION,
+        },
+        isActive: true,
+      },
+    });
+
+    if (!evolution) {
+      return null;
+    }
+
+    return {
+      evolutionId: evolution.id,
+      url: evolution.url,
+    };
+  }
+
+  /**
+   * Aloca um novo tenant à Evolution disponível
+   */
+  async allocateTenantToEvolution(tenantId: string): Promise<AllocationResult> {
+    try {
+      // Verifica se tenant já foi alocado
+      const existing = await prisma.tenantEvolutionMapping.findUnique({
+        where: {
+          tenantId,
+        },
+      });
+
+      if (existing) {
+        return {
+          success: true,
+          evolutionId: existing.evolutionInstanceId,
+          error: 'Tenant já alocado',
+        };
+      }
+
+      // Encontra Evolution disponível
+      const available = await this.findAvailableEvolutionInstance();
+
+      if (!available) {
+        return {
+          success: false,
+          error: 'Nenhuma Evolution disponível com espaço',
+        };
+      }
+
+      // Cria mapeamento do tenant para Evolution
+      const mapping = await prisma.tenantEvolutionMapping.create({
+        data: {
+          tenantId,
+          evolutionInstanceId: available.evolutionId,
+          isConnected: false,
+        },
+      });
+
+      // Incrementa contador de tenants na Evolution
+      await prisma.evolutionInstance.update({
+        where: { id: available.evolutionId },
+        data: {
+          tenantCount: {
+            increment: 1,
+          },
+        },
+      });
+
+      return {
+        success: true,
+        evolutionId: available.evolutionId,
+        evolutionUrl: available.url,
+      };
+    } catch (error) {
+      console.error('Erro ao alocar tenant:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Gera QR Code para tenant conectar seu WhatsApp
+   */
+  async generateQRCodeForTenant(tenantId: string): Promise<QRCodeResult> {
+    try {
+      // Obtém Evolution alocada para este tenant
+      const mapping = await prisma.tenantEvolutionMapping.findUnique({
+        where: { tenantId },
+        include: {
+          evolutionInstance: true,
+        },
+      });
+
+      if (!mapping || !mapping.evolutionInstance) {
+        return {
+          success: false,
+          error: 'Tenant não está alocado a nenhuma Evolution',
+        };
+      }
+
+      // Gera QR Code na Evolution
+      const evolutionService = getEvolutionService();
+      const qrCodeResponse = await evolutionService.generateQRCode(
+        mapping.evolutionInstanceId,
+        tenantId
+      );
+
+      if (qrCodeResponse.success) {
+        // Atualiza timestamp de tentativa
+        await prisma.tenantEvolutionMapping.update({
+          where: { tenantId },
+          data: {
+            lastQRCodeGeneratedAt: new Date(),
+          },
+        });
+      }
+
+      return {
+        success: qrCodeResponse.success,
+        qr: qrCodeResponse.qr,
+        code: qrCodeResponse.code,
+        base64: qrCodeResponse.base64,
+        error: qrCodeResponse.success ? undefined : 'Falha ao gerar QR Code',
+      };
+    } catch (error) {
+      console.error('Erro ao gerar QR Code:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Marca tenant como conectado quando webhook chega
+   */
+  async handleTenantConnected(
+    tenantId: string,
+    whatsappPhoneNumber?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const mapping = await prisma.tenantEvolutionMapping.update({
+        where: { tenantId },
+        data: {
+          isConnected: true,
+          whatsappPhoneNumber: whatsappPhoneNumber,
+          connectedAt: new Date(),
+          disconnectedAt: null,
+        },
+      });
+
+      console.log(`✅ Tenant ${tenantId} conectado (${whatsappPhoneNumber})`);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao marcar tenant como conectado:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Marca tenant como desconectado quando webhook chega
+   */
+  async handleTenantDisconnected(tenantId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      const mapping = await prisma.tenantEvolutionMapping.update({
+        where: { tenantId },
+        data: {
+          isConnected: false,
+          disconnectedAt: new Date(),
+        },
+      });
+
+      console.log(`❌ Tenant ${tenantId} desconectado`);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao marcar tenant como desconectado:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Remove completamente um tenant da Evolution
+   * Desconecta, remove da Evolution, limpa mapeamento e decrementa contador
+   */
+  async deleteTenantEvolutionConnection(tenantId: string): Promise<{
+    success: boolean;
+    error?: string;
+  }> {
+    try {
+      // Obtém mapeamento
+      const mapping = await prisma.tenantEvolutionMapping.findUnique({
+        where: { tenantId },
+        include: {
+          evolutionInstance: true,
+        },
+      });
+
+      if (!mapping) {
+        return {
+          success: false,
+          error: 'Tenant não encontrado',
+        };
+      }
+
+      const evolutionId = mapping.evolutionInstanceId;
+
+      // Desconecta na Evolution se estava conectado
+      if (mapping.isConnected) {
+        const evolutionService = getEvolutionService();
+        await evolutionService.disconnect(evolutionId, tenantId);
+      }
+
+      // Deleta mapeamento
+      await prisma.tenantEvolutionMapping.delete({
+        where: { tenantId },
+      });
+
+      // Decrementa contador de tenants
+      await prisma.evolutionInstance.update({
+        where: { id: evolutionId },
+        data: {
+          tenantCount: {
+            decrement: 1,
+          },
+        },
+      });
+
+      console.log(`🗑️ Tenant ${tenantId} removido da Evolution ${evolutionId}`);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao deletar conexão Evolution do tenant:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Obtém status da conexão Evolution de um tenant
+   */
+  async getTenantEvolutionStatus(tenantId: string): Promise<{
+    success: boolean;
+    isConnected?: boolean;
+    evolutionId?: number;
+    whatsappPhone?: string;
+    connectedAt?: Date;
+    error?: string;
+  }> {
+    try {
+      const mapping = await prisma.tenantEvolutionMapping.findUnique({
+        where: { tenantId },
+      });
+
+      if (!mapping) {
+        return {
+          success: false,
+          error: 'Tenant não está alocado',
+        };
+      }
+
+      return {
+        success: true,
+        isConnected: mapping.isConnected,
+        evolutionId: mapping.evolutionInstanceId,
+        whatsappPhone: mapping.whatsappPhoneNumber || undefined,
+        connectedAt: mapping.connectedAt || undefined,
+      };
+    } catch (error) {
+      console.error('Erro ao obter status:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Obtém status de todas as Evolution instances
+   */
+  async getAllEvolutionStatus(): Promise<{
+    success: boolean;
+    instances?: Array<{
+      id: number;
+      name: string;
+      url: string;
+      tenantCount: number;
+      isActive: boolean;
+      occupancyPercent: number;
+    }>;
+    error?: string;
+  }> {
+    try {
+      const instances = await prisma.evolutionInstance.findMany();
+
+      const status = instances.map((instance) => ({
+        id: instance.id,
+        name: instance.name,
+        url: instance.url,
+        tenantCount: instance.tenantCount,
+        isActive: instance.isActive,
+        occupancyPercent: Math.round(
+          (instance.tenantCount / MAX_TENANTS_PER_EVOLUTION) * 100
+        ),
+      }));
+
+      return {
+        success: true,
+        instances: status,
+      };
+    } catch (error) {
+      console.error('Erro ao obter status das Evolution instances:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+}
+
+// Singleton instance
+let allocationService: EvolutionAllocationService;
+
+export function getEvolutionAllocationService(): EvolutionAllocationService {
+  if (!allocationService) {
+    allocationService = new EvolutionAllocationService();
+  }
+  return allocationService;
+}

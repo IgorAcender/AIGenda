@@ -1,0 +1,210 @@
+version: '3.8'
+
+services:
+  # ==================== FRONTEND ====================
+  web:
+    build: ./apps/web
+    container_name: agende-ai-web
+    ports:
+      - "3000:3000"
+    environment:
+      - API_URL=http://localhost:3001
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - agende-ai-network
+
+  # ==================== BACKEND ====================
+  api:
+    build: ./apps/api
+    container_name: agende-ai-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://agende_user:agende_password@postgres-app:5432/agende_ai
+      - REDIS_URL=redis://redis-app:6379/0
+      - EVOLUTION_1_URL=http://evolution-1:8080
+      - EVOLUTION_2_URL=http://evolution-2:8080
+      - EVOLUTION_3_URL=http://evolution-3:8080
+      - EVOLUTION_POSTGRES_URL=postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      - EVOLUTION_REDIS_URL=redis://redis-evolution:6379/0
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    depends_on:
+      - postgres-app
+      - redis-app
+      - postgres-evolution
+      - redis-evolution
+    networks:
+      - agende-ai-network
+
+  # ==================== BANCO DE DADOS APP ====================
+  postgres-app:
+    image: postgres:15
+    container_name: agende-ai-postgres-app
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=agende_ai
+      - POSTGRES_USER=agende_user
+      - POSTGRES_PASSWORD=agende_password
+    volumes:
+      - postgres-app-data:/var/lib/postgresql/data
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agende_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== CACHE APP ====================
+  redis-app:
+    image: redis:7
+    container_name: agende-ai-redis-app
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-app-data:/data
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== BANCO DE DADOS EVOLUTION ====================
+  postgres-evolution:
+    image: postgres:15
+    container_name: agende-ai-postgres-evolution
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=evolution
+      - POSTGRES_USER=evolution_user
+      - POSTGRES_PASSWORD=evolution_password
+    volumes:
+      - postgres-evolution-data:/var/lib/postgresql/data
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== CACHE EVOLUTION ====================
+  redis-evolution:
+    image: redis:7
+    container_name: agende-ai-redis-evolution
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-evolution-data:/data
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== EVOLUTION 1 ====================
+  evolution-1:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-1
+    ports:
+      - "8001:8080"
+    environment:
+      - DATABASE_URL=postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      - REDIS_URL=redis://redis-evolution:6379/0
+      - INSTANCE_NAME=evolution-1
+      - DEBUG=true
+    depends_on:
+      - postgres-evolution
+      - redis-evolution
+    volumes:
+      - evolution-1-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 2 ====================
+  evolution-2:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-2
+    ports:
+      - "8002:8080"
+    environment:
+      - DATABASE_URL=postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      - REDIS_URL=redis://redis-evolution:6379/0
+      - INSTANCE_NAME=evolution-2
+      - DEBUG=true
+    depends_on:
+      - postgres-evolution
+      - redis-evolution
+    volumes:
+      - evolution-2-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== EVOLUTION 3 ====================
+  evolution-3:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-3
+    ports:
+      - "8003:8080"
+    environment:
+      - DATABASE_URL=postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      - REDIS_URL=redis://redis-evolution:6379/0
+      - INSTANCE_NAME=evolution-3
+      - DEBUG=true
+    depends_on:
+      - postgres-evolution
+      - redis-evolution
+    volumes:
+      - evolution-3-data:/app/instances
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres-app-data:
+    driver: local
+  postgres-evolution-data:
+    driver: local
+  redis-app-data:
+    driver: local
+  redis-evolution-data:
+    driver: local
+  evolution-1-data:
+    driver: local
+  evolution-2-data:
+    driver: local
+  evolution-3-data:
+    driver: local
+
+# ==================== NETWORKS ====================
+networks:
+  agende-ai-network:
+    driver: bridge
