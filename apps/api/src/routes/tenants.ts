@@ -168,7 +168,7 @@ export async function tenantRoutes(app: FastifyInstance) {
       where: { id: tenantId },
       include: {
         configs: true,
-        subscriptions: true,
+        subscription: true,
         _count: {
           select: {
             clients: true,
@@ -258,7 +258,7 @@ export async function tenantRoutes(app: FastifyInstance) {
         name: true,
         email: true,
         role: true,
-        active: true,
+        isActive: true,
         avatar: true,
         createdAt: true,
       },

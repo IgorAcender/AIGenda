@@ -31,7 +31,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
    */
   app.get<{ Params: { tenantSlug: string } }>(
     '/:tenantSlug',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Params: { tenantSlug: string } }>, reply: FastifyReply) => {
       try {
         const { tenantSlug } = request.params;
 
@@ -169,7 +169,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
    */
   app.get<{ Params: { tenantSlug: string; serviceId: string } }>(
     '/:tenantSlug/professionals/:serviceId',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Params: { tenantSlug: string; serviceId: string } }>, reply: FastifyReply) => {
       try {
         const { tenantSlug, serviceId } = request.params;
 
@@ -201,7 +201,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
    */
   app.get<{ Params: { tenantSlug: string } }>(
     '/:tenantSlug/available-slots',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Params: { tenantSlug: string } }>, reply: FastifyReply) => {
       try {
         const { tenantSlug } = request.params;
         const query = availableSlotsSchema.parse(request.query);
@@ -403,7 +403,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
    */
   app.post<{ Params: { bookingId: string } }>(
     '/public/bookings/:bookingId/cancel',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Params: { bookingId: string } }>, reply: FastifyReply) => {
       try {
         const { bookingId } = request.params;
         const { customerPhone, reason } = request.body as {
@@ -490,7 +490,7 @@ export async function publicBookingRoutes(app: FastifyInstance) {
    */
   app.post<{ Params: { bookingId: string } }>(
     '/public/bookings/:bookingId/reschedule',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Params: { bookingId: string } }>, reply: FastifyReply) => {
       try {
         const { bookingId } = request.params;
         const { customerPhone, newDate, newTime } = request.body as {

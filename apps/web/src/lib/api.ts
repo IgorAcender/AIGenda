@@ -77,6 +77,10 @@ export const authApi = {
     if (response.data.token) {
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data.user))
+      // ✅ Adicionar tenant ao localStorage
+      if (response.data.tenant) {
+        localStorage.setItem('tenant', JSON.stringify(response.data.tenant))
+      }
     }
     return response.data
   },
@@ -87,6 +91,8 @@ export const authApi = {
     } finally {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      // ✅ Remover tenant também
+      localStorage.removeItem('tenant')
     }
   },
 

@@ -176,8 +176,8 @@ export async function clientRoutes(app: FastifyInstance) {
 
       // Verificar CPF duplicado
       if (clientData.cpf) {
-        const existingClient = await prisma.client.findUnique({
-          where: { cpf: clientData.cpf },
+        const existingClient = await prisma.client.findFirst({
+          where: { cpf: clientData.cpf, tenantId },
         })
         if (existingClient) {
           return reply.status(400).send({ error: 'CPF já cadastrado' })
@@ -187,7 +187,7 @@ export async function clientRoutes(app: FastifyInstance) {
       const createData = { ...clientData, tenantId }
 
       const client = await prisma.client.create({
-        data: createData,
+        data: createData as any,
       })
 
       // Invalidar cache

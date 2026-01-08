@@ -92,7 +92,7 @@ export async function serviceRoutes(app: FastifyInstance) {
         data: {
           ...data,
           tenantId,
-        },
+        } as any,
       })
 
       return reply.status(201).send(service)
@@ -121,7 +121,7 @@ export async function serviceRoutes(app: FastifyInstance) {
 
       const service = await prisma.service.update({
         where: { id },
-        data,
+        data: data as any,
       })
 
       return service

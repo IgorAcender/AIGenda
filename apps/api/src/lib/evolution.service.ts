@@ -96,6 +96,9 @@ export class EvolutionService {
         },
       };
 
+      console.log(`[HTTP Request] ${options.method} ${urlObj.hostname}:${options.port}${options.path}`);
+      console.log(`[Headers] apikey: ${this.apiKey}`);
+
       const req = httpModule.request(options, (res) => {
         let data = '';
 
@@ -104,11 +107,14 @@ export class EvolutionService {
         });
 
         res.on('end', () => {
+          console.log(`[HTTP Response] Status: ${res.statusCode}`);
           try {
             const parsedData = JSON.parse(data);
             if (res.statusCode && res.statusCode >= 400) {
+              console.error(`[HTTP Error] ${res.statusCode}: ${JSON.stringify(parsedData)}`);
               reject(new Error(`HTTP ${res.statusCode}: ${parsedData?.error || parsedData?.message || 'Erro'}`));
             } else {
+              console.log(`[HTTP Success] Data:`, parsedData);
               resolve(parsedData);
             }
           } catch (e) {
@@ -118,6 +124,7 @@ export class EvolutionService {
       });
 
       req.on('error', (e) => {
+        console.error(`[HTTP Error] Connection error:`, e.message);
         reject(e);
       });
 
@@ -145,6 +152,7 @@ export class EvolutionService {
       
       console.log(`🔄 Criando instância ${instanceName} na Evolution ${evolutionId} (${evolutionUrl})`);
       console.log(`🔑 Usando API Key: ${this.apiKey.substring(0, 10)}...`);
+      console.log(`📧 Headers: apikey=${this.apiKey}`);
 
       // Faz o request usando http/https nativo
       const data = await this.makeHttpRequest(
@@ -157,6 +165,7 @@ export class EvolutionService {
       );
 
       console.log(`✅ Instância criada: ${instanceName}`);
+      console.log(`📦 Resposta Evolution:`, data);
 
       // Retorna sucesso - o QR será enviado via webhook quando pronto
       return {
@@ -168,6 +177,7 @@ export class EvolutionService {
     } catch (error: any) {
       console.error(`❌ Erro ao criar instância Evolution ${evolutionId}:`, {
         message: error.message,
+        url: process.env[`EVOLUTION_${evolutionId}_URL`],
       });
 
       throw new Error(

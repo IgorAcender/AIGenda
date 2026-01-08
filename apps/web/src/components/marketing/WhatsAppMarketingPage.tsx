@@ -65,6 +65,14 @@ export default function WhatsAppMarketingPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
   const tenantId = tenant?.id
 
+  // Verificar autenticação
+  useEffect(() => {
+    if (!tenant || !user) {
+      setCheckingStatus(false)
+      message.error('Você precisa estar autenticado para acessar o WhatsApp Marketing')
+    }
+  }, [])
+
   useEffect(() => {
     if (!tenantId) return
 

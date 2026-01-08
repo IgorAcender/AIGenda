@@ -17,6 +17,7 @@ import { dashboardRoutes } from './routes/dashboard'
 import { tenantRoutes, tenantPublicRoutes } from './routes/tenants'
 import { whatsappRoutes } from './routes/whatsapp'
 import { isRedisAvailable } from './lib/redis'
+import { ensureEvolutionInstancesSeeded } from './lib/evolution-seed'
 
 const app = Fastify({
   logger: true,
@@ -125,6 +126,9 @@ app.register(whatsappRoutes, { prefix: '/api/whatsapp' })
 // Start server
 const start = async () => {
   try {
+    // Garante que as Evolution Instances estão seeded
+    await ensureEvolutionInstancesSeeded()
+
     const port = parseInt(process.env.API_PORT || '3001')
     const host = process.env.API_HOST || '0.0.0.0'
     

@@ -57,11 +57,8 @@ export async function transactionRoutes(app: FastifyInstance) {
           client: {
             select: { id: true, name: true },
           },
-          professional: {
-            select: { id: true, name: true },
-          },
           appointment: {
-            select: { id: true, title: true },
+            select: { id: true, date: true },
           },
         },
       }),
@@ -99,7 +96,6 @@ export async function transactionRoutes(app: FastifyInstance) {
       where: { id, tenantId },
       include: {
         client: true,
-        professional: true,
         appointment: true,
       },
     })
@@ -121,9 +117,9 @@ export async function transactionRoutes(app: FastifyInstance) {
         data: {
           ...data,
           tenantId,
-          status: 'CONFIRMED',
+          status: 'PAID',
           paidAt: new Date(),
-        },
+        } as any,
       })
 
       return reply.status(201).send(transaction)
@@ -152,7 +148,7 @@ export async function transactionRoutes(app: FastifyInstance) {
 
       const transaction = await prisma.transaction.update({
         where: { id },
-        data,
+        data: data as any,
       })
 
       return transaction

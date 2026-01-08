@@ -173,7 +173,7 @@ export class EvolutionAllocationService {
       }
 
       return {
-        success: qrCodeResponse.success,
+        success: qrCodeResponse.success || false,
         qr: qrCodeResponse.qr,
         code: qrCodeResponse.code,
         base64: qrCodeResponse.base64,

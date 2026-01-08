@@ -12,7 +12,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    * Aloca um tenant à uma Evolution disponível e gera QR Code
    */
   app.post<{ Body: { tenantId: string } }>('/setup', async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Body: { tenantId: string } }>,
     reply: FastifyReply
   ) => {
     try {
@@ -69,7 +69,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    * Regenera o QR Code para um tenant
    */
   app.post<{ Body: { tenantId: string } }>('/refresh-qr', async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Body: { tenantId: string } }>,
     reply: FastifyReply
   ) => {
     try {
@@ -112,7 +112,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    * Obtém status da conexão WhatsApp de um tenant
    */
   app.get<{ Params: { tenantId: string } }>('/status/:tenantId', async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Params: { tenantId: string } }>,
     reply: FastifyReply
   ) => {
     try {
@@ -140,7 +140,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    */
   app.post<{
     Body: { tenantId: string; phoneNumber: string; message: string };
-  }>('/send-message', async (request: FastifyRequest, reply: FastifyReply) => {
+  }>('/send-message', async (request: FastifyRequest<{ Body: { tenantId: string; phoneNumber: string; message: string } }>, reply: FastifyReply) => {
     try {
       const { tenantId, phoneNumber, message } = request.body;
 
@@ -193,7 +193,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    * Desconecta WhatsApp de um tenant
    */
   app.post<{ Body: { tenantId: string } }>('/disconnect', async (
-    request: FastifyRequest,
+    request: FastifyRequest<{ Body: { tenantId: string } }>,
     reply: FastifyReply
   ) => {
     try {
@@ -266,7 +266,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    */
   app.post<{ Body: { instance: string; data: any } }>(
     '/webhooks/evolution/connected',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: { instance: string; data: any } }>, reply: FastifyReply) => {
       try {
         const { instance, data } = request.body;
 
@@ -308,7 +308,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    */
   app.post<{ Body: { instance: string; data: any } }>(
     '/webhooks/evolution/disconnected',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: { instance: string; data: any } }>, reply: FastifyReply) => {
       try {
         const { instance, data } = request.body;
 
@@ -347,7 +347,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
    */
   app.post<{ Body: { instance: string; data: any } }>(
     '/webhooks/evolution/messages',
-    async (request: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: { instance: string; data: any } }>, reply: FastifyReply) => {
       try {
         const { instance, data } = request.body;
 
