@@ -49,7 +49,8 @@ export class EvolutionService {
           timeout: 30000,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
+            // Evolution v2.2.3 espera header `apikey`
+            apikey: this.apiKey,
           },
         });
         this.evolutionInstances.set(i, client);
@@ -70,6 +71,7 @@ export class EvolutionService {
 
   /**
    * Gera um QR Code para conectar um novo WhatsApp
+   * Na v2.2.3, o QR Code é gerado assincronamente via polling
    */
   async generateQRCode(
     evolutionId: number,
@@ -79,17 +81,98 @@ export class EvolutionService {
       const client = this.getClient(evolutionId);
       const instanceName = `tenant-${tenantId}`;
 
-      const response = await client.post('/qrcode/generate', {
-        apikey: this.apiKey,
-        instance: instanceName,
-      });
+      // Tenta criar a instância
+      try {
+        await client.post(
+          '/instance/create',
+          {
+            instanceName,
+            integration: 'WHATSAPP-BAILEYS',
+            qrcode: true,
+          },
+          {
+            headers: { apikey: this.apiKey },
+          }
+        );
+      } catch (error: any) {
+        // Se a instância já existe, continua
+        if (error.response?.status !== 400) {
+          throw error;
+        }
+      }
 
+      // Aguarda o QR Code com polling (máx 30 segundos)
+      const maxAttempts = 30;
+      const delayMs = 1000;
+      
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          // Tenta obter a lista de instâncias e procura pela nossa
+          const instancesResponse = await client.get('/instance/fetchInstances', {
+            headers: { apikey: this.apiKey },
+          });
+          
+          const instances = instancesResponse.data || [];
+          const instance = instances.find((inst: any) => inst.name === instanceName);
+          
+          if (instance && instance.connectionStatus === 'connecting') {
+            // Tenta obter o QR Code via diferentes endpoints
+            
+            // Endpoint 1: /chat/getBase64Qrcode
+            try {
+              const qrResponse = await client.get(
+                `/chat/getBase64Qrcode/${instanceName}`,
+                { headers: { apikey: this.apiKey } }
+              );
+              if (qrResponse.data?.base64) {
+                return {
+                  base64: qrResponse.data.base64,
+                  code: qrResponse.data.code,
+                  qr: qrResponse.data.qr,
+                  success: true,
+                };
+              }
+            } catch (e) {
+              // Endpoint não disponível, continua tentando
+            }
+
+            // Endpoint 2: /instance/connect (pode retornar QR no futuro)
+            try {
+              const connectResponse = await client.get(
+                `/instance/connect/${instanceName}`,
+                { headers: { apikey: this.apiKey } }
+              );
+              const data = connectResponse.data || {};
+              if (data.base64) {
+                return {
+                  base64: data.base64,
+                  code: data.code,
+                  qr: data.qr,
+                  success: true,
+                };
+              }
+            } catch (e) {
+              // Continua polling
+            }
+          }
+        } catch (error) {
+          // Continua tentando
+          console.log(`Polling tentativa ${attempt + 1}/${maxAttempts} para ${instanceName}`);
+        }
+
+        // Aguarda antes da próxima tentativa
+        if (attempt < maxAttempts - 1) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+      }
+
+      // Se chegou aqui, o QR Code não foi obtido, mas a instância foi criada
+      // Retorna sucesso sem o QR Code (será obtido via webhook mais tarde)
       return {
-        qr: response.data.qr,
-        code: response.data.code,
-        base64: response.data.base64,
         success: true,
+        code: `Instance ${instanceName} created. QR Code will be available via webhook.`,
       };
+
     } catch (error) {
       console.error(
         `Erro ao gerar QR Code na Evolution ${evolutionId}:`,

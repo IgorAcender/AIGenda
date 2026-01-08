@@ -79,6 +79,19 @@ export class EvolutionAllocationService {
         };
       }
 
+      // Valida se o tenant existe para evitar erro de FK na criação do mapping
+      const tenantExists = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { id: true },
+      });
+
+      if (!tenantExists) {
+        return {
+          success: false,
+          error: 'Tenant não encontrado. Verifique o ID usado pelo frontend',
+        };
+      }
+
       // Encontra Evolution disponível
       const available = await this.findAvailableEvolutionInstance();
 

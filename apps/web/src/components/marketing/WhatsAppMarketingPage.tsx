@@ -93,6 +93,9 @@ export default function WhatsAppMarketingPage() {
     }
 
     setLoading(true)
+    const loadingKey = 'qr_loading'
+    message.loading({ content: 'Gerando QR Code...', key: loadingKey, duration: 0 })
+    
     try {
       const res = await fetch(`${API_URL}/api/whatsapp/setup`, {
         method: 'POST',
@@ -103,15 +106,23 @@ export default function WhatsAppMarketingPage() {
       const data: QRCodeResponse = await res.json()
 
       if (data.success && data.base64) {
+        message.success({ content: 'QR Code gerado com sucesso!', key: loadingKey })
         setQrCode(data)
         setShowQRModal(true)
-        message.success('QR Code gerado com sucesso!')
+      } else if (data.success && !data.base64) {
+        // Instância foi criada, mas QR Code ainda está sendo gerado
+        message.info({ 
+          content: 'Instância criada. Aguarde alguns segundos para o QR Code aparecer...', 
+          key: loadingKey 
+        })
+        // Tenta novamente em 3 segundos
+        setTimeout(() => handleShowQR(), 3000)
       } else {
-        message.error(data.error || 'Erro ao gerar QR Code')
+        message.error({ content: data.error || 'Erro ao gerar QR Code', key: loadingKey })
       }
     } catch (error) {
       console.error('Erro:', error)
-      message.error('Erro ao gerar QR Code')
+      message.error({ content: 'Erro ao gerar QR Code', key: loadingKey })
     } finally {
       setLoading(false)
     }
@@ -178,7 +189,7 @@ export default function WhatsAppMarketingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenantId,
-          phone: values.phone,
+          phoneNumber: values.phone,
           message: values.message,
         }),
       })

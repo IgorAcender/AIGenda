@@ -43,11 +43,11 @@ export function useAuth(): AuthContextType & { isAuthenticated: boolean } {
     // Se não houver tenant, usar um padrão para testes (FIXO para não mudar a cada render)
     if (!tenant) {
       tenant = {
-        id: 'cmk31sb13000210mypvq27noa',
-        name: 'Barbearia Exemplo',
-        slug: 'barbearia-exemplo',
-        email: 'contato@barbearia.com',
-        phone: '11999999999',
+        id: 't1', // Mantém alinhado com o seed atual do banco
+        name: 'Minha Empresa',
+        slug: 'minha-empresa',
+        email: 'empresa@teste.com',
+        phone: undefined,
       }
     }
     
