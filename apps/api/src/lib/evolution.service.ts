@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
+import * as http from 'http';
+import * as https from 'https';
 
 interface EvolutionInstance {
   id: number;
@@ -12,6 +14,7 @@ interface QRCodeResponse {
   code?: string;
   base64?: string;
   success?: boolean;
+  message?: string;
 }
 
 interface GenerateInstanceResponse {
@@ -34,6 +37,7 @@ export class EvolutionService {
 
   constructor(apiKey: string = process.env.EVOLUTION_API_KEY || '') {
     this.apiKey = apiKey;
+    console.log(`🔑 Evolution API Key: ${apiKey ? apiKey.substring(0, 10) + '...' : 'NÃO DEFINIDA'}`);
     this.initializeInstances();
   }
 
@@ -70,116 +74,104 @@ export class EvolutionService {
   }
 
   /**
+   * Faz um POST direto usando http/https nativo
+   */
+  private async makeHttpRequest(url: string, body: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const isHttps = url.startsWith('https');
+      const httpModule = isHttps ? https : http;
+      const urlObj = new URL(url);
+
+      const postData = JSON.stringify(body);
+
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (isHttps ? 443 : 80),
+        path: urlObj.pathname + urlObj.search,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.apiKey,
+          'Content-Length': Buffer.byteLength(postData),
+        },
+      };
+
+      const req = httpModule.request(options, (res) => {
+        let data = '';
+
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            const parsedData = JSON.parse(data);
+            if (res.statusCode && res.statusCode >= 400) {
+              reject(new Error(`HTTP ${res.statusCode}: ${parsedData?.error || parsedData?.message || 'Erro'}`));
+            } else {
+              resolve(parsedData);
+            }
+          } catch (e) {
+            reject(new Error(`Falha ao parsear resposta: ${data}`));
+          }
+        });
+      });
+
+      req.on('error', (e) => {
+        reject(e);
+      });
+
+      req.write(postData);
+      req.end();
+    });
+  }
+
+  /**
    * Gera um QR Code para conectar um novo WhatsApp
-   * Na v2.2.3, o QR Code é gerado assincronamente via polling
+   * Na v2.2.3, apenas cria a instância (QR será obtido via webhook)
+   * NOTA: Usando http/https nativo por compatibilidade com Evolution API
    */
   async generateQRCode(
     evolutionId: number,
     tenantId: string
   ): Promise<QRCodeResponse> {
     try {
-      const client = this.getClient(evolutionId);
+      const evolutionUrl = process.env[`EVOLUTION_${evolutionId}_URL`];
+      if (!evolutionUrl) {
+        throw new Error(`Evolution ${evolutionId} URL não configurada`);
+      }
+
       const instanceName = `tenant-${tenantId}`;
-
-      // Tenta criar a instância
-      try {
-        await client.post(
-          '/instance/create',
-          {
-            instanceName,
-            integration: 'WHATSAPP-BAILEYS',
-            qrcode: true,
-          },
-          {
-            headers: { apikey: this.apiKey },
-          }
-        );
-      } catch (error: any) {
-        // Se a instância já existe, continua
-        if (error.response?.status !== 400) {
-          throw error;
-        }
-      }
-
-      // Aguarda o QR Code com polling (máx 30 segundos)
-      const maxAttempts = 30;
-      const delayMs = 1000;
       
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-          // Tenta obter a lista de instâncias e procura pela nossa
-          const instancesResponse = await client.get('/instance/fetchInstances', {
-            headers: { apikey: this.apiKey },
-          });
-          
-          const instances = instancesResponse.data || [];
-          const instance = instances.find((inst: any) => inst.name === instanceName);
-          
-          if (instance && instance.connectionStatus === 'connecting') {
-            // Tenta obter o QR Code via diferentes endpoints
-            
-            // Endpoint 1: /chat/getBase64Qrcode
-            try {
-              const qrResponse = await client.get(
-                `/chat/getBase64Qrcode/${instanceName}`,
-                { headers: { apikey: this.apiKey } }
-              );
-              if (qrResponse.data?.base64) {
-                return {
-                  base64: qrResponse.data.base64,
-                  code: qrResponse.data.code,
-                  qr: qrResponse.data.qr,
-                  success: true,
-                };
-              }
-            } catch (e) {
-              // Endpoint não disponível, continua tentando
-            }
+      console.log(`🔄 Criando instância ${instanceName} na Evolution ${evolutionId} (${evolutionUrl})`);
+      console.log(`🔑 Usando API Key: ${this.apiKey.substring(0, 10)}...`);
 
-            // Endpoint 2: /instance/connect (pode retornar QR no futuro)
-            try {
-              const connectResponse = await client.get(
-                `/instance/connect/${instanceName}`,
-                { headers: { apikey: this.apiKey } }
-              );
-              const data = connectResponse.data || {};
-              if (data.base64) {
-                return {
-                  base64: data.base64,
-                  code: data.code,
-                  qr: data.qr,
-                  success: true,
-                };
-              }
-            } catch (e) {
-              // Continua polling
-            }
-          }
-        } catch (error) {
-          // Continua tentando
-          console.log(`Polling tentativa ${attempt + 1}/${maxAttempts} para ${instanceName}`);
+      // Faz o request usando http/https nativo
+      const data = await this.makeHttpRequest(
+        `${evolutionUrl}/instance/create`,
+        {
+          instanceName,
+          integration: 'WHATSAPP-BAILEYS',
+          qrcode: true,
         }
+      );
 
-        // Aguarda antes da próxima tentativa
-        if (attempt < maxAttempts - 1) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
-        }
-      }
+      console.log(`✅ Instância criada: ${instanceName}`);
 
-      // Se chegou aqui, o QR Code não foi obtido, mas a instância foi criada
-      // Retorna sucesso sem o QR Code (será obtido via webhook mais tarde)
+      // Retorna sucesso - o QR será enviado via webhook quando pronto
       return {
         success: true,
-        code: `Instance ${instanceName} created. QR Code will be available via webhook.`,
+        code: `Instance ${instanceName} created`,
+        message: 'Aguarde alguns segundos para o QR Code aparecer...',
       };
 
-    } catch (error) {
-      console.error(
-        `Erro ao gerar QR Code na Evolution ${evolutionId}:`,
-        error
-      );
+    } catch (error: any) {
+      console.error(`❌ Erro ao criar instância Evolution ${evolutionId}:`, {
+        message: error.message,
+      });
+
       throw new Error(
-        `Falha ao gerar QR Code: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+        `Falha ao gerar QR Code: ${error.message}`
       );
     }
   }
