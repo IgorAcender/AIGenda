@@ -43,10 +43,10 @@ export function useAuth(): AuthContextType & { isAuthenticated: boolean } {
     // Se não houver tenant, usar um padrão para testes (FIXO para não mudar a cada render)
     if (!tenant) {
       tenant = {
-        id: 'test-tenant-demo-001',
-        name: 'Meu Negócio',
-        slug: 'meu-negocio',
-        email: 'teste@email.com',
+        id: 'cmk31sb13000210mypvq27noa',
+        name: 'Barbearia Exemplo',
+        slug: 'barbearia-exemplo',
+        email: 'contato@barbearia.com',
         phone: '11999999999',
       }
     }

@@ -1,0 +1,254 @@
+version: '3.8'
+
+# ===========================================
+# DESENVOLVIMENTO LOCAL - COM EVOLUTION
+# Inclui PostgreSQL, Redis e 3 Evolution instances
+# Para Development: docker-compose -f docker-compose.evolution.yml up
+# ===========================================
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: agende-ai-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agende_ai
+      POSTGRES_PASSWORD: agende_ai_secret
+      POSTGRES_DB: agende_ai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agende_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agende-ai-network
+
+  # Redis Cache - Compartilhado com seu App
+  redis:
+    image: redis:7-alpine
+    container_name: agende-ai-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agende-ai-network
+
+  # ==================== EVOLUTION DEDICATED SERVICES ====================
+  # PostgreSQL dedicado para Evolution
+  postgres-evolution:
+    image: postgres:16-alpine
+    container_name: agende-ai-evolution-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evolution_user
+      POSTGRES_PASSWORD: evolution_password
+      POSTGRES_DB: evolution_main
+    volumes:
+      - postgres_evolution_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agende-ai-network
+
+  # Redis dedicado para Evolution
+  redis-evolution:
+    image: redis:7-alpine
+    container_name: agende-ai-evolution-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_evolution_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agende-ai-network
+
+  # ==================== EVOLUTION 1 ====================
+  evolution-1:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-1
+    restart: unless-stopped
+    environment:
+      INSTANCE_NAME: evolution-1
+      SERVER_PORT: 8080
+      API_KEY: evolution_api_key_dev
+      SECRET_KEY: evolution_secret_key_dev
+    ports:
+      - "8001:8080"
+    volumes:
+      - evolution-1-data:/app/instances
+      - evolution-1-uploads:/app/uploads
+    depends_on:
+      redis-evolution:
+        condition: service_healthy
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================== EVOLUTION 2 ====================
+  evolution-2:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-2
+    restart: unless-stopped
+    environment:
+      INSTANCE_NAME: evolution-2
+      SERVER_PORT: 8080
+      API_KEY: evolution_api_key_dev
+      SECRET_KEY: evolution_secret_key_dev
+    ports:
+      - "8002:8080"
+    volumes:
+      - evolution-2-data:/app/instances
+      - evolution-2-uploads:/app/uploads
+    depends_on:
+      redis-evolution:
+        condition: service_healthy
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================== EVOLUTION 3 ====================
+  evolution-3:
+    image: atendai/evolution-api:latest
+    container_name: agende-ai-evolution-3
+    restart: unless-stopped
+    environment:
+      INSTANCE_NAME: evolution-3
+      SERVER_PORT: 8080
+      API_KEY: evolution_api_key_dev
+      SECRET_KEY: evolution_secret_key_dev
+    ports:
+      - "8003:8080"
+    volumes:
+      - evolution-3-data:/app/instances
+      - evolution-3-uploads:/app/uploads
+    depends_on:
+      redis-evolution:
+        condition: service_healthy
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # API Backend
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: agende-ai-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://agende_ai:agende_ai_secret@postgres:5432/agende_ai?schema=public
+      REDIS_URL: redis://redis:6379
+      API_PORT: 3001
+      API_HOST: 0.0.0.0
+      JWT_SECRET: ${JWT_SECRET:-agende-ai-secret-key}
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: development
+      # Evolution URLs (internas ao Docker)
+      EVOLUTION_1_URL: http://evolution-1:8080
+      EVOLUTION_2_URL: http://evolution-2:8080
+      EVOLUTION_3_URL: http://evolution-3:8080
+      EVOLUTION_API_KEY: evolution_api_key_dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./apps/api/prisma:/app/apps/api/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      evolution-1:
+        condition: service_healthy
+      evolution-2:
+        condition: service_healthy
+      evolution-3:
+        condition: service_healthy
+    networks:
+      - agende-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Web
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: deps
+    container_name: agende-ai-web
+    restart: unless-stopped
+    command: sh -c "cd /app/apps/web && pnpm run dev"
+    environment:
+      API_URL_INTERNAL: http://api:3001
+      NEXT_PUBLIC_API_URL:
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/public:/app/apps/web/public
+      - ./apps/web/next.config.js:/app/apps/web/next.config.js
+      - ./apps/web/tsconfig.json:/app/apps/web/tsconfig.json
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - agende-ai-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  postgres_evolution_data:
+  redis_evolution_data:
+  evolution-1-data:
+  evolution-2-data:
+  evolution-3-data:
+  evolution-1-uploads:
+  evolution-2-uploads:
+  evolution-3-uploads:
+
+networks:
+  agende-ai-network:
+    driver: bridge

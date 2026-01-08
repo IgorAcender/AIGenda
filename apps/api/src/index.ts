@@ -15,7 +15,7 @@ import { publicBookingRoutes } from './routes/public-bookings'
 import { transactionRoutes } from './routes/transactions'
 import { dashboardRoutes } from './routes/dashboard'
 import { tenantRoutes, tenantPublicRoutes } from './routes/tenants'
-import { whatsappRoutesMock } from './routes/whatsapp-mock'
+import { whatsappRoutes } from './routes/whatsapp'
 import { isRedisAvailable } from './lib/redis'
 
 const app = Fastify({
@@ -119,8 +119,8 @@ app.register(publicBookingRoutes, { prefix: '' }) // Sem prefixo para rotas púb
 app.register(transactionRoutes, { prefix: '/api/transactions' })
 app.register(dashboardRoutes, { prefix: '/api/dashboard' })
 
-// WhatsApp Routes - tenta banco real, fallback para mock
-app.register(whatsappRoutesMock, { prefix: '/api/whatsapp' }) // Usa mock por padrão em dev
+// WhatsApp Routes - conectado com Evolution
+app.register(whatsappRoutes, { prefix: '/api/whatsapp' })
 
 // Start server
 const start = async () => {

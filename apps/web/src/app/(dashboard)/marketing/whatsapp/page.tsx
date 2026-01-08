@@ -1,4 +1,4 @@
-import { WhatsAppMarketingPage } from '@/components/marketing/WhatsAppMarketingPage'
+import WhatsAppMarketingPage from '@/components/marketing/WhatsAppMarketingPage'
 
 export const metadata = {
   title: 'WhatsApp - Marketing',
