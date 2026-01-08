@@ -92,26 +92,42 @@ services:
     container_name: agende-ai-evolution-1
     restart: unless-stopped
     environment:
-      INSTANCE_NAME: evolution-1
+      # Server Config
+      SERVER_URL: http://localhost:8001
       SERVER_PORT: 8080
-      API_KEY: evolution_api_key_dev
-      SECRET_KEY: evolution_secret_key_dev
+      # Database Config
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      # Redis Config
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis-evolution:6379/0
+      CACHE_REDIS_PREFIX_KEY: evolution_1
+      CACHE_LOCAL_ENABLED: "false"
+      # Auth Config
+      AUTHENTICATION_API_KEY: evolution_api_key_dev
     ports:
       - "8001:8080"
     volumes:
-      - evolution-1-data:/app/instances
-      - evolution-1-uploads:/app/uploads
+      - evolution_instances:/evolution/instances
     depends_on:
+      postgres-evolution:
+        condition: service_healthy
       redis-evolution:
         condition: service_healthy
     networks:
       - agende-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
   # ==================== EVOLUTION 2 ====================
   evolution-2:
@@ -119,26 +135,42 @@ services:
     container_name: agende-ai-evolution-2
     restart: unless-stopped
     environment:
-      INSTANCE_NAME: evolution-2
+      # Server Config
+      SERVER_URL: http://localhost:8002
       SERVER_PORT: 8080
-      API_KEY: evolution_api_key_dev
-      SECRET_KEY: evolution_secret_key_dev
+      # Database Config
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      # Redis Config
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis-evolution:6379/1
+      CACHE_REDIS_PREFIX_KEY: evolution_2
+      CACHE_LOCAL_ENABLED: "false"
+      # Auth Config
+      AUTHENTICATION_API_KEY: evolution_api_key_dev
     ports:
       - "8002:8080"
     volumes:
-      - evolution-2-data:/app/instances
-      - evolution-2-uploads:/app/uploads
+      - evolution_instances:/evolution/instances
     depends_on:
+      postgres-evolution:
+        condition: service_healthy
       redis-evolution:
         condition: service_healthy
     networks:
       - agende-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
   # ==================== EVOLUTION 3 ====================
   evolution-3:
@@ -146,26 +178,42 @@ services:
     container_name: agende-ai-evolution-3
     restart: unless-stopped
     environment:
-      INSTANCE_NAME: evolution-3
+      # Server Config
+      SERVER_URL: http://localhost:8003
       SERVER_PORT: 8080
-      API_KEY: evolution_api_key_dev
-      SECRET_KEY: evolution_secret_key_dev
+      # Database Config
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      # Redis Config
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis-evolution:6379/2
+      CACHE_REDIS_PREFIX_KEY: evolution_3
+      CACHE_LOCAL_ENABLED: "false"
+      # Auth Config
+      AUTHENTICATION_API_KEY: evolution_api_key_dev
     ports:
       - "8003:8080"
     volumes:
-      - evolution-3-data:/app/instances
-      - evolution-3-uploads:/app/uploads
+      - evolution_instances:/evolution/instances
     depends_on:
+      postgres-evolution:
+        condition: service_healthy
       redis-evolution:
         condition: service_healthy
     networks:
       - agende-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
   # API Backend
   api:
@@ -242,12 +290,7 @@ volumes:
   redis_data:
   postgres_evolution_data:
   redis_evolution_data:
-  evolution-1-data:
-  evolution-2-data:
-  evolution-3-data:
-  evolution-1-uploads:
-  evolution-2-uploads:
-  evolution-3-uploads:
+  evolution_instances:
 
 networks:
   agende-ai-network:
