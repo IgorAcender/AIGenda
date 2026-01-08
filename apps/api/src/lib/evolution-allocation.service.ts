@@ -121,6 +121,19 @@ export class EvolutionAllocationService {
         },
       });
 
+      // Configura webhooks para este tenant (não bloqueia alocação se falhar)
+      const evolutionService = getEvolutionService();
+      const instanceName = `tenant-${tenantId}`;
+      const webhookUrl = `${process.env.API_URL || 'http://localhost:3001'}/api/whatsapp/webhooks/evolution/connected`;
+      
+      try {
+        await evolutionService.configureWebhook(available.url, instanceName, webhookUrl);
+        console.log(`✅ Webhook configurado para ${instanceName}`);
+      } catch (webhookError) {
+        console.warn(`⚠️ Falha ao configurar webhook para ${instanceName}:`, webhookError);
+        // Não bloqueia a alocação se webhook falhar
+      }
+
       return {
         success: true,
         evolutionId: available.evolutionId,
@@ -157,10 +170,31 @@ export class EvolutionAllocationService {
 
       // Gera QR Code na Evolution
       const evolutionService = getEvolutionService();
-      const qrCodeResponse = await evolutionService.generateQRCode(
+      const instanceName = `tenant-${tenantId}`;
+      let qrCodeResponse = await evolutionService.generateQRCode(
         mapping.evolutionInstanceId,
         tenantId
       );
+
+      // Se falhar, tenta deletar e recriar a instância
+      if (!qrCodeResponse.success) {
+        console.log(`⚠️  Falha ao gerar QR Code na primeira tentativa. Deletando instância e recriando...`);
+        
+        // Deleta a instância antiga
+        await evolutionService.deleteInstance(
+          mapping.evolutionInstance.url,
+          instanceName
+        );
+
+        // Aguarda um pouco para garantir a deleção
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Tenta gerar novamente
+        qrCodeResponse = await evolutionService.generateQRCode(
+          mapping.evolutionInstanceId,
+          tenantId
+        );
+      }
 
       if (qrCodeResponse.success) {
         // Atualiza timestamp de tentativa
@@ -196,6 +230,8 @@ export class EvolutionAllocationService {
     whatsappPhoneNumber?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`[handleTenantConnected] Iniciando para tenantId: "${tenantId}"`);
+      
       const mapping = await prisma.tenantEvolutionMapping.update({
         where: { tenantId },
         data: {
@@ -207,10 +243,11 @@ export class EvolutionAllocationService {
       });
 
       console.log(`✅ Tenant ${tenantId} conectado (${whatsappPhoneNumber})`);
+      console.log(`[handleTenantConnected] Banco atualizado com sucesso para tenantId: "${tenantId}"`);
 
       return { success: true };
     } catch (error) {
-      console.error('Erro ao marcar tenant como conectado:', error);
+      console.error(`[handleTenantConnected] Erro para tenantId "${tenantId}":`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido',

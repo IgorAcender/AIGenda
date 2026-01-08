@@ -74,6 +74,7 @@ export default function WhatsAppMarketingPage() {
     }
   }, [user, tenant, isLoading])
 
+  // Polling de status - mais rápido quando modal está aberto
   useEffect(() => {
     if (!tenantId || isLoading) return
 
@@ -81,6 +82,7 @@ export default function WhatsAppMarketingPage() {
       try {
         const res = await fetch(`${API_URL}/api/whatsapp/status/${tenantId}`)
         const data = await res.json()
+        console.log('[WhatsApp Polling]', { tenantId, isConnected: data.isConnected, timestamp: new Date().toLocaleTimeString() })
         setStatus(data)
       } catch (error) {
         console.error('Erro ao buscar status:', error)
@@ -90,10 +92,38 @@ export default function WhatsAppMarketingPage() {
       }
     }
 
+    // Fetch imediato
     fetchStatus()
-    const interval = setInterval(fetchStatus, 10000)
+    
+    // Polling interval: 2s se modal aberto (para detectar conexão rápido), 10s se fechado
+    const pollInterval = showQRModal ? 2000 : 10000
+    console.log('[WhatsApp] Iniciando polling com intervalo:', pollInterval, 'ms')
+    const interval = setInterval(fetchStatus, pollInterval)
     return () => clearInterval(interval)
-  }, [tenantId, API_URL, isLoading])
+  }, [tenantId, API_URL, isLoading, showQRModal])
+
+  // Fecha o modal QR Code automaticamente quando conecta
+  useEffect(() => {
+    if (!showQRModal) return  // Só faz algo se modal está aberto
+    
+    console.log('[WhatsApp] Auto-close check:', { 
+      tenantId,
+      isConnected: status?.isConnected, 
+      showQRModal, 
+      modalOpen: showQRModal,
+      fullStatus: status
+    })
+    
+    if (status?.isConnected === true && showQRModal) {
+      console.log('[WhatsApp] ✅ Detectado isConnected=true para tenantId:', tenantId)
+      console.log('[WhatsApp] Fechando modal em 1 segundo...')
+      const timer = setTimeout(() => {
+        setShowQRModal(false)
+        message.success('WhatsApp conectado com sucesso! 🎉')
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [status?.isConnected, showQRModal, tenantId])
 
   const handleShowQR = async () => {
     if (!tenantId) {
@@ -101,37 +131,48 @@ export default function WhatsAppMarketingPage() {
       return
     }
 
+    // Abre o modal IMEDIATAMENTE com spinner
+    setShowQRModal(true)
+    setQrCode(null)  // Limpa QR anterior
     setLoading(true)
-    const loadingKey = 'qr_loading'
-    message.loading({ content: 'Gerando QR Code...', key: loadingKey, duration: 0 })
     
     try {
-      const res = await fetch(`${API_URL}/api/whatsapp/setup`, {
+      // Primeiro, tenta regenerar QR (se já foi alocado)
+      let res = await fetch(`${API_URL}/api/whatsapp/refresh-qr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId }),
       })
 
-      const data: QRCodeResponse = await res.json()
+      let data: QRCodeResponse = await res.json()
+
+      // Se falhar (tenant não alocado ainda), tenta fazer setup completo
+      if (!data.success) {
+        console.log('Tenant não alocado ainda, fazendo setup completo...')
+        res = await fetch(`${API_URL}/api/whatsapp/setup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenantId }),
+        })
+        data = await res.json()
+      }
 
       if (data.success && data.base64) {
-        message.success({ content: 'QR Code gerado com sucesso!', key: loadingKey })
+        console.log('✅ QR Code gerado com sucesso')
         setQrCode(data)
-        setShowQRModal(true)
       } else if (data.success && !data.base64) {
         // Instância foi criada, mas QR Code ainda está sendo gerado
-        message.info({ 
-          content: 'Instância criada. Aguarde alguns segundos para o QR Code aparecer...', 
-          key: loadingKey 
-        })
-        // Tenta novamente em 3 segundos
-        setTimeout(() => handleShowQR(), 3000)
+        console.log('⏳ Aguardando QR Code...')
+        // Tenta novamente em 2 segundos
+        setTimeout(() => handleShowQR(), 2000)
       } else {
-        message.error({ content: data.error || 'Erro ao gerar QR Code', key: loadingKey })
+        message.error(data.error || 'Erro ao gerar QR Code')
+        setShowQRModal(false)
       }
     } catch (error) {
       console.error('Erro:', error)
-      message.error({ content: 'Erro ao gerar QR Code', key: loadingKey })
+      message.error('Erro ao gerar QR Code')
+      setShowQRModal(false)
     } finally {
       setLoading(false)
     }
@@ -367,20 +408,27 @@ export default function WhatsAppMarketingPage() {
           </Button>,
         ]}
       >
-        {qrCode?.base64 && (
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <div style={{ textAlign: 'center' }}>
-              <img
-                src={qrCode.base64}
-                alt="QR Code"
-                style={{ maxWidth: '100%', border: '1px solid #d9d9d9', borderRadius: '4px' }}
-              />
+        <Spin spinning={loading} tip="Gerando QR Code...">
+          {qrCode?.base64 && (
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              <div style={{ textAlign: 'center' }}>
+                <img
+                  src={qrCode.base64}
+                  alt="QR Code"
+                  style={{ maxWidth: '100%', border: '1px solid #d9d9d9', borderRadius: '4px' }}
+                />
+              </div>
+              <Paragraph>
+                Abra o WhatsApp no seu celular, vá em <strong>Configurações → Aparelhos Vinculados</strong> e escaneie este QR Code.
+              </Paragraph>
+            </Space>
+          )}
+          {!qrCode?.base64 && loading && (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <p>Aguardando QR Code...</p>
             </div>
-            <Paragraph>
-              Abra o WhatsApp no seu celular, vá em <strong>Configurações → Aparelhos Vinculados</strong> e escaneie este QR Code.
-            </Paragraph>
-          </Space>
-        )}
+          )}
+        </Spin>
       </Modal>
     </div>
   )

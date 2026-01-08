@@ -72,6 +72,7 @@ export async function whatsappRoutes(app: FastifyInstance) {
     request: FastifyRequest<{ Body: { tenantId: string } }>,
     reply: FastifyReply
   ) => {
+    const startTime = Date.now();
     try {
       const { tenantId } = request.body;
 
@@ -82,7 +83,10 @@ export async function whatsappRoutes(app: FastifyInstance) {
         });
       }
 
+      console.log(`[QR-CODE] Iniciando geração para ${tenantId}`);
       const qrCode = await allocationService.generateQRCodeForTenant(tenantId);
+      const duration = Date.now() - startTime;
+      console.log(`[QR-CODE] Geração concluída em ${duration}ms`);
 
       if (!qrCode.success) {
         return reply.status(400).send({
@@ -99,7 +103,8 @@ export async function whatsappRoutes(app: FastifyInstance) {
         message: 'QR Code regenerado com sucesso',
       });
     } catch (error) {
-      console.error('Erro em /whatsapp/refresh-qr:', error);
+      const duration = Date.now() - startTime;
+      console.error(`Erro em /whatsapp/refresh-qr (após ${duration}ms):`, error);
       reply.status(500).send({
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido',
@@ -290,10 +295,14 @@ export async function whatsappRoutes(app: FastifyInstance) {
         }
 
         const tenantId = instanceName.replace('tenant-', '');
+        
+        console.log(`[WEBHOOK] Parsed tenantId: "${tenantId}" from instanceName: "${instanceName}"`);
+        console.log(`[WEBHOOK] State: "${state}", PhoneNumber: "${phoneNumber}"`);
 
         // Só processa se for um evento de "open" (conectado)
         if (state === 'open') {
           console.log(`✅ [WEBHOOK] WhatsApp conectado para tenant: ${tenantId} (${phoneNumber || 'sem telefone'})`);
+          console.log(`[WEBHOOK] Chamando handleTenantConnected com tenantId: "${tenantId}"`);
           
           const result = await allocationService.handleTenantConnected(
             tenantId,

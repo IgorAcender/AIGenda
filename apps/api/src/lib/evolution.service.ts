@@ -196,17 +196,18 @@ export class EvolutionService {
         }
       }
 
-      // Inspirado no Rifas: Usar RETRY LOGIC com timeout progressivo
-      const maxAttempts = 10; // Tentar até 10 vezes
-      const initialWait = 500; // Começar com 500ms
-      const maxWait = 5000; // Máximo de 5 segundos entre tentativas
+      // Otimizado: RETRY LOGIC rápido (3 tentativas com delay curto)
+      // A maioria dos casos resolve na 1ª tentativa
+      const maxAttempts = 3; // Apenas 3 tentativas rápidas
+      const delays = [200, 500, 1000]; // Delays progressivos: 200ms, 500ms, 1s
       
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Calcula wait time com backoff exponencial
-        const waitTime = Math.min(initialWait * attempt, maxWait);
+        const waitTime = delays[attempt - 1];
         
         console.log(`⏳ Tentativa ${attempt}/${maxAttempts} - Aguardando ${waitTime}ms para QR Code...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        if (attempt > 1) {
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
 
         try {
           // Endpoint correto (copiado de Rifas): /instance/connect/{name}
@@ -390,6 +391,34 @@ export class EvolutionService {
   }
 
   /**
+   * Deleta uma instância na Evolution
+   */
+  async deleteInstance(
+    evolutionUrl: string,
+    instanceName: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log(`🗑️  Deletando instância ${instanceName} na Evolution...`);
+
+      const response = await axios.delete(
+        `${evolutionUrl}/instance/delete/${instanceName}`,
+        {
+          headers: {
+            apikey: this.apiKey,
+          },
+        }
+      );
+
+      console.log(`✅ Instância ${instanceName} deletada com sucesso`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Erro ao deletar instância ${instanceName}:`, error);
+      // Não bloqueia o fluxo se falhar
+      return { success: true };
+    }
+  }
+
+  /**
    * Verifica saúde de uma Evolution
    */
   async healthCheck(evolutionId: number): Promise<boolean> {
@@ -403,7 +432,41 @@ export class EvolutionService {
   }
 
   /**
-   * Lista todas as Evolutions disponíveis e seus status
+   * Configura webhooks para uma instância na Evolution
+   * Envia os eventos de CONNECTION_UPDATE para nosso servidor
+   */
+  async configureWebhook(
+    evolutionUrl: string,
+    instanceName: string,
+    webhookUrl: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log(`🔗 Configurando webhook para ${instanceName} em ${webhookUrl}`);
+
+      await this.makeHttpRequest(
+        `${evolutionUrl}/webhook/set/${instanceName}`,
+        {
+          webhook: {
+            enabled: true,
+            url: webhookUrl,
+            events: ['CONNECTION_UPDATE', 'MESSAGES_UPDATE'],
+          },
+        }
+      );
+
+      console.log(`✅ Webhook configurado para ${instanceName}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao configurar webhook:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
+      };
+    }
+  }
+
+  /**
+   * Lista todos os status das Evolutions disponíveis e seus status
    */
   async getAllStatus(): Promise<
     Array<{ id: number; healthy: boolean; error?: string }>
