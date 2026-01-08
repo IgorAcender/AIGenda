@@ -52,7 +52,7 @@ interface QRCodeResponse {
 }
 
 export default function WhatsAppMarketingPage() {
-  const { user, tenant } = useAuth()
+  const { user, tenant, isLoading } = useAuth()
   const [status, setStatus] = useState<WhatsAppStatus | null>(null)
   const [qrCode, setQrCode] = useState<QRCodeResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -67,14 +67,15 @@ export default function WhatsAppMarketingPage() {
 
   // Verificar autenticação
   useEffect(() => {
+    if (isLoading) return  // Aguardar hidratação
     if (!tenant || !user) {
       setCheckingStatus(false)
       message.error('Você precisa estar autenticado para acessar o WhatsApp Marketing')
     }
-  }, [])
+  }, [user, tenant, isLoading])
 
   useEffect(() => {
-    if (!tenantId) return
+    if (!tenantId || isLoading) return
 
     const fetchStatus = async () => {
       try {
@@ -92,7 +93,7 @@ export default function WhatsAppMarketingPage() {
     fetchStatus()
     const interval = setInterval(fetchStatus, 10000)
     return () => clearInterval(interval)
-  }, [tenantId, API_URL])
+  }, [tenantId, API_URL, isLoading])
 
   const handleShowQR = async () => {
     if (!tenantId) {

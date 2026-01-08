@@ -17,6 +17,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
   const router = useRouter()
   const pathname = usePathname()
   const [isChecking, setIsChecking] = useState(true)
+  const [checkTimeout, setCheckTimeout] = useState(false)
   
   const { 
     isAuthenticated, 
@@ -30,7 +31,17 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     const verify = async () => {
       // Se já está autenticado, não precisa verificar
       if (!isAuthenticated) {
-        await checkAuth()
+        // Timeout de 6 segundos para verificação
+        const timeoutId = setTimeout(() => {
+          setCheckTimeout(true)
+          setIsChecking(false)
+        }, 6000)
+        
+        try {
+          await checkAuth()
+        } finally {
+          clearTimeout(timeoutId)
+        }
       }
       setIsChecking(false)
     }
@@ -46,9 +57,16 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '16px',
         background: '#f5f5f5'
       }}>
         <Spin size="large" tip="Carregando..." />
+        {checkTimeout && (
+          <p style={{ color: '#ff4d4f', fontSize: '14px' }}>
+            Demorando... <a onClick={() => { setIsChecking(false); router.replace('/login') }} style={{ cursor: 'pointer' }}>ir para login</a>
+          </p>
+        )}
       </div>
     )
   }

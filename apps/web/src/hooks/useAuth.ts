@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export interface User {
@@ -28,18 +28,38 @@ interface AuthContextType {
   logout: () => Promise<void>
 }
 
-// Hook simples que lê do localStorage (sem mocks)
+// Hook que sincroniza com localStorage
 export function useAuth(): AuthContextType & { isAuthenticated: boolean } {
   const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [tenant, setTenant] = useState<Tenant | null>(null)
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  // Lê do localStorage - SEM FALLBACK PARA MOCK
-  let user: User | null = null
-  let tenant: Tenant | null = null
-  
-  if (typeof window !== 'undefined') {
-    user = JSON.parse(localStorage.getItem('user') || 'null')
-    tenant = JSON.parse(localStorage.getItem('tenant') || 'null')
-  }
+  // Carregar dados do localStorage uma única vez (no mount)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('user')
+      const storedTenant = localStorage.getItem('tenant')
+
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser))
+        } catch (e) {
+          console.error('Erro ao parsear user:', e)
+        }
+      }
+
+      if (storedTenant) {
+        try {
+          setTenant(JSON.parse(storedTenant))
+        } catch (e) {
+          console.error('Erro ao parsear tenant:', e)
+        }
+      }
+
+      setIsHydrated(true)
+    }
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     // Implementar chamada de login real
@@ -50,13 +70,15 @@ export function useAuth(): AuthContextType & { isAuthenticated: boolean } {
     localStorage.removeItem('user')
     localStorage.removeItem('tenant')
     localStorage.removeItem('token')
+    setUser(null)
+    setTenant(null)
     router.push('/login')
   }, [router])
 
   return {
     user,
     tenant,
-    isLoading: false,
+    isLoading: !isHydrated,
     isAuthenticated: !!user,
     login,
     logout,

@@ -88,7 +88,7 @@ services:
 
   # ==================== EVOLUTION 1 ====================
   evolution-1:
-    image: atendai/evolution-api:latest
+    image: atendai/evolution-api:v2.2.3
     container_name: agende-ai-evolution-1
     restart: unless-stopped
     environment:
@@ -98,7 +98,7 @@ services:
       # Database Config
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution_main
       DATABASE_SAVE_DATA_INSTANCE: "true"
       DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
       DATABASE_SAVE_MESSAGE_UPDATE: "true"
@@ -131,7 +131,7 @@ services:
 
   # ==================== EVOLUTION 2 ====================
   evolution-2:
-    image: atendai/evolution-api:latest
+    image: atendai/evolution-api:v2.2.3
     container_name: agende-ai-evolution-2
     restart: unless-stopped
     environment:
@@ -141,7 +141,7 @@ services:
       # Database Config
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution_main
       DATABASE_SAVE_DATA_INSTANCE: "true"
       DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
       DATABASE_SAVE_MESSAGE_UPDATE: "true"
@@ -174,7 +174,7 @@ services:
 
   # ==================== EVOLUTION 3 ====================
   evolution-3:
-    image: atendai/evolution-api:latest
+    image: atendai/evolution-api:v2.2.3
     container_name: agende-ai-evolution-3
     restart: unless-stopped
     environment:
@@ -184,7 +184,7 @@ services:
       # Database Config
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
+      DATABASE_CONNECTION_URI: postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution_main
       DATABASE_SAVE_DATA_INSTANCE: "true"
       DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
       DATABASE_SAVE_MESSAGE_UPDATE: "true"

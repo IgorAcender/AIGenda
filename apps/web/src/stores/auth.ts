@@ -76,8 +76,12 @@ export const useAuthStore = create<AuthState>()(
           const response = await api.post('/auth/login', { email, password })
           const { user, tenant, professional, token } = response.data
           
-          // Salvar token no localStorage
+          // Salvar dados no localStorage
           localStorage.setItem('token', token)
+          localStorage.setItem('user', JSON.stringify(user))
+          if (tenant) {
+            localStorage.setItem('tenant', JSON.stringify(tenant))
+          }
           
           set({
             user,
@@ -101,6 +105,10 @@ export const useAuthStore = create<AuthState>()(
           const { user, tenant, token } = response.data
           
           localStorage.setItem('token', token)
+          localStorage.setItem('user', JSON.stringify(user))
+          if (tenant) {
+            localStorage.setItem('tenant', JSON.stringify(tenant))
+          }
           
           set({
             user,
@@ -119,6 +127,8 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('tenant')
         set({
           user: null,
           tenant: null,
@@ -136,13 +146,19 @@ export const useAuthStore = create<AuthState>()(
       checkAuth: async () => {
         const token = localStorage.getItem('token')
         if (!token) {
-          set({ isAuthenticated: false })
+          set({ isAuthenticated: false, isLoading: false })
           return
         }
 
         set({ isLoading: true })
         try {
-          const response = await api.get('/auth/me')
+          // Adicionar timeout de 5 segundos
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 5000)
+          
+          const response = await api.get('/auth/me', { signal: controller.signal as any })
+          clearTimeout(timeoutId)
+          
           const { user, tenant, professional } = response.data
           
           set({
@@ -153,16 +169,30 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false,
           })
-        } catch (error) {
-          localStorage.removeItem('token')
-          set({
-            user: null,
-            tenant: null,
-            professional: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          })
+        } catch (error: any) {
+          console.error('Auth check error:', error.message)
+          // Se erro de timeout ou conexão, não remover token, apenas deslogar visualmente
+          if (error.message?.includes('timeout') || error.message?.includes('Network')) {
+            set({
+              user: null,
+              tenant: null,
+              professional: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: 'Erro de conexão. Tente novamente.',
+            })
+          } else {
+            // Erro real (401, 403, etc) - remove token
+            localStorage.removeItem('token')
+            set({
+              user: null,
+              tenant: null,
+              professional: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false,
+            })
+          }
         }
       },
 

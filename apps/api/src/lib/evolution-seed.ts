@@ -21,10 +21,10 @@ export async function ensureEvolutionInstancesSeeded(): Promise<void> {
 
     for (let i = 1; i <= EVOLUTION_COUNT; i++) {
       const name = `evolution-${i}`
-      const port = 8000 + i
-      const url = isDev
-        ? `http://localhost:${port}`
-        : `http://evolution-${i}:${port}`
+      // Tentar ler URL do .env, se não existir, usar fallback
+      const envVarName = `EVOLUTION_${i}_URL`
+      const url = process.env[envVarName] || 
+        (isDev ? `http://localhost:${8000 + i}` : `http://evolution-${i}:${8000 + i}`)
 
       try {
         const instance = await prisma.evolutionInstance.create({

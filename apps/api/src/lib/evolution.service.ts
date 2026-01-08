@@ -74,26 +74,32 @@ export class EvolutionService {
   }
 
   /**
-   * Faz um POST direto usando http/https nativo
+   * Faz um POST/GET direto usando http/https nativo
    */
-  private async makeHttpRequest(url: string, body: any): Promise<any> {
+  private async makeHttpRequest(url: string, body: any, method: string = 'POST'): Promise<any> {
     return new Promise((resolve, reject) => {
       const isHttps = url.startsWith('https');
       const httpModule = isHttps ? https : http;
       const urlObj = new URL(url);
 
-      const postData = JSON.stringify(body);
+      const postData = method === 'POST' && body ? JSON.stringify(body) : '';
+
+      const headers: any = {
+        'Content-Type': 'application/json',
+        'apikey': this.apiKey,
+      };
+
+      // Apenas adicione Content-Length para POST com dados
+      if (method === 'POST' && postData) {
+        headers['Content-Length'] = Buffer.byteLength(postData);
+      }
 
       const options = {
         hostname: urlObj.hostname,
         port: urlObj.port || (isHttps ? 443 : 80),
         path: urlObj.pathname + urlObj.search,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': this.apiKey,
-          'Content-Length': Buffer.byteLength(postData),
-        },
+        method: method,
+        headers: headers,
       };
 
       console.log(`[HTTP Request] ${options.method} ${urlObj.hostname}:${options.port}${options.path}`);
@@ -128,15 +134,16 @@ export class EvolutionService {
         reject(e);
       });
 
-      req.write(postData);
+      if (method === 'POST' && postData) {
+        req.write(postData);
+      }
       req.end();
     });
   }
 
   /**
    * Gera um QR Code para conectar um novo WhatsApp
-   * Na v2.2.3, apenas cria a instância (QR será obtido via webhook)
-   * NOTA: Usando http/https nativo por compatibilidade com Evolution API
+   * Inspirado no padrão robusto do projeto Rifas com retry logic
    */
   async generateQRCode(
     evolutionId: number,
@@ -150,32 +157,90 @@ export class EvolutionService {
 
       const instanceName = `tenant-${tenantId}`;
       
-      console.log(`🔄 Criando instância ${instanceName} na Evolution ${evolutionId} (${evolutionUrl})`);
-      console.log(`🔑 Usando API Key: ${this.apiKey.substring(0, 10)}...`);
-      console.log(`📧 Headers: apikey=${this.apiKey}`);
+      console.log(`🔄 Verificando instância ${instanceName} na Evolution ${evolutionId}`);
 
-      // Faz o request usando http/https nativo
-      const data = await this.makeHttpRequest(
-        `${evolutionUrl}/instance/create`,
-        {
-          instanceName,
-          integration: 'WHATSAPP-BAILEYS',
-          qrcode: true,
+      // PRIMEIRO: Verificar se instância já existe
+      let instanceExists = false;
+      try {
+        const existingInstances = await this.makeHttpRequest(
+          `${evolutionUrl}/instance/fetchInstances`,
+          null,
+          'GET'
+        );
+        instanceExists = existingInstances?.some((inst: any) => inst.name === instanceName) || false;
+        console.log(`📋 Instância ${instanceName} ${instanceExists ? 'já existe' : 'não existe'}`);
+      } catch (checkError) {
+        console.log(`⚠️ Erro ao verificar instância existente:`, checkError);
+      }
+
+      // Criar instância APENAS se não existir
+      if (!instanceExists) {
+        try {
+          console.log(`🔄 Criando nova instância ${instanceName}...`);
+          await this.makeHttpRequest(
+            `${evolutionUrl}/instance/create`,
+            {
+              instanceName,
+              integration: 'WHATSAPP-BAILEYS',
+              qrcode: true,
+            }
+          );
+          console.log(`✅ Instância criada: ${instanceName}`);
+        } catch (createError: any) {
+          // Se erro 403 porque já existe, ignore e continue
+          if (createError.message?.includes('already in use')) {
+            console.log(`📋 Instância já existia (erro 403), continuando...`);
+          } else {
+            throw createError;
+          }
         }
-      );
+      }
 
-      console.log(`✅ Instância criada: ${instanceName}`);
-      console.log(`📦 Resposta Evolution:`, data);
+      // Inspirado no Rifas: Usar RETRY LOGIC com timeout progressivo
+      const maxAttempts = 10; // Tentar até 10 vezes
+      const initialWait = 500; // Começar com 500ms
+      const maxWait = 5000; // Máximo de 5 segundos entre tentativas
+      
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Calcula wait time com backoff exponencial
+        const waitTime = Math.min(initialWait * attempt, maxWait);
+        
+        console.log(`⏳ Tentativa ${attempt}/${maxAttempts} - Aguardando ${waitTime}ms para QR Code...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
 
-      // Retorna sucesso - o QR será enviado via webhook quando pronto
-      return {
-        success: true,
-        code: `Instance ${instanceName} created`,
-        message: 'Aguarde alguns segundos para o QR Code aparecer...',
-      };
+        try {
+          // Endpoint correto (copiado de Rifas): /instance/connect/{name}
+          const qrData = await this.makeHttpRequest(
+            `${evolutionUrl}/instance/connect/${instanceName}`,
+            null,
+            'GET'
+          );
+
+          // Verifica se obteve o QR code (Rifas retorna { base64, code })
+          if (qrData && qrData.base64) {
+            console.log(`✅ QR Code encontrado na tentativa ${attempt}!`);
+            return {
+              success: true,
+              qr: qrData.base64,
+              base64: qrData.base64,
+              code: qrData.code || instanceName,
+              message: 'QR Code gerado com sucesso',
+            };
+          }
+
+          console.log(`⚠️ Tentativa ${attempt}: QR ainda não pronto (resposta: ${JSON.stringify(qrData)})`);
+          
+        } catch (qrError) {
+          console.log(`⚠️ Tentativa ${attempt} erro:`, qrError instanceof Error ? qrError.message : qrError);
+        }
+      }
+
+      // Se saiu do loop sem QR, retorna erro
+      console.log(`❌ QR Code não foi gerado após ${maxAttempts} tentativas`);
+      throw new Error('QR Code não foi gerado após múltiplas tentativas');
 
     } catch (error: any) {
-      console.error(`❌ Erro ao criar instância Evolution ${evolutionId}:`, {
+      console.error(`❌ Erro ao criar instância:`, {
         message: error.message,
         url: process.env[`EVOLUTION_${evolutionId}_URL`],
       });
