@@ -58,6 +58,7 @@ export default function WhatsAppMarketingPage() {
   const [loading, setLoading] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [showQRModal, setShowQRModal] = useState(false)
+  const [wasDisconnectedOnModalOpen, setWasDisconnectedOnModalOpen] = useState(false)
   const [testMessage, setTestMessage] = useState('Olá! Esta é uma mensagem de teste do sistema. 🎉')
   const [testPhone, setTestPhone] = useState('')
   const [form] = Form.useForm()
@@ -110,20 +111,22 @@ export default function WhatsAppMarketingPage() {
       tenantId,
       isConnected: status?.isConnected, 
       showQRModal, 
-      modalOpen: showQRModal,
+      wasDisconnectedOnModalOpen,
       fullStatus: status
     })
     
-    if (status?.isConnected === true && showQRModal) {
+    // Só fecha se: modal aberto + estava desconectado quando abriu + agora está conectado
+    if (status?.isConnected === true && showQRModal && wasDisconnectedOnModalOpen) {
       console.log('[WhatsApp] ✅ Detectado isConnected=true para tenantId:', tenantId)
       console.log('[WhatsApp] Fechando modal em 1 segundo...')
       const timer = setTimeout(() => {
         setShowQRModal(false)
+        setWasDisconnectedOnModalOpen(false)
         message.success('WhatsApp conectado com sucesso! 🎉')
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [status?.isConnected, showQRModal, tenantId])
+  }, [status?.isConnected, showQRModal, tenantId, wasDisconnectedOnModalOpen])
 
   const handleShowQR = async () => {
     if (!tenantId) {
@@ -131,6 +134,9 @@ export default function WhatsAppMarketingPage() {
       return
     }
 
+    // Marca que estava desconectado quando abriu o modal (para auto-close funcionar)
+    setWasDisconnectedOnModalOpen(!status?.isConnected)
+    
     // Abre o modal IMEDIATAMENTE com spinner
     setShowQRModal(true)
     setQrCode(null)  // Limpa QR anterior

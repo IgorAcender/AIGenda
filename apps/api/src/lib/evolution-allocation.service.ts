@@ -124,11 +124,13 @@ export class EvolutionAllocationService {
       // Configura webhooks para este tenant (não bloqueia alocação se falhar)
       const evolutionService = getEvolutionService();
       const instanceName = `tenant-${tenantId}`;
-      const webhookUrl = `${process.env.API_URL || 'http://localhost:3001'}/api/whatsapp/webhooks/evolution/connected`;
+      // Usa host.docker.internal para que o container Docker consiga acessar a API na máquina host
+      const webhookHost = process.env.WEBHOOK_HOST || 'http://host.docker.internal:3001';
+      const webhookUrl = `${webhookHost}/api/whatsapp/webhooks/evolution/connected`;
       
       try {
         await evolutionService.configureWebhook(available.url, instanceName, webhookUrl);
-        console.log(`✅ Webhook configurado para ${instanceName}`);
+        console.log(`✅ Webhook configurado para ${instanceName}: ${webhookUrl}`);
       } catch (webhookError) {
         console.warn(`⚠️ Falha ao configurar webhook para ${instanceName}:`, webhookError);
         // Não bloqueia a alocação se webhook falhar

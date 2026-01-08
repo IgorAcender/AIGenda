@@ -299,12 +299,13 @@ export class EvolutionService {
       const client = this.getClient(evolutionId);
       const instanceName = `tenant-${tenantId}`;
 
-      const response = await client.post('/disconnect', {
-        instance: instanceName,
-        apikey: this.apiKey,
+      const response = await client.delete(`/instance/delete/${instanceName}`, {
+        headers: {
+          apikey: this.apiKey,
+        },
       });
 
-      return { success: response.data.success };
+      return { success: response.data.status === 'SUCCESS' };
     } catch (error) {
       console.error(
         `Erro ao desconectar na Evolution ${evolutionId}:`,
