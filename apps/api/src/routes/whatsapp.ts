@@ -263,77 +263,74 @@ export async function whatsappRoutes(app: FastifyInstance) {
 
   /**
    * POST /webhooks/evolution/connected
+   * Recebe eventos de CONNECTION_UPDATE da Evolution API
+   * Evolution envia: { event, instance, data }
    */
-  app.post<{ Body: { instance: string; data: any } }>(
+  app.post<{ Body: any }>(
     '/webhooks/evolution/connected',
-    async (request: FastifyRequest<{ Body: { instance: string; data: any } }>, reply: FastifyReply) => {
+    async (request: FastifyRequest<{ Body: any }>, reply: FastifyReply) => {
       try {
-        const { instance, data } = request.body;
+        const body = request.body;
+        
+        // Log completo do webhook para debug
+        console.log('[WEBHOOK] Received CONNECTION_UPDATE event:', JSON.stringify(body, null, 2));
 
-        if (!instance) {
+        // Evolution API v2.2.3 envia no formato:
+        // { event: "CONNECTION_UPDATE", instance: "tenant-...", data: { state, phoneNumber, ... } }
+        const instanceName = body.instance || body.instanceName;
+        const state = body.data?.state || body.state;
+        const phoneNumber = body.data?.phoneNumber || body.phoneNumber;
+
+        if (!instanceName) {
+          console.warn('[WEBHOOK] Sem instanceName no payload:', body);
           return reply.status(400).send({
             success: false,
-            error: 'instance é obrigatório',
+            error: 'instanceName é obrigatório',
           });
         }
 
-        const tenantId = instance.replace('tenant-', '');
-        console.log(`[WEBHOOK] WhatsApp conectado para tenant: ${tenantId}`);
+        const tenantId = instanceName.replace('tenant-', '');
 
-        const result = await allocationService.handleTenantConnected(
-          tenantId,
-          data?.phoneNumber
-        );
+        // Só processa se for um evento de "open" (conectado)
+        if (state === 'open') {
+          console.log(`✅ [WEBHOOK] WhatsApp conectado para tenant: ${tenantId} (${phoneNumber || 'sem telefone'})`);
+          
+          const result = await allocationService.handleTenantConnected(
+            tenantId,
+            phoneNumber
+          );
 
-        if (!result.success) {
-          return reply.status(400).send(result);
+          if (!result.success) {
+            return reply.status(400).send(result);
+          }
+
+          return reply.send({
+            success: true,
+            message: `Tenant ${tenantId} conectado com sucesso`,
+          });
+        } else if (state === 'close') {
+          // Se for desconexão, marca como desconectado
+          console.log(`❌ [WEBHOOK] WhatsApp desconectado para tenant: ${tenantId}`);
+          
+          const result = await allocationService.handleTenantDisconnected(tenantId);
+
+          if (!result.success) {
+            return reply.status(400).send(result);
+          }
+
+          return reply.send({
+            success: true,
+            message: `Tenant ${tenantId} desconectado`,
+          });
+        } else {
+          console.log(`⚠️ [WEBHOOK] Estado desconhecido para tenant ${tenantId}: ${state}`);
+          return reply.send({
+            success: true,
+            message: `Evento recebido (estado: ${state})`,
+          });
         }
-
-        return reply.send({
-          success: true,
-          message: `Tenant ${tenantId} conectado com sucesso`,
-        });
       } catch (error) {
         console.error('Erro em webhook connected:', error);
-        reply.status(500).send({
-          success: false,
-          error: error instanceof Error ? error.message : 'Erro desconhecido',
-        });
-      }
-    }
-  );
-
-  /**
-   * POST /webhooks/evolution/disconnected
-   */
-  app.post<{ Body: { instance: string; data: any } }>(
-    '/webhooks/evolution/disconnected',
-    async (request: FastifyRequest<{ Body: { instance: string; data: any } }>, reply: FastifyReply) => {
-      try {
-        const { instance, data } = request.body;
-
-        if (!instance) {
-          return reply.status(400).send({
-            success: false,
-            error: 'instance é obrigatório',
-          });
-        }
-
-        const tenantId = instance.replace('tenant-', '');
-        console.log(`[WEBHOOK] WhatsApp desconectado para tenant: ${tenantId}`);
-
-        const result = await allocationService.handleTenantDisconnected(tenantId);
-
-        if (!result.success) {
-          return reply.status(400).send(result);
-        }
-
-        return reply.send({
-          success: true,
-          message: `Tenant ${tenantId} desconectado`,
-        });
-      } catch (error) {
-        console.error('Erro em webhook disconnected:', error);
         reply.status(500).send({
           success: false,
           error: error instanceof Error ? error.message : 'Erro desconhecido',
