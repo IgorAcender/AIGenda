@@ -303,7 +303,20 @@ export default function WhatsAppMarketingPage() {
   }
 
   return (
-    <div style={{ padding: '24px' }}>
+    <>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            box-shadow: 0 0 8px rgba(82, 196, 26, 0.5);
+          }
+          50% {
+            opacity: 0.6;
+            box-shadow: 0 0 16px rgba(82, 196, 26, 0.8);
+          }
+        }
+      `}</style>
+      <div style={{ padding: '24px' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
           <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -316,38 +329,42 @@ export default function WhatsAppMarketingPage() {
           <Col xs={24} md={12}>
             <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
               <Space direction="vertical" style={{ width: '100%' }} size="large">
-                <div>
-                  <Title level={4} style={{ margin: '0 0 12px 0' }}>Status da Conexão</Title>
+                <div style={{ textAlign: 'center' }}>
+                  <Title level={4} style={{ margin: '0 0 16px 0' }}>Status da Conexão</Title>
                   <div style={{ 
                     display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '10px 14px',
-                    backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(245, 34, 45, 0.1)',
-                    borderRadius: '6px',
-                    border: `1.5px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`,
-                    marginBottom: '12px'
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    padding: '14px 20px',
+                    backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.15)' : 'rgba(245, 34, 45, 0.15)',
+                    borderRadius: '8px',
+                    border: `2px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`,
+                    marginBottom: '20px'
                   }}>
                     <div
                       style={{
-                        width: '8px',
-                        height: '8px',
+                        width: '12px',
+                        height: '12px',
                         borderRadius: '50%',
                         backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
+                        boxShadow: status?.isConnected ? '0 0 8px rgba(82, 196, 26, 0.5)' : '0 0 8px rgba(245, 34, 45, 0.5)',
+                        animation: status?.isConnected ? 'pulse 2s infinite' : 'none'
                       }}
                     />
-                    <Text style={{ fontWeight: '600', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
+                    <Text style={{ fontWeight: '700', fontSize: '16px', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
                       {status?.isConnected ? 'Conectado' : 'Desconectado'}
                     </Text>
                   </div>
                 </div>
-                <Space wrap>
+                <Space direction="vertical" style={{ width: '100%' }}>
                   <Button
                     type="primary"
                     icon={<ReloadOutlined />}
                     onClick={handleUpdateStatus}
                     loading={loading}
                     size="large"
+                    block
                   >
                     Atualizar
                   </Button>
@@ -357,6 +374,7 @@ export default function WhatsAppMarketingPage() {
                     onClick={handleShowQR}
                     loading={loading}
                     size="large"
+                    block
                   >
                     QR Code
                   </Button>
@@ -366,6 +384,7 @@ export default function WhatsAppMarketingPage() {
                     onClick={handleDisconnect}
                     loading={loading}
                     size="large"
+                    block
                   >
                     Desconectar
                   </Button>
@@ -464,5 +483,7 @@ export default function WhatsAppMarketingPage() {
         </Spin>
       </Modal>
     </div>
+    </>
   )
 }
+
