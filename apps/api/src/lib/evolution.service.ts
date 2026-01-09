@@ -327,19 +327,39 @@ export class EvolutionService {
   ): Promise<{
     isConnected: boolean;
     phoneNumber?: string;
+    state?: string;
     error?: string;
   }> {
     try {
       const client = this.getClient(evolutionId);
       const instanceName = `tenant-${tenantId}`;
 
-      const response = await client.get(`/message/check-number/${instanceName}`, {
-        headers: { apikey: this.apiKey },
-      });
+      const response = await client.get(
+        `/instance/connectionState/${instanceName}`,
+        {
+          headers: { apikey: this.apiKey },
+        }
+      );
+
+      // Evolution pode retornar em formatos diferentes; normalizamos aqui
+      const raw = response.data?.instance || response.data || {};
+      const state =
+        raw.state ||
+        raw.status ||
+        raw.connectionStatus ||
+        raw.statusConnection ||
+        (raw.connected ? 'open' : 'close');
+
+      // Estados considerados conectados
+      const connectedStates = ['open', 'connected', 'openfull'];
+      const normalizedState = String(state || '').toLowerCase();
+      const isConnected =
+        connectedStates.includes(normalizedState) || raw.connected === true;
 
       return {
-        isConnected: response.data.success,
-        phoneNumber: response.data.phoneNumber,
+        isConnected,
+        phoneNumber: raw.phoneNumber || raw.phone?.id || raw.phone,
+        state: state || (isConnected ? 'open' : 'close'),
       };
     } catch (error) {
       console.error(

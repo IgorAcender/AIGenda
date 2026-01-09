@@ -6,6 +6,7 @@ export interface WhatsAppStatus {
   evolutionId?: number
   whatsappPhone?: string
   connectedAt?: string
+  state?: string
   error?: string
 }
 

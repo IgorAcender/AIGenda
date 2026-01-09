@@ -3,7 +3,9 @@ version: '3.8'
 services:
   # ==================== FRONTEND ====================
   web:
-    build: ./apps/web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
     container_name: agende-ai-web
     ports:
       - "3000:3000"
@@ -19,7 +21,9 @@ services:
 
   # ==================== BACKEND ====================
   api:
-    build: ./apps/api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     container_name: agende-ai-api
     ports:
       - "3001:3001"
@@ -33,8 +37,11 @@ services:
       - EVOLUTION_POSTGRES_URL=postgresql://evolution_user:evolution_password@postgres-evolution:5432/evolution
       - EVOLUTION_REDIS_URL=redis://redis-evolution:6379/0
     volumes:
-      - ./apps/api:/app
-      - /app/node_modules
+      - ./apps/api:/app/apps/api
+      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml
+      - ./package.json:/app/package.json
+      - api-node-modules:/app/node_modules
     depends_on:
       - postgres-app
       - redis-app
@@ -194,6 +201,8 @@ volumes:
   postgres-evolution-data:
     driver: local
   redis-app-data:
+    driver: local
+  api-node-modules:
     driver: local
   redis-evolution-data:
     driver: local

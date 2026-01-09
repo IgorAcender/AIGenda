@@ -353,6 +353,7 @@ export class EvolutionAllocationService {
     evolutionId?: number;
     whatsappPhone?: string;
     connectedAt?: Date;
+    state?: string;
     error?: string;
   }> {
     try {
@@ -367,12 +368,65 @@ export class EvolutionAllocationService {
         };
       }
 
+      // Consulta status direto na Evolution para garantir sincronização em tempo real
+      const evolutionService = getEvolutionService();
+      let liveStatus:
+        | {
+            isConnected: boolean;
+            phoneNumber?: string;
+            state?: string;
+          }
+        | null = null;
+
+      try {
+        liveStatus = await evolutionService.getStatus(
+          mapping.evolutionInstanceId,
+          tenantId
+        );
+      } catch (liveError) {
+        console.error(
+          `Erro ao consultar status na Evolution ${mapping.evolutionInstanceId}:`,
+          liveError
+        );
+      }
+
+      const isConnected =
+        liveStatus?.isConnected !== undefined
+          ? liveStatus.isConnected
+          : mapping.isConnected;
+      const whatsappPhone =
+        liveStatus?.phoneNumber || mapping.whatsappPhoneNumber || undefined;
+      const state = liveStatus?.state || (isConnected ? 'open' : 'close');
+      let connectedAt = mapping.connectedAt || undefined;
+
+      if (isConnected && !connectedAt) {
+        connectedAt = new Date();
+      }
+
+      // Mantém banco sincronizado com o estado real
+      if (
+        liveStatus &&
+        (liveStatus.isConnected !== mapping.isConnected ||
+          liveStatus.phoneNumber !== mapping.whatsappPhoneNumber)
+      ) {
+        await prisma.tenantEvolutionMapping.update({
+          where: { tenantId },
+          data: {
+            isConnected: liveStatus.isConnected,
+            whatsappPhoneNumber: liveStatus.phoneNumber,
+            connectedAt: liveStatus.isConnected ? connectedAt : mapping.connectedAt,
+            disconnectedAt: liveStatus.isConnected ? null : new Date(),
+          },
+        });
+      }
+
       return {
         success: true,
-        isConnected: mapping.isConnected,
+        isConnected,
         evolutionId: mapping.evolutionInstanceId,
-        whatsappPhone: mapping.whatsappPhoneNumber || undefined,
-        connectedAt: mapping.connectedAt || undefined,
+        whatsappPhone,
+        connectedAt,
+        state,
       };
     } catch (error) {
       console.error('Erro ao obter status:', error);
