@@ -234,17 +234,42 @@ export class EvolutionAllocationService {
     try {
       console.log(`[handleTenantConnected] Iniciando para tenantId: "${tenantId}"`);
       
+      // Se não recebeu o número no webhook, tenta consultar direto na Evolution
+      let phoneToSave = whatsappPhoneNumber;
+      if (!phoneToSave) {
+        try {
+          const mapping = await prisma.tenantEvolutionMapping.findUnique({
+            where: { tenantId },
+          });
+          
+          if (mapping) {
+            const evolutionService = getEvolutionService();
+            const liveStatus = await evolutionService.getStatus(
+              mapping.evolutionInstanceId,
+              tenantId
+            );
+            
+            if (liveStatus?.phoneNumber && liveStatus.phoneNumber !== 'N/A') {
+              phoneToSave = liveStatus.phoneNumber;
+              console.log(`[handleTenantConnected] Número recuperado da Evolution: ${phoneToSave}`);
+            }
+          }
+        } catch (statusError) {
+          console.error(`[handleTenantConnected] Erro ao consultar status na Evolution:`, statusError);
+        }
+      }
+      
       const mapping = await prisma.tenantEvolutionMapping.update({
         where: { tenantId },
         data: {
           isConnected: true,
-          whatsappPhoneNumber: whatsappPhoneNumber,
+          whatsappPhoneNumber: phoneToSave,
           connectedAt: new Date(),
           disconnectedAt: null,
         },
       });
 
-      console.log(`✅ Tenant ${tenantId} conectado (${whatsappPhoneNumber})`);
+      console.log(`✅ Tenant ${tenantId} conectado (${phoneToSave || 'sem telefone'})`);
       console.log(`[handleTenantConnected] Banco atualizado com sucesso para tenantId: "${tenantId}"`);
 
       return { success: true };
