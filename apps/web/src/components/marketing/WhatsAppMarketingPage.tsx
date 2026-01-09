@@ -17,6 +17,7 @@ import {
   Divider,
   Tag,
   Form,
+  Switch,
 } from 'antd'
 import {
   ReloadOutlined,
@@ -62,6 +63,19 @@ export default function WhatsAppMarketingPage() {
   const [testMessage, setTestMessage] = useState('Olá! Esta é uma mensagem de teste do sistema. 🎉')
   const [testPhone, setTestPhone] = useState('')
   const [form] = Form.useForm()
+  const [automationToggles, setAutomationToggles] = useState<Record<string, boolean>>({
+    parabenize: false,
+    reconquiste: false,
+    evite_esquecimentos: false,
+    cuidados: false,
+    garanta_retornos: false,
+    clientes_informados: false,
+    boas_vindas: false,
+    agendamento_online: false,
+    cashback: false,
+    pacote_expirando: false,
+    realize_cobrancas: false,
+  })
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
   const tenantId = tenant?.id
@@ -457,10 +471,10 @@ export default function WhatsAppMarketingPage() {
         <div>
           <Title level={3} style={{ marginBottom: '24px' }}>Automações Disponíveis</Title>
           <Row gutter={[24, 24]}>
-            {/* Card 1 */}
+            {/* Card 1 - Parabenize */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎁</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Parabenize seus clientes</Title>
@@ -469,19 +483,23 @@ export default function WhatsAppMarketingPage() {
                     Reforce os laços com seus clientes e mostre o quanto eles são especiais! Envie uma mensagem automática parabenizando os aniversariantes do dia.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.parabenize}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, parabenize: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 2 */}
+            {/* Card 2 - Reconquiste */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>🤝</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Reconquiste clientes</Title>
@@ -490,19 +508,23 @@ export default function WhatsAppMarketingPage() {
                     Já faz um tempo que o seu cliente não vem no seu estabelecimento? Recupere ele criando uma oferta especial nesta campanha enviará uma mensagem aos clientes que nunca vieram ou não retornaram após um período.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.reconquiste}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, reconquiste: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 3 */}
+            {/* Card 3 - Evite esquecimentos */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚠️</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Evite esquecimentos</Title>
@@ -511,19 +533,23 @@ export default function WhatsAppMarketingPage() {
                     Na correria do dia a dia o seu cliente pode esquecer do seu agendamento! Evite que isso aconteça e envie quantos lembretes forem necessários com lembretes personalizados para que ele não esqueça do seu horário.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.evite_esquecimentos}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, evite_esquecimentos: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 4 */}
+            {/* Card 4 - Cuidados */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>❤️</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Cuidados</Title>
@@ -532,19 +558,23 @@ export default function WhatsAppMarketingPage() {
                     Fortaleça o relacionamento com seus clientes enviando mensagens automáticas de pré-atendimento, personalizadas por serviço. Essas mensagens são enviadas apenas para agendamentos confirmados.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.cuidados}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, cuidados: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 5 */}
+            {/* Card 5 - Garanta retornos */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>📞</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Garanta retornos</Title>
@@ -553,19 +583,23 @@ export default function WhatsAppMarketingPage() {
                     Já passou um tempo e está na hora do seu cliente retornar para fazer novamente o serviço ou o produto dele está acabando? Lembre-o que está na hora dele retornar ao estabelecimento!
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.garanta_retornos}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, garanta_retornos: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 6 */}
+            {/* Card 6 - Clientes bem informados */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>📅</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Clientes bem informados</Title>
@@ -574,19 +608,23 @@ export default function WhatsAppMarketingPage() {
                     Atualize o seu cliente sobre o andamento do seu agendamento! Envie mensagens avisando que o agendamento dele foi criado ou o seu status foi atualizado.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático parcial ⓘ</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.clientes_informados}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, clientes_informados: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 7 */}
+            {/* Card 7 - Boas-vindas */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>↩️</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Boas-vindas a novos clientes</Title>
@@ -595,19 +633,23 @@ export default function WhatsAppMarketingPage() {
                     Que tal dar boas-vindas a um cliente e lhe oferetar um desconto? Esta campanha é enviada automaticamente aos clientes 1 dia após a sua primeira compra.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.boas_vindas}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, boas_vindas: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 8 */}
+            {/* Card 8 - Agendamento online */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Convide os clientes para agendar online</Title>
@@ -616,19 +658,23 @@ export default function WhatsAppMarketingPage() {
                     Incentive os seus clientes a agendar online o seu próximo atendimento com uma oferta especial. Esta campanha é enviada aos clientes que nunca agendaram online.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.agendamento_online}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, agendamento_online: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 9 */}
+            {/* Card 9 - Cashback */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>💳</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Cashback</Title>
@@ -637,19 +683,23 @@ export default function WhatsAppMarketingPage() {
                     Envie ao seu cliente uma mensagem avisando sobre o seu saldo atual de cashback.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.cashback}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, cashback: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 10 */}
+            {/* Card 10 - Pacote expirando */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>📦</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Pacote expirando</Title>
@@ -658,19 +708,23 @@ export default function WhatsAppMarketingPage() {
                     Envie ao seu cliente uma mensagem avisando sobre o vencimento do pacote.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.pacote_expirando}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, pacote_expirando: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
             </Col>
 
-            {/* Card 11 */}
+            {/* Card 11 - Realize cobranças */}
             <Col xs={24} sm={12} md={8} lg={6}>
               <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space direction="vertical" style={{ width: '100%' }} size="middle">
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '32px', marginBottom: '12px' }}>💰</div>
                     <Title level={5} style={{ margin: '0 0 8px 0' }}>Realize cobranças</Title>
@@ -679,10 +733,14 @@ export default function WhatsAppMarketingPage() {
                     Seu cliente deixou uma fatura em aberto e esqueceu de quitar no tempo combinado?! Lembre-o que há uma fatura em aberto no seu estabelecimento.
                   </Text>
                   <Space direction="vertical" style={{ width: '100%' }}>
-                    <Space>
-                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '12px' }}>Envio automático</span>
+                      <Switch 
+                        checked={automationToggles.realize_cobrancas}
+                        onChange={(checked) => setAutomationToggles({...automationToggles, realize_cobrancas: checked})}
+                      />
                     </Space>
-                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                    <Button type="primary" block>Personalizar</Button>
                   </Space>
                 </Space>
               </Card>
