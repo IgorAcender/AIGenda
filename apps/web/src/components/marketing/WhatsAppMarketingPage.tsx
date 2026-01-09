@@ -360,9 +360,6 @@ export default function WhatsAppMarketingPage() {
         >
           <Row gutter={24}>
             <Col xs={24} sm={12} md={8}>
-              <Statistic title="Instância" value={status?.instanceName || 'N/A'} />
-            </Col>
-            <Col xs={24} sm={12} md={8}>
               <Statistic
                 title="Estado"
                 value={status?.state === 'open' ? 'Aberto' : 'Fechado'}
@@ -377,16 +374,6 @@ export default function WhatsAppMarketingPage() {
               />
             </Col>
           </Row>
-
-          {status?.apiUrl && (
-            <>
-              <Divider />
-              <Title level={5}>URL da API</Title>
-              <Text copyable code style={{ fontSize: '12px', wordBreak: 'break-all' }}>
-                {status.apiUrl}
-              </Text>
-            </>
-          )}
         </Card>
 
         <Card
