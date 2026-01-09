@@ -258,7 +258,23 @@ export default function WhatsAppMarketingPage() {
     return cleanPhone
   }
 
+  // Valida se é número (não é grupo)
+  const isValidPhoneNumber = (phone: string): boolean => {
+    // Se contém @g.us ou @s.whatsapp.net é grupo, não número individual
+    if (phone.includes('@g.us') || phone.includes('@s.whatsapp.net')) {
+      return false
+    }
+    // Se contém apenas dígitos após limpeza, é número válido
+    return /^\d+$/.test(phone.replace(/\D/g, ''))
+  }
+
   const handleSendTestMessage = async (values: any) => {
+    // Validar se é número individual
+    if (!isValidPhoneNumber(values.phone)) {
+      message.error('A mensagem de teste é exclusiva para números individuais. Para grupos, use outro método.')
+      return
+    }
+
     setLoading(true)
     try {
       const formattedPhone = formatBrazilianPhoneNumber(values.phone)
@@ -393,12 +409,12 @@ export default function WhatsAppMarketingPage() {
           }
         >
           <Paragraph type="secondary">
-            💡 Você pode enviar para números individuais ou para grupos. Para números, use sem o 55 (ex: 11999999999) que adicionamos automaticamente. Para grupos, use o ID do grupo do WhatsApp (formato: 120363xxx@g.us)
+            💡 Este formulário é exclusivo para enviar mensagens para <strong>números individuais</strong>. Digite o número sem o 55 (ex: 11999999999) que adicionamos automaticamente.
           </Paragraph>
 
           <Form form={form} layout="vertical" onFinish={handleSendTestMessage} disabled={!status?.isConnected}>
-            <Form.Item label="Número do WhatsApp ou ID do Grupo" name="phone" rules={[{ required: true, message: 'Digite um número ou ID' }]}>
-              <Input placeholder="11999999999 ou 120363xxx@g.us" prefix={<PhoneOutlined />} />
+            <Form.Item label="Número do WhatsApp" name="phone" rules={[{ required: true, message: 'Digite um número válido' }]}>
+              <Input placeholder="11999999999" prefix={<PhoneOutlined />} />
             </Form.Item>
 
             <Form.Item
