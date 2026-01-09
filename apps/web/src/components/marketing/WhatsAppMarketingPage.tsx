@@ -363,9 +363,20 @@ export default function WhatsAppMarketingPage() {
                 </Col>
 
                 {/* Botões - Direita */}
-                <Col flex="auto" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Col flex="auto" style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
                   <Button
                     type="primary"
+                    icon={<QrcodeOutlined />}
+                    onClick={handleShowQR}
+                    loading={loading}
+                    size="large"
+                    block
+                    style={{ height: '56px', fontSize: '16px', fontWeight: '600' }}
+                  >
+                    Conectar
+                  </Button>
+                  <Button
+                    type="default"
                     icon={<ReloadOutlined />}
                     onClick={handleUpdateStatus}
                     loading={loading}
@@ -373,16 +384,6 @@ export default function WhatsAppMarketingPage() {
                     block
                   >
                     Atualizar
-                  </Button>
-                  <Button
-                    type="default"
-                    icon={<QrcodeOutlined />}
-                    onClick={handleShowQR}
-                    loading={loading}
-                    size="large"
-                    block
-                  >
-                    QR Code
                   </Button>
                   <Button
                     danger
