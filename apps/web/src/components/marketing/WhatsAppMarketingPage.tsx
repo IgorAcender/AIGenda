@@ -327,37 +327,43 @@ export default function WhatsAppMarketingPage() {
 
         <Row gutter={24}>
           <Col xs={24} md={12}>
-            <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
-              <Space direction="vertical" style={{ width: '100%' }} size="large">
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ margin: '0 0 16px 0' }}>Status da Conexão</Title>
+            <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              <Row gutter={16} style={{ height: '100%' }}>
+                {/* Status Quadrado - Esquerda */}
+                <Col flex="auto" style={{ display: 'flex', alignItems: 'stretch' }}>
                   <div style={{ 
+                    flex: 1,
                     display: 'flex', 
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '10px',
-                    padding: '14px 20px',
+                    gap: '16px',
+                    padding: '24px',
                     backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.15)' : 'rgba(245, 34, 45, 0.15)',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     border: `2px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`,
-                    marginBottom: '20px'
+                    minHeight: '240px'
                   }}>
                     <div
                       style={{
-                        width: '12px',
-                        height: '12px',
+                        width: '24px',
+                        height: '24px',
                         borderRadius: '50%',
                         backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
-                        boxShadow: status?.isConnected ? '0 0 8px rgba(82, 196, 26, 0.5)' : '0 0 8px rgba(245, 34, 45, 0.5)',
+                        boxShadow: status?.isConnected ? '0 0 12px rgba(82, 196, 26, 0.6)' : '0 0 12px rgba(245, 34, 45, 0.6)',
                         animation: status?.isConnected ? 'pulse 2s infinite' : 'none'
                       }}
                     />
-                    <Text style={{ fontWeight: '700', fontSize: '16px', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
-                      {status?.isConnected ? 'Conectado' : 'Desconectado'}
-                    </Text>
+                    <div style={{ textAlign: 'center' }}>
+                      <Text style={{ fontWeight: '700', fontSize: '14px', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0, display: 'block' }}>
+                        {status?.isConnected ? 'Conectado' : 'Desconectado'}
+                      </Text>
+                    </div>
                   </div>
-                </div>
-                <Space direction="vertical" style={{ width: '100%' }}>
+                </Col>
+
+                {/* Botões - Direita */}
+                <Col flex="auto" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <Button
                     type="primary"
                     icon={<ReloadOutlined />}
@@ -388,8 +394,8 @@ export default function WhatsAppMarketingPage() {
                   >
                     Desconectar
                   </Button>
-                </Space>
-              </Space>
+                </Col>
+              </Row>
             </Card>
           </Col>
 
