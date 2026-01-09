@@ -561,6 +561,132 @@ export default function WhatsAppMarketingPage() {
                 </Space>
               </Card>
             </Col>
+
+            {/* Card 6 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📅</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Clientes bem informados</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Atualize o seu cliente sobre o andamento do seu agendamento! Envie mensagens avisando que o agendamento dele foi criado ou o seu status foi atualizado.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático parcial ⓘ</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 7 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>↩️</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Boas-vindas a novos clientes</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Que tal dar boas-vindas a um cliente e lhe oferetar um desconto? Esta campanha é enviada automaticamente aos clientes 1 dia após a sua primeira compra.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 8 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📋</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Convide os clientes para agendar online</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Incentive os seus clientes a agendar online o seu próximo atendimento com uma oferta especial. Esta campanha é enviada aos clientes que nunca agendaram online.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 9 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>💳</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Cashback</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Envie ao seu cliente uma mensagem avisando sobre o seu saldo atual de cashback.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 10 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📦</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Pacote expirando</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Envie ao seu cliente uma mensagem avisando sobre o vencimento do pacote.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 11 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>💰</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Realize cobranças</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Seu cliente deixou uma fatura em aberto e esqueceu de quitar no tempo combinado?! Lembre-o que há uma fatura em aberto no seu estabelecimento.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
           </Row>
         </div>
       </Space>
