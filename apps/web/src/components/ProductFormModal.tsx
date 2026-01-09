@@ -80,18 +80,19 @@ export function ProductFormModal({
       saveProduct(values, {
         onSuccess: (response: any) => {
           message.success(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!')
-          onSuccess(response.data || response)
+          onSuccess(response)
           onClose()
           form.resetFields()
-          setSubmitting(false)
         },
         onError: (error: any) => {
-          message.error(error.message || 'Erro ao salvar produto')
-          setSubmitting(false)
+          message.error(error?.response?.data?.message || error?.message || 'Erro ao salvar produto')
+          console.error('Erro ao salvar produto:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
+      message.error('Erro ao validar formulário')
+    } finally {
       setSubmitting(false)
     }
   }

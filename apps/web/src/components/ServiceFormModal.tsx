@@ -28,9 +28,11 @@ export function ServiceFormModal({
   const { mutate: saveService, isPending: isSaving } = useApiMutation(
     async (serviceData) => {
       if (editingService?.id) {
-        return await api.put(`/services/${editingService.id}`, serviceData)
+        const { data } = await api.put(`/services/${editingService.id}`, serviceData)
+        return data
       } else {
-        return await api.post('/services', serviceData)
+        const { data } = await api.post('/services', serviceData)
+        return data
       }
     },
     [['services']]
@@ -59,18 +61,20 @@ export function ServiceFormModal({
       saveService(values, {
         onSuccess: (response: any) => {
           message.success(editingService ? 'Serviço atualizado com sucesso!' : 'Serviço criado com sucesso!')
-          onSuccess(response.data || response)
+          onSuccess(response)
           onClose()
           form.resetFields()
-          setSubmitting(false)
         },
         onError: (error: any) => {
-          message.error(error.message || 'Erro ao salvar serviço')
-          setSubmitting(false)
+          const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao salvar serviço'
+          message.error(errorMessage)
+          console.error('Erro ao salvar serviço:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
+      message.error('Erro ao validar formulário')
+    } finally {
       setSubmitting(false)
     }
   }

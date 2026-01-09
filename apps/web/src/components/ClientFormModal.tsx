@@ -123,6 +123,9 @@ export function ClientFormModal({ open, onClose, onSuccess, editingClient }: Cli
         form.resetFields()
         setAvatarPreview(null)
       },
+      onError: (error: any) => {
+        console.error('Erro ao salvar cliente:', error)
+      },
     })
   }
 

@@ -60,18 +60,19 @@ export function CategoryFormModal({
       saveCategory(values, {
         onSuccess: (response: any) => {
           message.success(editingCategory ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!')
-          onSuccess(response.data || response)
+          onSuccess(response)
           onClose()
           form.resetFields()
-          setSubmitting(false)
         },
         onError: (error: any) => {
-          message.error(error.message || 'Erro ao salvar categoria')
-          setSubmitting(false)
+          message.error(error?.response?.data?.message || error?.message || 'Erro ao salvar categoria')
+          console.error('Erro ao salvar categoria:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
+      message.error('Erro ao validar formulário')
+    } finally {
       setSubmitting(false)
     }
   }

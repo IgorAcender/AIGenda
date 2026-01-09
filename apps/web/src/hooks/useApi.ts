@@ -58,6 +58,7 @@ export function useApiPaginatedQuery(
 
 /**
  * Hook para POST/PUT/DELETE com invalidação automática
+ * Suporta callbacks onSuccess e onError na chamada mutate()
  */
 export function useApiMutation(
   mutationFn: (data: any) => Promise<any>,
@@ -65,9 +66,9 @@ export function useApiMutation(
 ) {
   const queryClient = useQueryClient()
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn,
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       console.log('🔄 Mutation sucesso! Invalidando keys:', invalidateKeys)
       // Invalidar queries relacionadas para refetch automático
       if (invalidateKeys) {
@@ -82,6 +83,7 @@ export function useApiMutation(
           })
         }
       }
+      return data
     },
     onError: (error: any) => {
       console.error('❌ Erro na operação:', error)
@@ -91,6 +93,23 @@ export function useApiMutation(
       }
     },
   })
+
+  // Wrapper para suportar callbacks na chamada mutate()
+  const mutateWithCallbacks = (data: any, callbacks?: { onSuccess?: (data: any) => void; onError?: (error: any) => void }) => {
+    return mutation.mutate(data, {
+      onSuccess: (response) => {
+        callbacks?.onSuccess?.(response)
+      },
+      onError: (error) => {
+        callbacks?.onError?.(error)
+      },
+    })
+  }
+
+  return {
+    ...mutation,
+    mutate: mutateWithCallbacks,
+  }
 }
 
 /**
