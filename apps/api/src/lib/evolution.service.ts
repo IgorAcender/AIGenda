@@ -264,23 +264,32 @@ export class EvolutionService {
     try {
       const client = this.getClient(evolutionId);
       const instanceName = `tenant-${tenantId}`;
+      const endpoint = `/message/sendText/${instanceName}`;
 
-      const response = await client.post('/message/send', {
+      console.log(`📤 Enviando mensagem na Evolution ${evolutionId}:`);
+      console.log(`   Endpoint: ${endpoint}`);
+      console.log(`   Para: ${phoneNumber}`);
+      console.log(`   Mensagem: ${message}`);
+
+      const response = await client.post(endpoint, {
         number: phoneNumber,
         text: message,
-        instance: instanceName,
-        apikey: this.apiKey,
       });
 
+      console.log(`✅ Mensagem enviada com sucesso:`, response.data);
+
       return {
-        success: response.data.success,
-        messageId: response.data.messageId,
+        success: true,
+        messageId: response.data.key?.id || response.data.messageId,
       };
-    } catch (error) {
-      console.error(
-        `Erro ao enviar mensagem na Evolution ${evolutionId}:`,
-        error
-      );
+    } catch (error: any) {
+      console.error(`❌ Erro ao enviar mensagem na Evolution ${evolutionId}:`);
+      console.error(`   Status: ${error.response?.status}`);
+      console.error(`   URL: ${error.config?.url}`);
+      console.error(`   Headers: ${JSON.stringify(error.config?.headers)}`);
+      console.error(`   Response: ${JSON.stringify(error.response?.data)}`);
+      console.error(`   Message: ${error.message}`);
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido',
