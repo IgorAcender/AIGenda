@@ -452,6 +452,117 @@ export default function WhatsAppMarketingPage() {
             </Card>
           </Col>
         </Row>
+
+        {/* Automações de WhatsApp */}
+        <div>
+          <Title level={3} style={{ marginBottom: '24px' }}>Automações Disponíveis</Title>
+          <Row gutter={[24, 24]}>
+            {/* Card 1 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎁</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Parabenize seus clientes</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Reforce os laços com seus clientes e mostre o quanto eles são especiais! Envie uma mensagem automática parabenizando os aniversariantes do dia.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 2 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>🤝</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Reconquiste clientes</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Já faz um tempo que o seu cliente não vem no seu estabelecimento? Recupere ele criando uma oferta especial nesta campanha enviará uma mensagem aos clientes que nunca vieram ou não retornaram após um período.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 3 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚠️</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Evite esquecimentos</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Na correria do dia a dia o seu cliente pode esquecer do seu agendamento! Evite que isso aconteça e envie quantos lembretes forem necessários com lembretes personalizados para que ele não esqueça do seu horário.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 4 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>❤️</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Cuidados</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Fortaleça o relacionamento com seus clientes enviando mensagens automáticas de pré-atendimento, personalizadas por serviço. Essas mensagens são enviadas apenas para agendamentos confirmados.
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+
+            {/* Card 5 */}
+            <Col xs={24} sm={12} md={8} lg={6}>
+              <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📞</div>
+                    <Title level={5} style={{ margin: '0 0 8px 0' }}>Garanta retornos</Title>
+                  </div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Já passou um tempo e está na hora do seu cliente retornar para fazer novamente o serviço ou o produto dele está acabando? Lembre-o que está na hora dele retornar ao estabelecimento!
+                  </Text>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space>
+                      <span style={{ fontSize: '12px' }}>Envio automático desativado</span>
+                    </Space>
+                    <Button type="link" style={{ padding: 0, height: 'auto', color: '#1677ff' }}>Personalizar</Button>
+                  </Space>
+                </Space>
+              </Card>
+            </Col>
+          </Row>
+        </div>
       </Space>
 
       <Modal
