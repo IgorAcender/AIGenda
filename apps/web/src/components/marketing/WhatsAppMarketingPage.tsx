@@ -350,7 +350,11 @@ export default function WhatsAppMarketingPage() {
               />
             </Col>
             <Col xs={24} sm={12} md={8}>
-              <Statistic title="Número" value={status?.whatsappPhone || 'N/A'} />
+              <Statistic 
+                title="Número" 
+                value={status?.whatsappPhone || 'N/A'}
+                formatter={(value) => String(value)}
+              />
             </Col>
           </Row>
 
