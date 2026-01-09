@@ -64,7 +64,6 @@ export default function LinkAgendamentoPage() {
           <Col xs={24} lg={12}>
             <Card 
               style={{ 
-                height: '100%',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 borderRadius: '12px',
                 border: '1px solid #f0f0f0'
@@ -106,73 +105,73 @@ export default function LinkAgendamentoPage() {
                   </Space.Compact>
                 </div>
 
-                {/* Botões de Ação */}
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Button
-                    block
-                    type="default"
-                    icon={<ShareAltOutlined />}
-                    onClick={() => handleShare(landingPageUrl, 'Agende seu horário!')}
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Compartilhar
-                  </Button>
-                  <Button
-                    block
-                    type="dashed"
-                    href={landingPageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Visualizar Página
-                  </Button>
-                </Space>
+                {/* Layout 2 Colunas: QR Code + Botões */}
+                <Row gutter={16} style={{ width: '100%' }}>
+                  {/* QR Code - Esquerda */}
+                  <Col flex="auto" style={{ display: 'flex', alignItems: 'stretch' }}>
+                    <div style={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '20px', 
+                      backgroundColor: '#f8f9ff',
+                      borderRadius: '8px',
+                      border: '1px solid #e6e6ff'
+                    }}>
+                      <QRCode
+                        value={landingPageUrl}
+                        size={160}
+                        level="H"
+                      />
+                    </div>
+                  </Col>
 
-                <Divider style={{ margin: '12px 0' }} />
-
-                {/* QR Code */}
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ marginTop: 0, marginBottom: '12px' }}>
-                    <QrcodeOutlined /> QR Code
-                  </Title>
-                  <div style={{ 
-                    padding: '20px', 
-                    background: '#fff', 
-                    borderRadius: '12px',
-                    border: '2px solid #f0f0f0',
-                    display: 'inline-block',
-                    marginBottom: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                  }}>
-                    <QRCode
-                      value={landingPageUrl}
-                      size={200}
-                      level="H"
-                    />
-                  </div>
-                  <Button
-                    block
-                    type="primary"
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                    onClick={() => {
-                      const canvas = document.querySelectorAll('canvas')[0]
-                      if (canvas) {
-                        const url = canvas.toDataURL()
-                        const link = document.createElement('a')
-                        link.download = 'qrcode-landing-page.png'
-                        link.href = url
-                        link.click()
-                        message.success('QR Code baixado!')
-                      }
-                    }}
-                  >
-                    Baixar QR Code
-                  </Button>
-                </div>
+                  {/* Botões - Direita */}
+                  <Col flex="auto" style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+                    <Button
+                      block
+                      type="default"
+                      icon={<ShareAltOutlined />}
+                      onClick={() => handleShare(landingPageUrl, 'Agende seu horário!')}
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                    >
+                      Compartilhar
+                    </Button>
+                    <Button
+                      block
+                      type="primary"
+                      href={landingPageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                    >
+                      Visualizar Página
+                    </Button>
+                    <Button
+                      block
+                      type="primary"
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                      onClick={() => {
+                        const canvas = document.querySelectorAll('canvas')[0]
+                        if (canvas) {
+                          const url = canvas.toDataURL()
+                          const link = document.createElement('a')
+                          link.download = 'qrcode-landing-page.png'
+                          link.href = url
+                          link.click()
+                          message.success('QR Code baixado!')
+                        }
+                      }}
+                    >
+                      Baixar QR Code
+                    </Button>
+                  </Col>
+                </Row>
               </Space>
             </Card>
           </Col>
@@ -181,7 +180,6 @@ export default function LinkAgendamentoPage() {
           <Col xs={24} lg={12}>
             <Card 
               style={{ 
-                height: '100%',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 borderRadius: '12px',
                 border: '1px solid #f0f0f0'
@@ -196,7 +194,7 @@ export default function LinkAgendamentoPage() {
                     <Tag color="green" style={{ marginLeft: 'auto' }}>Rápido</Tag>
                   </div>
                   <Text type="secondary">
-                    Link direto para o calendário de agendamentos. Perfeito para RedirecionaR clientes rápidamente sem distrações.
+                    Link direto para o calendário de agendamentos. Perfeito para redirecionar clientes rápidamente sem distrações.
                   </Text>
                 </div>
 
@@ -223,73 +221,73 @@ export default function LinkAgendamentoPage() {
                   </Space.Compact>
                 </div>
 
-                {/* Botões de Ação */}
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Button
-                    block
-                    type="default"
-                    icon={<ShareAltOutlined />}
-                    onClick={() => handleShare(bookingUrl, 'Agende agora!')}
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Compartilhar
-                  </Button>
-                  <Button
-                    block
-                    type="primary"
-                    href={bookingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Agendar Agora
-                  </Button>
-                </Space>
+                {/* Layout 2 Colunas: QR Code + Botões */}
+                <Row gutter={16} style={{ width: '100%' }}>
+                  {/* QR Code - Esquerda */}
+                  <Col flex="auto" style={{ display: 'flex', alignItems: 'stretch' }}>
+                    <div style={{ 
+                      flex: 1,
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '20px', 
+                      backgroundColor: '#f6ffed',
+                      borderRadius: '8px',
+                      border: '1px solid #b7eb8f'
+                    }}>
+                      <QRCode
+                        value={bookingUrl}
+                        size={160}
+                        level="H"
+                      />
+                    </div>
+                  </Col>
 
-                <Divider style={{ margin: '12px 0' }} />
-
-                {/* QR Code */}
-                <div style={{ textAlign: 'center' }}>
-                  <Title level={4} style={{ marginTop: 0, marginBottom: '12px' }}>
-                    <QrcodeOutlined /> QR Code
-                  </Title>
-                  <div style={{ 
-                    padding: '20px', 
-                    background: '#fff', 
-                    borderRadius: '12px',
-                    border: '2px solid #f0f0f0',
-                    display: 'inline-block',
-                    marginBottom: '16px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                  }}>
-                    <QRCode
-                      value={bookingUrl}
-                      size={200}
-                      level="H"
-                    />
-                  </div>
-                  <Button
-                    block
-                    type="primary"
-                    size="large"
-                    style={{ borderRadius: '6px' }}
-                    onClick={() => {
-                      const canvas = document.querySelectorAll('canvas')[1]
-                      if (canvas) {
-                        const url = canvas.toDataURL()
-                        const link = document.createElement('a')
-                        link.download = 'qrcode-agendamento-direto.png'
-                        link.href = url
-                        link.click()
-                        message.success('QR Code baixado!')
-                      }
-                    }}
-                  >
-                    Baixar QR Code
-                  </Button>
-                </div>
+                  {/* Botões - Direita */}
+                  <Col flex="auto" style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
+                    <Button
+                      block
+                      type="default"
+                      icon={<ShareAltOutlined />}
+                      onClick={() => handleShare(bookingUrl, 'Agende agora!')}
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                    >
+                      Compartilhar
+                    </Button>
+                    <Button
+                      block
+                      type="primary"
+                      href={bookingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                    >
+                      Agendar Agora
+                    </Button>
+                    <Button
+                      block
+                      type="primary"
+                      size="large"
+                      style={{ borderRadius: '6px' }}
+                      onClick={() => {
+                        const canvas = document.querySelectorAll('canvas')[1]
+                        if (canvas) {
+                          const url = canvas.toDataURL()
+                          const link = document.createElement('a')
+                          link.download = 'qrcode-agendamento-direto.png'
+                          link.href = url
+                          link.click()
+                          message.success('QR Code baixado!')
+                        }
+                      }}
+                    >
+                      Baixar QR Code
+                    </Button>
+                  </Col>
+                </Row>
               </Space>
             </Card>
           </Col>
