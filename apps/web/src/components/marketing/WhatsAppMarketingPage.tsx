@@ -81,9 +81,17 @@ export default function WhatsAppMarketingPage() {
 
     const fetchStatus = async () => {
       try {
+        console.log(`[WhatsApp] Consultando status para tenantId: "${tenantId}"`);
         const res = await fetch(`${API_URL}/api/whatsapp/status/${tenantId}`)
         const data = await res.json()
-        console.log('[WhatsApp Polling]', { tenantId, isConnected: data.isConnected, timestamp: new Date().toLocaleTimeString() })
+        console.log('[WhatsApp Polling]', { 
+          tenantId, 
+          isConnected: data.isConnected, 
+          whatsappPhone: data.whatsappPhone,
+          state: data.state,
+          fullData: data,
+          timestamp: new Date().toLocaleTimeString() 
+        })
         setStatus(data)
       } catch (error) {
         console.error('Erro ao buscar status:', error)

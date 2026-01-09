@@ -357,7 +357,7 @@ export class EvolutionAllocationService {
     error?: string;
   }> {
     try {
-      const mapping = await prisma.tenantEvolutionMapping.findUnique({
+      let mapping = await prisma.tenantEvolutionMapping.findUnique({
         where: { tenantId },
       });
 
@@ -394,8 +394,7 @@ export class EvolutionAllocationService {
         liveStatus?.isConnected !== undefined
           ? liveStatus.isConnected
           : mapping.isConnected;
-      const whatsappPhone =
-        liveStatus?.phoneNumber || mapping.whatsappPhoneNumber || undefined;
+      
       const state = liveStatus?.state || (isConnected ? 'open' : 'close');
       let connectedAt = mapping.connectedAt || undefined;
 
@@ -404,21 +403,46 @@ export class EvolutionAllocationService {
       }
 
       // Mantém banco sincronizado com o estado real
-      if (
-        liveStatus &&
-        (liveStatus.isConnected !== mapping.isConnected ||
-          liveStatus.phoneNumber !== mapping.whatsappPhoneNumber)
-      ) {
-        await prisma.tenantEvolutionMapping.update({
-          where: { tenantId },
-          data: {
+      if (liveStatus) {
+        // Só atualiza o que realmente mudou
+        // Se Evolution não retorna número, mantém o do banco
+        const shouldUpdatePhone = liveStatus.phoneNumber !== undefined && liveStatus.phoneNumber !== null;
+        
+        if (
+          liveStatus.isConnected !== mapping.isConnected ||
+          (shouldUpdatePhone && liveStatus.phoneNumber !== mapping.whatsappPhoneNumber)
+        ) {
+          console.log(
+            `[getTenantEvolutionStatus] Atualizando banco: isConnected=${liveStatus.isConnected}, phoneNumber="${
+              shouldUpdatePhone ? liveStatus.phoneNumber : mapping.whatsappPhoneNumber
+            }"`
+          );
+          
+          const updateData: any = {
             isConnected: liveStatus.isConnected,
-            whatsappPhoneNumber: liveStatus.phoneNumber,
             connectedAt: liveStatus.isConnected ? connectedAt : mapping.connectedAt,
             disconnectedAt: liveStatus.isConnected ? null : new Date(),
-          },
-        });
+          };
+          
+          // Só atualiza phoneNumber se Evolution retornou um valor
+          if (shouldUpdatePhone) {
+            updateData.whatsappPhoneNumber = liveStatus.phoneNumber;
+          }
+          
+          // Recarrega mapping após atualizar
+          mapping = await prisma.tenantEvolutionMapping.update({
+            where: { tenantId },
+            data: updateData,
+          });
+        }
       }
+
+      // Usa sempre o valor mais atualizado do mapping
+      const whatsappPhone = mapping.whatsappPhoneNumber || undefined;
+
+      console.log(
+        `[getTenantEvolutionStatus] Retornando para tenant ${tenantId}: isConnected=${isConnected}, phoneNumber="${whatsappPhone}", state="${state}"`
+      );
 
       return {
         success: true,

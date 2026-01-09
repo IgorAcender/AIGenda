@@ -356,9 +356,32 @@ export class EvolutionService {
       const isConnected =
         connectedStates.includes(normalizedState) || raw.connected === true;
 
+      // Tenta extrair número de telefone de várias localizações possíveis
+      let phoneNumber =
+        raw.phoneNumber ||
+        raw.phone?.id ||
+        raw.phone ||
+        raw.wid ||
+        raw.jid ||
+        raw.number ||
+        raw.webhookData?.phoneNumber ||
+        raw.data?.phoneNumber ||
+        raw.connection?.phoneNumber ||
+        (typeof raw.phone === 'string' ? raw.phone : null);
+
+      // Remove sufixo @s.whatsapp.net ou @g.us se existir (formato padrão do WhatsApp)
+      if (phoneNumber && typeof phoneNumber === 'string') {
+        phoneNumber = phoneNumber.replace(/@s\.whatsapp\.net$/, '').replace(/@g\.us$/, '');
+      }
+
+      console.log(
+        `[Evolution Status] Tenant ${tenantId}: connected=${isConnected}, state="${state}", phone="${phoneNumber || 'N/A'}"`
+      );
+      console.log(`[Evolution Raw Response] ${JSON.stringify(raw, null, 2)}`);
+
       return {
         isConnected,
-        phoneNumber: raw.phoneNumber || raw.phone?.id || raw.phone,
+        phoneNumber,
         state: state || (isConnected ? 'open' : 'close'),
       };
     } catch (error) {
