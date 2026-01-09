@@ -305,35 +305,45 @@ export default function WhatsAppMarketingPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
-            <WechatOutlined /> WhatsApp Marketing
-          </Title>
-          <Text type="secondary">Gerencie sua conexão do WhatsApp para automação de agendamentos</Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <WechatOutlined /> WhatsApp Marketing
+            </Title>
+            <Text type="secondary">Gerencie sua conexão do WhatsApp para automação de agendamentos</Text>
+          </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            padding: '10px 14px',
+            backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(245, 34, 45, 0.1)',
+            borderRadius: '6px',
+            border: `1.5px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`
+          }}>
+            <div
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
+              }}
+            />
+            <Text style={{ fontWeight: '600', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
+              {status?.isConnected ? 'Conectado' : 'Desconectado'}
+            </Text>
+          </div>
         </div>
 
         <Card
-          title={
-            <Space>
-              <div
-                style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
-                }}
-              />
-              <span>{status?.isConnected ? 'Conectado' : 'Desconectado'}</span>
-            </Space>
-          }
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
           extra={
-            <Space>
+            <Space wrap>
               <Button
                 type="primary"
                 icon={<ReloadOutlined />}
                 onClick={handleUpdateStatus}
                 loading={loading}
-                size="small"
               >
                 Atualizar
               </Button>
@@ -342,7 +352,6 @@ export default function WhatsAppMarketingPage() {
                 icon={<QrcodeOutlined />}
                 onClick={handleShowQR}
                 loading={loading}
-                size="small"
               >
                 QR Code
               </Button>
@@ -351,7 +360,6 @@ export default function WhatsAppMarketingPage() {
                 icon={<LogoutOutlined />}
                 onClick={handleDisconnect}
                 loading={loading}
-                size="small"
               >
                 Desconectar
               </Button>
@@ -362,20 +370,25 @@ export default function WhatsAppMarketingPage() {
         </Card>
 
         <Card
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
           title={
             <Space>
-              <SendOutlined />
-              <span>Enviar Mensagem de Teste</span>
+              <SendOutlined style={{ color: '#1677ff', fontSize: '18px' }} />
+              <span style={{ fontWeight: '600' }}>Enviar Mensagem de Teste</span>
             </Space>
           }
         >
-          <Paragraph type="secondary">
+          <Paragraph type="secondary" style={{ marginBottom: '20px' }}>
             💡 Digite o número sem o 55 (ex: 11999999999) que adicionamos automaticamente.
           </Paragraph>
 
           <Form form={form} layout="vertical" onFinish={handleSendTestMessage} disabled={!status?.isConnected}>
             <Form.Item label="Número do WhatsApp" name="phone" rules={[{ required: true, message: 'Digite um número válido' }]}>
-              <Input placeholder="11999999999" prefix={<PhoneOutlined />} />
+              <Input 
+                placeholder="11999999999" 
+                prefix={<PhoneOutlined />}
+                size="large"
+              />
             </Form.Item>
 
             <Form.Item
@@ -393,6 +406,7 @@ export default function WhatsAppMarketingPage() {
                 htmlType="submit"
                 loading={loading}
                 block
+                size="large"
                 icon={<SendOutlined />}
                 disabled={!status?.isConnected}
               >
