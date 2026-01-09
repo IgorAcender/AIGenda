@@ -335,88 +335,99 @@ export default function WhatsAppMarketingPage() {
           </div>
         </div>
 
-        <Card
-          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-          extra={
-            <Space wrap>
-              <Button
-                type="primary"
-                icon={<ReloadOutlined />}
-                onClick={handleUpdateStatus}
-                loading={loading}
-              >
-                Atualizar
-              </Button>
-              <Button
-                type="default"
-                icon={<QrcodeOutlined />}
-                onClick={handleShowQR}
-                loading={loading}
-              >
-                QR Code
-              </Button>
-              <Button
-                danger
-                icon={<LogoutOutlined />}
-                onClick={handleDisconnect}
-                loading={loading}
-              >
-                Desconectar
-              </Button>
-            </Space>
-          }
-        >
-          {/* Status é exibido apenas pelo indicador "Conectado" no topo */}
-        </Card>
+        <Row gutter={24}>
+          <Col xs={24} md={12}>
+            <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+              <Space direction="vertical" style={{ width: '100%' }} size="large">
+                <div>
+                  <Title level={4} style={{ margin: '0 0 12px 0' }}>Status da Conexão</Title>
+                  <Text type="secondary">Gerenciar sua conexão WhatsApp</Text>
+                </div>
+                <Space wrap>
+                  <Button
+                    type="primary"
+                    icon={<ReloadOutlined />}
+                    onClick={handleUpdateStatus}
+                    loading={loading}
+                    size="large"
+                  >
+                    Atualizar
+                  </Button>
+                  <Button
+                    type="default"
+                    icon={<QrcodeOutlined />}
+                    onClick={handleShowQR}
+                    loading={loading}
+                    size="large"
+                  >
+                    QR Code
+                  </Button>
+                  <Button
+                    danger
+                    icon={<LogoutOutlined />}
+                    onClick={handleDisconnect}
+                    loading={loading}
+                    size="large"
+                  >
+                    Desconectar
+                  </Button>
+                </Space>
+              </Space>
+            </Card>
+          </Col>
 
-        <Card
-          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-          title={
-            <Space>
-              <SendOutlined style={{ color: '#1677ff', fontSize: '18px' }} />
-              <span style={{ fontWeight: '600' }}>Enviar Mensagem de Teste</span>
-            </Space>
-          }
-        >
-          <Paragraph type="secondary" style={{ marginBottom: '20px' }}>
-            💡 Digite o número sem o 55 (ex: 11999999999) que adicionamos automaticamente.
-          </Paragraph>
+          <Col xs={24} md={12}>
+            <Card style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)', height: '100%' }}>
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <div>
+                  <Title level={4} style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <SendOutlined style={{ color: '#1677ff' }} />
+                    Enviar Mensagem de Teste
+                  </Title>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    💡 Digite o número sem o 55 (ex: 11999999999)
+                  </Text>
+                </div>
 
-          <Form form={form} layout="vertical" onFinish={handleSendTestMessage} disabled={!status?.isConnected}>
-            <Form.Item label="Número do WhatsApp" name="phone" rules={[{ required: true, message: 'Digite um número válido' }]}>
-              <Input 
-                placeholder="11999999999" 
-                prefix={<PhoneOutlined />}
-                size="large"
-              />
-            </Form.Item>
+                <Form form={form} layout="vertical" onFinish={handleSendTestMessage} disabled={!status?.isConnected}>
+                  <Form.Item label="Número do WhatsApp" name="phone" rules={[{ required: true, message: 'Digite um número válido' }]} style={{ marginBottom: '12px' }}>
+                    <Input 
+                      placeholder="11999999999" 
+                      prefix={<PhoneOutlined />}
+                      size="large"
+                    />
+                  </Form.Item>
 
-            <Form.Item
-              label="Mensagem"
-              name="message"
-              initialValue={testMessage}
-              rules={[{ required: true, message: 'Digite uma mensagem' }]}
-            >
-              <TextArea rows={4} placeholder="Digite sua mensagem..." />
-            </Form.Item>
+                  <Form.Item
+                    label="Mensagem"
+                    name="message"
+                    initialValue={testMessage}
+                    rules={[{ required: true, message: 'Digite uma mensagem' }]}
+                    style={{ marginBottom: '12px' }}
+                  >
+                    <TextArea rows={3} placeholder="Digite sua mensagem..." />
+                  </Form.Item>
 
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                block
-                size="large"
-                icon={<SendOutlined />}
-                disabled={!status?.isConnected}
-              >
-                Enviar Mensagem
-              </Button>
-            </Form.Item>
-          </Form>
+                  <Form.Item style={{ marginBottom: 0 }}>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={loading}
+                      block
+                      size="large"
+                      icon={<SendOutlined />}
+                      disabled={!status?.isConnected}
+                    >
+                      Enviar Mensagem
+                    </Button>
+                  </Form.Item>
+                </Form>
 
-          {!status?.isConnected && <Tag color="warning">Conecte o WhatsApp para enviar mensagens</Tag>}
-        </Card>
+                {!status?.isConnected && <Tag color="warning">Conecte o WhatsApp para enviar mensagens</Tag>}
+              </Space>
+            </Card>
+          </Col>
+        </Row>
       </Space>
 
       <Modal
