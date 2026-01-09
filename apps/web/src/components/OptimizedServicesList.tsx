@@ -43,6 +43,7 @@ export function OptimizedServicesList() {
           description: 'Serviço excluído com sucesso!',
           placement: 'topRight',
         })
+        refetch()
       },
       onError: (error: any) => {
         notification.error({
