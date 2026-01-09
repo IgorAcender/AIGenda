@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Table, Card, Button, Input, Space, Tag, message } from 'antd'
+import { Table, Card, Button, Input, Space, Tag, notification } from 'antd'
 import { PlusOutlined, SearchOutlined, EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
@@ -38,12 +38,18 @@ export function OptimizedServicesList() {
   const handleDeleteService = (serviceId: string) => {
     deleteServiceMutation.mutate(serviceId, {
       onSuccess: () => {
-        message.success('Serviço excluído com sucesso!')
+        notification.success({
+          message: 'Sucesso!',
+          description: 'Serviço excluído com sucesso!',
+          placement: 'topRight',
+        })
       },
       onError: (error: any) => {
-        message.error(
-          error?.response?.data?.message || 'Erro ao excluir serviço'
-        )
+        notification.error({
+          message: 'Erro ao excluir',
+          description: error?.response?.data?.message || 'Erro ao excluir serviço',
+          placement: 'topRight',
+        })
       },
     })
   }

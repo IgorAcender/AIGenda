@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Switch, Select, message } from 'antd'
+import { Form, Input, InputNumber, Switch, Select, notification } from 'antd'
 import { useApiMutation } from '@/hooks/useApi'
 import { useApiPaginatedQuery } from '@/hooks/useApi'
 import { api } from '@/lib/api'
@@ -79,19 +79,31 @@ export function ProductFormModal({
 
       saveProduct(values, {
         onSuccess: (response: any) => {
-          message.success(editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!')
+          notification.success({
+            message: 'Sucesso!',
+            description: editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
+            placement: 'topRight',
+          })
           onSuccess(response)
           onClose()
           form.resetFields()
         },
         onError: (error: any) => {
-          message.error(error?.response?.data?.message || error?.message || 'Erro ao salvar produto')
+          notification.error({
+            message: 'Erro ao salvar',
+            description: error?.response?.data?.message || error?.message || 'Erro ao salvar produto',
+            placement: 'topRight',
+          })
           console.error('Erro ao salvar produto:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
-      message.error('Erro ao validar formulário')
+      notification.error({
+        message: 'Erro de validação',
+        description: 'Por favor, verifique os dados do formulário',
+        placement: 'topRight',
+      })
     } finally {
       setSubmitting(false)
     }

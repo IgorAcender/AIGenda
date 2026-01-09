@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Form, Input, Switch, Button, message } from 'antd'
+import { Form, Input, Switch, Button, notification } from 'antd'
 import { useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 import { ModalWithSidebar } from './ModalWithSidebar'
@@ -59,19 +59,31 @@ export function CategoryFormModal({
 
       saveCategory(values, {
         onSuccess: (response: any) => {
-          message.success(editingCategory ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!')
+          notification.success({
+            message: 'Sucesso!',
+            description: editingCategory ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!',
+            placement: 'topRight',
+          })
           onSuccess(response)
           onClose()
           form.resetFields()
         },
         onError: (error: any) => {
-          message.error(error?.response?.data?.message || error?.message || 'Erro ao salvar categoria')
+          notification.error({
+            message: 'Erro ao salvar',
+            description: error?.response?.data?.message || error?.message || 'Erro ao salvar categoria',
+            placement: 'topRight',
+          })
           console.error('Erro ao salvar categoria:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
-      message.error('Erro ao validar formulário')
+      notification.error({
+        message: 'Erro de validação',
+        description: 'Por favor, verifique os dados do formulário',
+        placement: 'topRight',
+      })
     } finally {
       setSubmitting(false)
     }

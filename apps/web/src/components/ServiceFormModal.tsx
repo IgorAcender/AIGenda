@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Form, Input, InputNumber, Switch, Button, message, Select, Checkbox } from 'antd'
+import { Form, Input, InputNumber, Switch, Button, notification, Select, Checkbox } from 'antd'
 import { useApiMutation } from '@/hooks/useApi'
 import { Service, serviceService } from '@/services/serviceService'
 import { api } from '@/lib/api'
@@ -60,20 +60,32 @@ export function ServiceFormModal({
 
       saveService(values, {
         onSuccess: (response: any) => {
-          message.success(editingService ? 'Serviço atualizado com sucesso!' : 'Serviço criado com sucesso!')
+          notification.success({
+            message: 'Sucesso!',
+            description: editingService ? 'Serviço atualizado com sucesso!' : 'Serviço criado com sucesso!',
+            placement: 'topRight',
+          })
           onSuccess(response)
           onClose()
           form.resetFields()
         },
         onError: (error: any) => {
           const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao salvar serviço'
-          message.error(errorMessage)
+          notification.error({
+            message: 'Erro ao salvar',
+            description: errorMessage,
+            placement: 'topRight',
+          })
           console.error('Erro ao salvar serviço:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
-      message.error('Erro ao validar formulário')
+      notification.error({
+        message: 'Erro de validação',
+        description: 'Por favor, verifique os dados do formulário',
+        placement: 'topRight',
+      })
     } finally {
       setSubmitting(false)
     }

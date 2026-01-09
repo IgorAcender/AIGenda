@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Form, Input, Switch, message } from 'antd'
+import { Form, Input, Switch, notification } from 'antd'
 import { useApiMutation } from '@/hooks/useApi'
 import { api } from '@/lib/api'
 import { ModalWithSidebar } from './ModalWithSidebar'
@@ -71,19 +71,31 @@ export function SupplierFormModal({
 
       saveSupplier(values, {
         onSuccess: (response: any) => {
-          message.success(editingSupplier ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!')
+          notification.success({
+            message: 'Sucesso!',
+            description: editingSupplier ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!',
+            placement: 'topRight',
+          })
           onSuccess(response)
           onClose()
           form.resetFields()
         },
         onError: (error: any) => {
-          message.error(error?.response?.data?.message || error?.message || 'Erro ao salvar fornecedor')
+          notification.error({
+            message: 'Erro ao salvar',
+            description: error?.response?.data?.message || error?.message || 'Erro ao salvar fornecedor',
+            placement: 'topRight',
+          })
           console.error('Erro ao salvar fornecedor:', error)
         },
       })
     } catch (error) {
       console.error('Erro ao validar formulário:', error)
-      message.error('Erro ao validar formulário')
+      notification.error({
+        message: 'Erro de validação',
+        description: 'Por favor, verifique os dados do formulário',
+        placement: 'topRight',
+      })
     } finally {
       setSubmitting(false)
     }
