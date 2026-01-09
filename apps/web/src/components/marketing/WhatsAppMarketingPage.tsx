@@ -245,15 +245,30 @@ export default function WhatsAppMarketingPage() {
     })
   }
 
+  // Formata número para o padrão brasileiro (adiciona 55 se necessário)
+  const formatBrazilianPhoneNumber = (phone: string): string => {
+    // Remove caracteres especiais
+    const cleanPhone = phone.replace(/\D/g, '')
+    
+    // Se não tiver 55 no início, adiciona
+    if (!cleanPhone.startsWith('55')) {
+      return '55' + cleanPhone
+    }
+    
+    return cleanPhone
+  }
+
   const handleSendTestMessage = async (values: any) => {
     setLoading(true)
     try {
+      const formattedPhone = formatBrazilianPhoneNumber(values.phone)
+      
       const res = await fetch(`${API_URL}/api/whatsapp/send-message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenantId,
-          phoneNumber: values.phone,
+          phoneNumber: formattedPhone,
           message: values.message,
         }),
       })
@@ -378,12 +393,12 @@ export default function WhatsAppMarketingPage() {
           }
         >
           <Paragraph type="secondary">
-            💡 Você pode enviar para números individuais ou para grupos. Para grupos, use o ID do grupo do WhatsApp (formato: 120363xxx@g.us)
+            💡 Você pode enviar para números individuais ou para grupos. Para números, use sem o 55 (ex: 11999999999) que adicionamos automaticamente. Para grupos, use o ID do grupo do WhatsApp (formato: 120363xxx@g.us)
           </Paragraph>
 
           <Form form={form} layout="vertical" onFinish={handleSendTestMessage} disabled={!status?.isConnected}>
             <Form.Item label="Número do WhatsApp ou ID do Grupo" name="phone" rules={[{ required: true, message: 'Digite um número ou ID' }]}>
-              <Input placeholder="551199999999 ou 120363xxx@g.us" prefix={<PhoneOutlined />} />
+              <Input placeholder="11999999999 ou 120363xxx@g.us" prefix={<PhoneOutlined />} />
             </Form.Item>
 
             <Form.Item
