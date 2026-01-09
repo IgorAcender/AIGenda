@@ -305,34 +305,11 @@ export default function WhatsAppMarketingPage() {
   return (
     <div style={{ padding: '24px' }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <WechatOutlined /> WhatsApp Marketing
-            </Title>
-            <Text type="secondary">Gerencie sua conexão do WhatsApp para automação de agendamentos</Text>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px',
-            padding: '10px 14px',
-            backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(245, 34, 45, 0.1)',
-            borderRadius: '6px',
-            border: `1.5px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`
-          }}>
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
-              }}
-            />
-            <Text style={{ fontWeight: '600', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
-              {status?.isConnected ? 'Conectado' : 'Desconectado'}
-            </Text>
-          </div>
+        <div>
+          <Title level={2} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <WechatOutlined /> WhatsApp Marketing
+          </Title>
+          <Text type="secondary">Gerencie sua conexão do WhatsApp para automação de agendamentos</Text>
         </div>
 
         <Row gutter={24}>
@@ -341,7 +318,28 @@ export default function WhatsAppMarketingPage() {
               <Space direction="vertical" style={{ width: '100%' }} size="large">
                 <div>
                   <Title level={4} style={{ margin: '0 0 12px 0' }}>Status da Conexão</Title>
-                  <Text type="secondary">Gerenciar sua conexão WhatsApp</Text>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    padding: '10px 14px',
+                    backgroundColor: status?.isConnected ? 'rgba(82, 196, 26, 0.1)' : 'rgba(245, 34, 45, 0.1)',
+                    borderRadius: '6px',
+                    border: `1.5px solid ${status?.isConnected ? '#52c41a' : '#f5222d'}`,
+                    marginBottom: '12px'
+                  }}>
+                    <div
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: status?.isConnected ? '#52c41a' : '#f5222d',
+                      }}
+                    />
+                    <Text style={{ fontWeight: '600', color: status?.isConnected ? '#52c41a' : '#f5222d', margin: 0 }}>
+                      {status?.isConnected ? 'Conectado' : 'Desconectado'}
+                    </Text>
+                  </div>
                 </div>
                 <Space wrap>
                   <Button
