@@ -358,22 +358,7 @@ export default function WhatsAppMarketingPage() {
             </Space>
           }
         >
-          <Row gutter={24}>
-            <Col xs={24} sm={12} md={8}>
-              <Statistic
-                title="Estado"
-                value={status?.state === 'open' ? 'Aberto' : 'Fechado'}
-                valueStyle={{ color: status?.state === 'open' ? '#52c41a' : '#f5222d' }}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Statistic 
-                title="Número" 
-                value={status?.whatsappPhone || 'N/A'}
-                formatter={(value) => String(value)}
-              />
-            </Col>
-          </Row>
+          {/* Status é exibido apenas pelo indicador "Conectado" no topo */}
         </Card>
 
         <Card
