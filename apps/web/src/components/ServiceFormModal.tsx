@@ -59,10 +59,15 @@ export function ServiceFormModal({
       setSubmitting(true)
       console.log('📝 Salvando serviço com valores:', values)
 
-      // Se estamos editando, incluir também os valores não alterados (especialmente isActive)
+      // Se estamos editando, incluir apenas os campos necessários
       const dataToSend = editingService ? {
-        ...editingService,
-        ...values,
+        name: values.name ?? editingService.name,
+        description: values.description ?? editingService.description,
+        price: values.price ?? editingService.price,
+        duration: values.duration ?? editingService.duration,
+        category: values.category ?? editingService.category,
+        categoryId: values.categoryId ?? editingService.categoryId,
+        isActive: values.isActive !== undefined ? values.isActive : editingService.isActive,
       } : values
 
       saveService(dataToSend, {
