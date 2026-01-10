@@ -65,6 +65,7 @@ export function ServiceFormModal({
             description: editingService ? 'Serviço atualizado com sucesso!' : 'Serviço criado com sucesso!',
             placement: 'topRight',
           })
+          setSubmitting(false)
           onSuccess(response)
           onClose()
           form.resetFields()
@@ -77,6 +78,7 @@ export function ServiceFormModal({
             placement: 'topRight',
           })
           console.error('Erro ao salvar serviço:', error)
+          setSubmitting(false)
         },
       })
     } catch (error) {
@@ -86,7 +88,6 @@ export function ServiceFormModal({
         description: 'Por favor, verifique os dados do formulário',
         placement: 'topRight',
       })
-    } finally {
       setSubmitting(false)
     }
   }

@@ -76,6 +76,7 @@ export function SupplierFormModal({
             description: editingSupplier ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!',
             placement: 'topRight',
           })
+          setSubmitting(false)
           onSuccess(response)
           onClose()
           form.resetFields()
@@ -87,6 +88,7 @@ export function SupplierFormModal({
             placement: 'topRight',
           })
           console.error('Erro ao salvar fornecedor:', error)
+          setSubmitting(false)
         },
       })
     } catch (error) {
@@ -96,7 +98,6 @@ export function SupplierFormModal({
         description: 'Por favor, verifique os dados do formulário',
         placement: 'topRight',
       })
-    } finally {
       setSubmitting(false)
     }
   }

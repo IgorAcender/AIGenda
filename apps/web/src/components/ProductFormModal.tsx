@@ -84,6 +84,7 @@ export function ProductFormModal({
             description: editingProduct ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!',
             placement: 'topRight',
           })
+          setSubmitting(false)
           onSuccess(response)
           onClose()
           form.resetFields()
@@ -95,6 +96,7 @@ export function ProductFormModal({
             placement: 'topRight',
           })
           console.error('Erro ao salvar produto:', error)
+          setSubmitting(false)
         },
       })
     } catch (error) {
@@ -104,7 +106,6 @@ export function ProductFormModal({
         description: 'Por favor, verifique os dados do formulário',
         placement: 'topRight',
       })
-    } finally {
       setSubmitting(false)
     }
   }

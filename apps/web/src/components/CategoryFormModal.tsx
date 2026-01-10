@@ -64,6 +64,7 @@ export function CategoryFormModal({
             description: editingCategory ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!',
             placement: 'topRight',
           })
+          setSubmitting(false)
           onSuccess(response)
           onClose()
           form.resetFields()
@@ -75,6 +76,7 @@ export function CategoryFormModal({
             placement: 'topRight',
           })
           console.error('Erro ao salvar categoria:', error)
+          setSubmitting(false)
         },
       })
     } catch (error) {
@@ -84,7 +86,6 @@ export function CategoryFormModal({
         description: 'Por favor, verifique os dados do formulário',
         placement: 'topRight',
       })
-    } finally {
       setSubmitting(false)
     }
   }
