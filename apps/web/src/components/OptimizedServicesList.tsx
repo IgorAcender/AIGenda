@@ -46,9 +46,11 @@ export function OptimizedServicesList() {
         refetch()
       },
       onError: (error: any) => {
+        console.error('🔴 Erro ao deletar serviço:', error)
+        const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao excluir serviço'
         notification.error({
           message: 'Erro ao excluir',
-          description: error?.response?.data?.message || 'Erro ao excluir serviço',
+          description: errorMessage,
           placement: 'topRight',
         })
       },
