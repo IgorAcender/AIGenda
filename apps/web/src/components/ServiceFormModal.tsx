@@ -59,7 +59,13 @@ export function ServiceFormModal({
       setSubmitting(true)
       console.log('📝 Salvando serviço com valores:', values)
 
-      saveService(values, {
+      // Se estamos editando, incluir também os valores não alterados (especialmente isActive)
+      const dataToSend = editingService ? {
+        ...editingService,
+        ...values,
+      } : values
+
+      saveService(dataToSend, {
         onSuccess: (response: any) => {
           console.log('✅ Serviço salvo com sucesso:', response)
           notification.success({
