@@ -34,7 +34,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useApiQuery, useApiMutation } from '@/hooks/useApi'
-import { HorariosTab } from '@/components/HorariosTab'
+import { HorariosTab, buildBusinessHoursPayload } from '@/components/HorariosTab'
 
 const { Title, Text } = Typography
 
@@ -116,6 +116,17 @@ export default function SettingsPage() {
       if (values.smsNotifications !== undefined) payload.smsNotifications = values.smsNotifications
       if (values.whatsappNotifications !== undefined) payload.whatsappNotifications = values.whatsappNotifications
       if (values.reminderHours !== undefined) payload.reminderHours = values.reminderHours
+
+      // Horários (aba Horários) - usa os valores do form compartilhado
+      const businessHours = buildBusinessHoursPayload(values, undefined, undefined, { skipIfEmpty: true })
+      if (businessHours && Object.keys(businessHours).length > 0) {
+        payload.businessHours = businessHours
+      }
+
+      if (values.onlineBookingEnabled !== undefined) payload.onlineBookingEnabled = values.onlineBookingEnabled
+      if (values.minAdvanceHours !== undefined) payload.minAdvanceHours = values.minAdvanceHours
+      if (values.maxAdvanceDays !== undefined) payload.maxAdvanceDays = values.maxAdvanceDays
+      if (values.slotDuration !== undefined) payload.slotDuration = values.slotDuration
 
       console.log('Payload enviado para /tenants/branding:', payload)
 

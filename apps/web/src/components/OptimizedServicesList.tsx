@@ -77,11 +77,11 @@ export function OptimizedServicesList() {
     },
     {
       title: 'Status',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active: boolean) => (
-        <Tag color={active ? 'green' : 'red'}>
-          {active ? 'Ativo' : 'Inativo'}
+      dataIndex: 'isActive',
+      key: 'isActive',
+      render: (isActive: boolean) => (
+        <Tag color={isActive ? 'green' : 'red'}>
+          {isActive ? 'Ativo' : 'Inativo'}
         </Tag>
       ),
     },

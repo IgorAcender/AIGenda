@@ -20,6 +20,81 @@ import { SaveOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { api } from '@/lib/api'
 
+const DAYS_MAP = [
+  { name: 'Domingo', value: 'sunday', index: 0 },
+  { name: 'Segunda-Feira', value: 'monday', index: 1 },
+  { name: 'Terça-Feira', value: 'tuesday', index: 2 },
+  { name: 'Quarta-Feira', value: 'wednesday', index: 3 },
+  { name: 'Quinta-Feira', value: 'thursday', index: 4 },
+  { name: 'Sexta-Feira', value: 'friday', index: 5 },
+  { name: 'Sábado', value: 'saturday', index: 6 },
+]
+
+type EnabledState = Record<string, boolean>
+type IntervalState = Record<string, boolean>
+
+// Utilitário compartilhado para montar o payload de horários a partir do formulário
+export function buildBusinessHoursPayload(
+  values: Record<string, any>,
+  enabledFallback?: EnabledState,
+  intervalFallback?: IntervalState,
+  options?: { skipIfEmpty?: boolean }
+) {
+  const businessHours: Record<string, string> = {}
+  let hasAnyValue = false
+
+  DAYS_MAP.forEach(({ value: dayName }) => {
+    const enabled = values?.[`${dayName}_enabled`]
+      ?? enabledFallback?.[dayName]
+      ?? false
+    const intervalEnabled = values?.[`${dayName}_interval_enabled`]
+      ?? intervalFallback?.[dayName]
+      ?? false
+
+    if (values?.hasOwnProperty?.(`${dayName}_enabled`) || enabledFallback) {
+      hasAnyValue = true
+    }
+
+    if (!enabled) {
+      businessHours[dayName] = 'Fechado'
+      return
+    }
+
+    const startTime = values?.[`${dayName}_start`]
+    const endTime = values?.[`${dayName}_end`]
+
+    if (!startTime || !endTime) return
+
+    hasAnyValue = true
+
+    const start = startTime.format ? startTime.format('HH:mm') : startTime
+    const end = endTime.format ? endTime.format('HH:mm') : endTime
+
+    let hoursString = `${start} - ${end}`
+
+    if (intervalEnabled) {
+      const intervalStart = values?.[`${dayName}_interval_start`]
+      const intervalEnd = values?.[`${dayName}_interval_end`]
+
+      if (intervalStart && intervalEnd) {
+        hasAnyValue = true
+
+        const iStart = intervalStart.format ? intervalStart.format('HH:mm') : intervalStart
+        const iEnd = intervalEnd.format ? intervalEnd.format('HH:mm') : intervalEnd
+        hoursString += ` (Intervalo: ${iStart}-${iEnd})`
+      }
+    }
+
+    businessHours[dayName] = hoursString
+  })
+
+  if (options?.skipIfEmpty && !hasAnyValue) {
+    return {}
+  }
+
+  return businessHours
+}
+
 const { Text } = Typography
 
 interface HorariosTabProps {
@@ -67,6 +142,16 @@ export function HorariosTab({
     saturday: false,
   })
 
+  // Sincroniza switches com o form externo para permitir salvar pelo botão global
+  useEffect(() => {
+    const switchValues: Record<string, boolean> = {}
+    DAYS_MAP.forEach(({ value }) => {
+      switchValues[`${value}_enabled`] = enabledDays[value as keyof typeof enabledDays]
+      switchValues[`${value}_interval_enabled`] = intervalEnabled[value as keyof typeof intervalEnabled]
+    })
+    form.setFieldsValue(switchValues)
+  }, [enabledDays, intervalEnabled, form])
+
   // Carregar dados diretamente da API quando não recebe configData externa
   useEffect(() => {
     if (!externalConfigData) {
@@ -104,16 +189,11 @@ export function HorariosTab({
       // Carregar businessHours (horários da tabela)
       if (configData.businessHours && typeof configData.businessHours === 'object') {
         const businessHours = configData.businessHours
-        const daysMap = [
-          'sunday', 'monday', 'tuesday', 'wednesday',
-          'thursday', 'friday', 'saturday'
-        ]
-
         // Resetar enabledDays e intervalEnabled baseado nos dados salvos
         const newEnabledDays = { ...enabledDays }
         const newIntervalEnabled = { ...intervalEnabled }
 
-        daysMap.forEach((dayName) => {
+        DAYS_MAP.forEach(({ value: dayName }) => {
           const hoursData = businessHours[dayName]
 
           if (hoursData && hoursData !== 'Fechado') {
@@ -149,6 +229,12 @@ export function HorariosTab({
           }
         })
 
+        // Guardar switches no formulário para serem reutilizados pelo botão global
+        DAYS_MAP.forEach(({ value: dayName }) => {
+          fieldsToSet[`${dayName}_enabled`] = newEnabledDays[dayName as keyof typeof enabledDays]
+          fieldsToSet[`${dayName}_interval_enabled`] = newIntervalEnabled[dayName as keyof typeof intervalEnabled]
+        })
+
         setEnabledDays(newEnabledDays)
         setIntervalEnabled(newIntervalEnabled)
       }
@@ -172,51 +258,9 @@ export function HorariosTab({
       const payload: any = {}
 
       // HORÁRIOS - Construir objeto businessHours a partir dos campos da tabela
-      const businessHours: any = {}
-      const daysMap = [
-        { dayName: 'sunday', label: 'Domingo' },
-        { dayName: 'monday', label: 'Segunda-Feira' },
-        { dayName: 'tuesday', label: 'Terça-Feira' },
-        { dayName: 'wednesday', label: 'Quarta-Feira' },
-        { dayName: 'thursday', label: 'Quinta-Feira' },
-        { dayName: 'friday', label: 'Sexta-Feira' },
-        { dayName: 'saturday', label: 'Sábado' },
-      ]
+      const businessHours = buildBusinessHoursPayload(values, enabledDays, intervalEnabled)
 
-      daysMap.forEach(({ dayName }) => {
-        const isEnabled = enabledDays[dayName as keyof typeof enabledDays]
-        const hasIntervalForDay = intervalEnabled[dayName as keyof typeof intervalEnabled]
-
-        if (!isEnabled) {
-          businessHours[dayName] = 'Fechado'
-        } else {
-          const startTime = values[`${dayName}_start`]
-          const endTime = values[`${dayName}_end`]
-          const intervalStartTime = values[`${dayName}_interval_start`]
-          const intervalEndTime = values[`${dayName}_interval_end`]
-
-          let hoursString = ''
-
-          if (startTime && endTime) {
-            const start = startTime.format ? startTime.format('HH:mm') : startTime
-            const end = endTime.format ? endTime.format('HH:mm') : endTime
-            hoursString = `${start} - ${end}`
-
-            // Adicionar intervalo se estiver ativado para este dia
-            if (hasIntervalForDay && intervalStartTime && intervalEndTime) {
-              const lStart = intervalStartTime.format ? intervalStartTime.format('HH:mm') : intervalStartTime
-              const lEnd = intervalEndTime.format ? intervalEndTime.format('HH:mm') : intervalEndTime
-              hoursString += ` (Intervalo: ${lStart}-${lEnd})`
-            }
-          }
-
-          if (hoursString) {
-            businessHours[dayName] = hoursString
-          }
-        }
-      })
-
-      if (Object.keys(businessHours).length > 0) {
+      if (businessHours && Object.keys(businessHours).length > 0) {
         payload.businessHours = businessHours
       }
 
@@ -290,15 +334,7 @@ export function HorariosTab({
             </tr>
           </thead>
           <tbody>
-            {[
-              { name: 'Domingo', value: 'sunday', index: 0 },
-              { name: 'Segunda-Feira', value: 'monday', index: 1 },
-              { name: 'Terça-Feira', value: 'tuesday', index: 2 },
-              { name: 'Quarta-Feira', value: 'wednesday', index: 3 },
-              { name: 'Quinta-Feira', value: 'thursday', index: 4 },
-              { name: 'Sexta-Feira', value: 'friday', index: 5 },
-              { name: 'Sábado', value: 'saturday', index: 6 },
-            ].map((day) => {
+            {DAYS_MAP.map((day) => {
               const isEnabled = enabledDays[day.value as keyof typeof enabledDays]
               const hasIntervalForDay = intervalEnabled[day.value as keyof typeof intervalEnabled]
 
@@ -321,6 +357,18 @@ export function HorariosTab({
                             ...prev,
                             [day.value]: checked,
                           }))
+                          form.setFieldsValue({
+                            [`${day.value}_enabled`]: checked,
+                          })
+                          if (!checked) {
+                            setIntervalEnabled((prev) => ({
+                              ...prev,
+                              [day.value]: false,
+                            }))
+                            form.setFieldsValue({
+                              [`${day.value}_interval_enabled`]: false,
+                            })
+                          }
                         }}
                       />
                       <span
@@ -364,6 +412,9 @@ export function HorariosTab({
                             ...prev,
                             [day.value]: checked,
                           }))
+                          form.setFieldsValue({
+                            [`${day.value}_interval_enabled`]: checked,
+                          })
                         }}
                       />
                       {hasIntervalForDay && isEnabled ? (
