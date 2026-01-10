@@ -45,7 +45,7 @@ export function ServiceFormModal({
         description: editingService.description,
         duration: editingService.duration,
         price: editingService.price,
-        active: editingService.active,
+        isActive: editingService.isActive,
       })
     } else {
       form.resetFields()
@@ -179,7 +179,7 @@ export function ServiceFormModal({
         {activeTab === 'configuracoes' && (
           <>
             <Form.Item
-              name="active"
+              name="isActive"
               label="Status"
               valuePropName="checked"
               initialValue={true}
