@@ -39,7 +39,9 @@ export async function publicBookingRoutes(app: FastifyInstance) {
         const tenant = await prisma.tenant.findUnique({
           where: { slug: tenantSlug },
           include: {
-            services: true,
+            services: {
+              where: { isActive: true }, // Apenas serviços ativos
+            },
             categories: true,
             professionals: true,
             businessHours: {
