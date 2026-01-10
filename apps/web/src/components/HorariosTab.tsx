@@ -226,11 +226,13 @@ export function HorariosTab({
       if (values.maxAdvanceDays !== undefined) payload.maxAdvanceDays = values.maxAdvanceDays
       if (values.slotDuration !== undefined) payload.slotDuration = values.slotDuration
 
-      console.log('Payload enviado para /tenants/branding:', payload)
+      console.log('📝 Payload enviado para /tenants/branding:', payload)
 
       setSaving(true)
       try {
-        await api.put('/tenants/branding', payload)
+        console.log('🔄 Enviando PUT para /tenants/branding...')
+        const response = await api.put('/tenants/branding', payload)
+        console.log('✅ Resposta recebida:', response)
         notification.success({
           message: 'Sucesso!',
           description: 'Configurações salvas com sucesso!',
@@ -238,10 +240,11 @@ export function HorariosTab({
         })
         onSaveSuccess?.()
       } catch (error: any) {
-        console.error('Erro ao salvar:', error)
+        console.error('❌ Erro ao salvar:', error)
+        console.error('Error response:', error?.response?.data)
         notification.error({
           message: 'Erro ao salvar',
-          description: 'Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'),
+          description: 'Erro ao salvar configurações: ' + (error?.message || error?.response?.data?.message || 'Erro desconhecido'),
           placement: 'topRight',
         })
       } finally {
