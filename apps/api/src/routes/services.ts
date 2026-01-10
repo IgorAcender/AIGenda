@@ -95,6 +95,9 @@ export async function serviceRoutes(app: FastifyInstance) {
         } as any,
       })
 
+      // Invalidar cache após criar
+      await cacheDeletePattern(`services:${tenantId}:*`)
+
       return reply.status(201).send(service)
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -124,6 +127,9 @@ export async function serviceRoutes(app: FastifyInstance) {
         data: data as any,
       })
 
+      // Invalidar cache após atualizar
+      await cacheDeletePattern(`services:${tenantId}:*`)
+
       return service
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -149,6 +155,9 @@ export async function serviceRoutes(app: FastifyInstance) {
     await prisma.service.delete({
       where: { id },
     })
+
+    // Invalidar cache após deletar
+    await cacheDeletePattern(`services:${tenantId}:*`)
 
     return { message: 'Serviço excluído com sucesso' }
   })
