@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
+import { cacheDeletePattern } from '../lib/redis'
 import * as fs from 'fs'
 import * as path from 'path'
 import { pipeline } from 'stream/promises'
@@ -550,6 +551,9 @@ export async function tenantRoutes(app: FastifyInstance) {
           }
         }
       }
+
+      // Invalidar cache após atualizar branding
+      await cacheDeletePattern(`branding:${tenantId}:*`)
 
       return config
     } catch (error) {
