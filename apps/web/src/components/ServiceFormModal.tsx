@@ -57,9 +57,11 @@ export function ServiceFormModal({
     try {
       const values = await form.validateFields()
       setSubmitting(true)
+      console.log('📝 Salvando serviço com valores:', values)
 
       saveService(values, {
         onSuccess: (response: any) => {
+          console.log('✅ Serviço salvo com sucesso:', response)
           notification.success({
             message: 'Sucesso!',
             description: editingService ? 'Serviço atualizado com sucesso!' : 'Serviço criado com sucesso!',
@@ -71,13 +73,13 @@ export function ServiceFormModal({
           form.resetFields()
         },
         onError: (error: any) => {
+          console.error('❌ Erro ao salvar serviço:', error)
           const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao salvar serviço'
           notification.error({
             message: 'Erro ao salvar',
             description: errorMessage,
             placement: 'topRight',
           })
-          console.error('Erro ao salvar serviço:', error)
           setSubmitting(false)
         },
       })
