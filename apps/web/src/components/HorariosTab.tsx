@@ -13,7 +13,7 @@ import {
   Select,
   Switch,
   Button,
-  message,
+  notification,
   Spin,
 } from 'antd'
 import { SaveOutlined } from '@ant-design/icons'
@@ -79,7 +79,11 @@ export function HorariosTab({
         })
         .catch((error) => {
           console.error('❌ Erro ao carregar:', error)
-          message.error('Erro ao carregar configurações')
+          notification.error({
+            message: 'Erro',
+            description: 'Erro ao carregar configurações',
+            placement: 'topRight',
+          })
         })
         .finally(() => {
           setLoading(false)
@@ -227,17 +231,29 @@ export function HorariosTab({
       setSaving(true)
       try {
         await api.put('/tenants/branding', payload)
-        message.success('Configurações salvas com sucesso!')
+        notification.success({
+          message: 'Sucesso!',
+          description: 'Configurações salvas com sucesso!',
+          placement: 'topRight',
+        })
         onSaveSuccess?.()
       } catch (error: any) {
         console.error('Erro ao salvar:', error)
-        message.error('Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'))
+        notification.error({
+          message: 'Erro ao salvar',
+          description: 'Erro ao salvar configurações: ' + (error?.message || 'Erro desconhecido'),
+          placement: 'topRight',
+        })
       } finally {
         setSaving(false)
       }
     } catch (error) {
       console.error('Erro:', error)
-      message.error('Erro ao processar as configurações')
+      notification.error({
+        message: 'Erro',
+        description: 'Erro ao processar as configurações',
+        placement: 'topRight',
+      })
     }
   }
 
