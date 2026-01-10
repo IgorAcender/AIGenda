@@ -8,7 +8,7 @@ export interface Service {
   duration: number
   category?: string | null
   categoryId?: string | null
-  active: boolean
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }

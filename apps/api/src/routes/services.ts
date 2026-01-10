@@ -10,6 +10,7 @@ const serviceSchema = z.object({
   duration: z.number().min(5), // mínimo 5 minutos
   category: z.string().optional().nullable(),
   categoryId: z.string().optional().nullable(),
+  isActive: z.boolean().optional(),
 })
 
 export async function serviceRoutes(app: FastifyInstance) {
@@ -136,6 +137,37 @@ export async function serviceRoutes(app: FastifyInstance) {
         return reply.status(400).send({ error: 'Dados inválidos', details: error.errors })
       }
       throw error
+    }
+  })
+
+  // Toggle status do serviço (ativar/desativar)
+  app.patch('/:id/toggle-status', async (request: any, reply: any) => {
+    try {
+      const { tenantId } = request.user
+      const { id } = request.params
+
+      const existing = await prisma.service.findFirst({
+        where: { id, tenantId },
+      })
+
+      if (!existing) {
+        return reply.status(404).send({ error: 'Serviço não encontrado' })
+      }
+
+      const service = await prisma.service.update({
+        where: { id },
+        data: {
+          isActive: !existing.isActive,
+        },
+      })
+
+      // Invalidar cache após atualizar
+      await cacheDeletePattern(`services:${tenantId}:*`)
+
+      return service
+    } catch (error) {
+      console.error('Erro ao fazer toggle de status:', error)
+      return reply.status(500).send({ error: 'Erro ao atualizar serviço' })
     }
   })
 

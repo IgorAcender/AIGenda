@@ -35,6 +35,35 @@ export function OptimizedServicesList() {
     [['services']]
   )
 
+  // Mutation para fazer toggle de status
+  const toggleStatusMutation = useApiMutation(
+    async (serviceId: string) => {
+      return await api.patch(`/services/${serviceId}/toggle-status`)
+    },
+    [['services']]
+  )
+
+  const handleToggleStatus = (service: Service) => {
+    toggleStatusMutation.mutate(service.id!, {
+      onSuccess: () => {
+        notification.success({
+          message: 'Sucesso!',
+          description: `Serviço ${service.isActive ? 'desativado' : 'ativado'} com sucesso!`,
+          placement: 'topRight',
+        })
+        refetch()
+      },
+      onError: (error: any) => {
+        console.error('🔴 Erro ao atualizar status:', error)
+        notification.error({
+          message: 'Erro ao atualizar status',
+          description: error?.message || 'Erro ao atualizar serviço',
+          placement: 'topRight',
+        })
+      },
+    })
+  }
+
   const handleDeleteService = (serviceId: string) => {
     deleteServiceMutation.mutate(serviceId, {
       onSuccess: () => {
@@ -89,7 +118,15 @@ export function OptimizedServicesList() {
       title: 'Ações',
       key: 'actions',
       render: (_: any, record: Service) => (
-        <Space>
+        <Space wrap>
+          <Button
+            type={record.isActive ? 'default' : 'primary'}
+            size="small"
+            onClick={() => handleToggleStatus(record)}
+            loading={toggleStatusMutation.isPending}
+          >
+            {record.isActive ? 'Desativar' : 'Ativar'}
+          </Button>
           <Button
             type="primary"
             size="small"
